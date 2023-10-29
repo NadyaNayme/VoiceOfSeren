@@ -1,6 +1,7 @@
 // alt1 base libs, provides all the commonly used methods for image matching and capture
 // also gives your editor info about the window.alt1 api
 import * as a1lib from 'alt1';
+import * as luxon from 'luxon';
 
 // tell webpack that this file relies index.html, appconfig.json and icon.png, this makes webpack
 // add these files to the output directory
@@ -17,13 +18,13 @@ function getByID(id: string) {
 
 let helperItems = {
 	Output: getByID('output'),
-	Get: getByID('getvos'),
 	Current: getByID('current'),
+	Get: getByID('get'),
 	Last: getByID('last'),
-	Vote: getByID('vote'),
 	Clan1: <HTMLSelectElement>getByID('clan1'),
 	Clan2: <HTMLSelectElement>getByID('clan2'),
-	Submit: getByID('submit'),
+	VoteOutput: getByID('vote_output'),
+	Vote: getByID('send_vote'),
 	settings: getByID('Settings'),
 };
 
@@ -38,61 +39,43 @@ var clanImages = a1lib.webpackImages({
 	trahaearn: require('./asset/data/Trahaearn_Clan.data.png'),
 });
 
-const clans = {
-	amlodd: 'amlodd',
-	cadarn: 'cadarn',
-	crwys: 'crwys',
-	hefin: 'hefin',
-	iorwerth: 'iorwerth',
-	ithell: 'ithell',
-	meilyr: 'meilyr',
-	trahaearn: 'trahaearn',
-};
-
 let clanVote = [];
 
 helperItems.Clan1.addEventListener('change', (e) => {
 	clanVote[0] = helperItems.Clan1.value;
+	validateVotes();
 });
 
 helperItems.Clan2.addEventListener('change', (e) => {
-	clanVote[1] = helperItems.Clan1.value;
+	clanVote[1] = helperItems.Clan2.value;
+	validateVotes();
 });
 
-helperItems.Get.addEventListener('click', () => {
-	fetch('https://vos-alt1.fly.dev/vos', {
-		method: 'GET',
-		headers: {
-			'Content-type': 'application/json; charset=UTF-8',
-		},
-	})
-	.then((res) => res.text())
-	.then((data) => {
-		//TODO: Parse & display data properly
-		helperItems.Current.innerHTML = data
-	});
-	fetch('https://vos-alt1.fly.dev/last_vos', {
-		method: 'GET',
-		headers: {
-			'Content-type': 'application/json; charset=UTF-8',
-		},
-	})
-	.then((res) => res.text())
-	.then((data) => {
-		//TODO: Parse & display data properly
-		helperItems.Last.innerHTML = data;
-	});
-});
-
-helperItems.Submit.addEventListener('click', () => {
-	if (!clanVote[0] || clanVote[1]) {
-		helperItems.Output.innerHTML = 'You must make a selection for both clans to vote.'
-		return;
+function validateVotes() {
+	if (!clanVote[0] || !clanVote[1]) {
+		helperItems.VoteOutput.innerHTML =
+			'<p>You must make a selection for both clans to vote.</p>';
+			helperItems.Vote.setAttribute('disabled', 'true');
 	}
-	if (clanVote[0] == clanVote[1]) {
-		helperItems.Output.innerHTML =
-			'You must select two different clans to vote.';
-		return;
+	else if (clanVote[0] == clanVote[1]) {
+		helperItems.VoteOutput.innerHTML =
+			'<p>You must select two different clans to vote.</p>';
+			helperItems.Vote.setAttribute('disabled', 'true');
+	} else {
+		helperItems.VoteOutput.innerHTML = '';
+		helperItems.Vote.removeAttribute('disabled');
+	}
+}
+
+helperItems.Get.addEventListener('click', (e) => {
+	fetchVos();
+	updateSetting('lastFetch', luxon.DateTime.Now());
+});
+
+helperItems.Vote.addEventListener('click', (e) => {
+	let lastVoteTime = getSetting('lastVote');
+	if (lastVoteTime == undefined) {
+		updateSetting('lastVote', luxon.DateTime.Now());
 	}
 	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
 		fetch('https://vos-alt1.fly.dev/increase_counter', {
@@ -104,8 +87,56 @@ helperItems.Submit.addEventListener('click', () => {
 				'Content-type': 'application/json; charset=UTF-8',
 			},
 		});
+		helperItems.Vote.setAttribute('disabled', 'true');
+		helperItems.Vote.insertAdjacentHTML('afterend', '<p>Voted!</p>');
 	}
-})
+});
+
+function fetchVos() {
+	fetch('https://vos-alt1.fly.dev/vos', {
+		method: 'GET',
+		headers: {
+			'Content-type': 'application/json; charset=UTF-8',
+		},
+	})
+		.then((res) => res.text())
+		.then((data) => {
+			let vos = JSON.parse(data);
+			if (vos['clan_1'] == undefined || vos['clan_2'] == undefined) {
+				helperItems.Current.innerHTML =
+					'<p>No data found. You can help by visiting Prifddinas and submitting data!</p>';
+				return;
+			}
+			let clan_1 = titleCase(vos['clan_1']);
+			let clan_2 = titleCase(vos['clan_2']);
+			helperItems.Current.innerHTML = `<img src="./asset/resource/${clan_1}.png"> <img src="./asset/resource/${clan_2}.png">`;
+		});
+	fetch('https://vos-alt1.fly.dev/last_vos', {
+		method: 'GET',
+		headers: {
+			'Content-type': 'application/json; charset=UTF-8',
+		},
+	})
+		.then((res) => res.text())
+		.then((data) => {
+			let last_vos = JSON.parse(data);
+			if (
+				last_vos['clan_1'] == undefined ||
+				last_vos['clan_2'] == undefined
+			) {
+				helperItems.Output.innerHTML =
+					'Server was reset - no data for previous hour.';
+				return;
+			}
+			let clan_1 = titleCase(last_vos['clan_1']);
+			let clan_2 = titleCase(last_vos['clan_2']);
+			helperItems.Last.innerHTML = `<img src="./asset/resource/${clan_1}.png"> <img src="./asset/resource/${clan_2}.png">`;
+		});
+}
+
+function titleCase(string) {
+	return string[0].toUpperCase() + string.slice(1).toLowerCase();
+}
 
 export function startvos() {
 	if (!window.alt1) {
@@ -129,6 +160,8 @@ export function startvos() {
 		);
 		return;
 	}
+
+	fetchVos();
 
 	//setInterval(updateOverlay, 100);
 }
@@ -162,7 +195,6 @@ function initSettings() {
 	if (!localStorage.vos) {
 		setDefaultSettings();
 	}
-	setEmptyPocket();
 }
 
 function setDefaultSettings() {
@@ -178,10 +210,6 @@ function setDefaultSettings() {
 			updatingOverlayPosition: false,
 		})
 	);
-}
-
-function setEmptyPocket() {
-	updateSetting('pocketItem', '');
 }
 
 let posBtn = getByID('OverlayPosition');

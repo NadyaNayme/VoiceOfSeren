@@ -4,7 +4,8 @@
 		"watch": "webpack --watch"
 	},
 	"dependencies": {
-		"alt1": "^0.0.4"
+		"alt1": "^0.0.4",
+		"luxon": "^3.4.3"
 	},
 	"devDependencies": {
 		"@types/node": "^12.12.54",
