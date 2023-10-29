@@ -68,23 +68,19 @@ helperItems.Vote.addEventListener('mouseenter', (e) => {
 			clanVote[1] = foundClans[1];
 		}
 	}
+	if (foundClans.length == 0) {
+		clanVote = [];
+	}
 	validateVotes();
 });
 
 function validateVotes() {
-	helperItems.VoteOutput.innerText = 'Validating Data...';
 	if (!clanVote[0] || !clanVote[1]) {
 		helperItems.VoteOutput.innerHTML =
-			'<p>You must make a selection for both clans to vote.</p>';
-			helperItems.Vote.setAttribute('disabled', 'true');
+			'<p>You must be in Prifddinas to submit data.</p>';
 	}
-	else if (clanVote[0] == clanVote[1]) {
-		helperItems.VoteOutput.innerHTML =
-			'<p>You must select two different clans to vote.</p>';
-			helperItems.Vote.setAttribute('disabled', 'true');
-	} else {
+	else {
 		helperItems.VoteOutput.innerHTML = '';
-		helperItems.Vote.removeAttribute('disabled');
 	}
 }
 
@@ -150,24 +146,24 @@ function fetchVos() {
 	}, 60000)
 }
 
-function canVoteAgain() {
+function timeHasElapsed() {
 	let nextVoteTime = DateTime.fromISO(getSetting('nextVoteTime'));
 	if (nextVoteTime == undefined) {
 		updateSetting('nextVoteTime', setNextTime());
 	}
 	let currentTime = DateTime.now();
-	if (nextVoteTime.hour > currentTime.hour) {
-		helperItems.Vote.innerText = 'Already Submitted';
-		helperItems.Vote.setAttribute('disabled', 'true');
+	if (nextVoteTime.hour == 0 && currentTime.hour == 23) {
 		return false;
 	} else {
-		helperItems.Vote.innerText = 'Submit Data';
-		helperItems.Vote.removeAttribute('disabled');
-		return true;
+		return nextVoteTime.hour <= currentTime.hour;
 	}
 }
 
 function voteVos() {
+	if (!timeHasElapsed()) {
+		return;
+	}
+	updateSetting('nextVoteTime', setNextTime());
 	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
 		fetch('https://vos-alt1.fly.dev/increase_counter', {
 			method: 'POST',
@@ -179,9 +175,8 @@ function voteVos() {
 			},
 		});
 		helperItems.Vote.setAttribute('disabled', 'true');
-		updateSetting('nextVoteTime', setNextTime());
-		fetchVos();
 	}
+	fetchVos();
 }
 
 function titleCase(string) {
@@ -221,9 +216,12 @@ export function startvos() {
 }
 
 function checkTime() {
-	if (canVoteAgain()) {
+	if (timeHasElapsed()) {
 		helperItems.Vote.innerText = 'Submit Data';
 		helperItems.Vote.removeAttribute('disabled');
+	} else {
+		helperItems.Vote.innerText = 'Submitted';
+		helperItems.Vote.setAttribute('disabled', 'true');
 	}
 }
 
