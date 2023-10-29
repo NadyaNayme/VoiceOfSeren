@@ -13,8 +13,8 @@ module.exports = {
 	},
 	output: {
 		path: path.resolve(__dirname, 'dist'),
-		// library means that the exports from the entry file can be accessed from outside, in this case from the global scope as window.NyusNecroJobGauge
-		library: { type: 'umd', name: 'NyusNecroJobGauge' },
+		// library means that the exports from the entry file can be accessed from outside, in this case from the global scope as window.vos
+		library: { type: 'umd', name: 'vos' },
 	},
 	devtool: false,
 	mode: 'development',

@@ -1,7 +1,7 @@
 // alt1 base libs, provides all the commonly used methods for image matching and capture
 // also gives your editor info about the window.alt1 api
 import * as a1lib from 'alt1';
-import * as luxon from 'luxon';
+import { DateTime } from 'luxon';
 
 // tell webpack that this file relies index.html, appconfig.json and icon.png, this makes webpack
 // add these files to the output directory
@@ -69,28 +69,34 @@ function validateVotes() {
 
 helperItems.Get.addEventListener('click', (e) => {
 	fetchVos();
-	updateSetting('lastFetch', luxon.DateTime.Now());
 });
 
 helperItems.Vote.addEventListener('click', (e) => {
-	let lastVoteTime = getSetting('lastVote');
-	if (lastVoteTime == undefined) {
-		updateSetting('lastVote', luxon.DateTime.Now());
-	}
-	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
-		fetch('https://vos-alt1.fly.dev/increase_counter', {
-			method: 'POST',
-			body: JSON.stringify({
-				clans: clanVote,
-			}),
-			headers: {
-				'Content-type': 'application/json; charset=UTF-8',
-			},
-		});
-		helperItems.Vote.setAttribute('disabled', 'true');
-		helperItems.Vote.insertAdjacentHTML('afterend', '<p>Voted!</p>');
-	}
+	voteVos();
 });
+
+function setNextTime() {
+	let now = DateTime.now();
+	let nextTime = now.plus({ hours: 1 });
+	return nextTime;
+}
+
+function canFetchAgain() {
+	let nextFetchTime = DateTime.fromISO(getSetting('nextFetchTime'));
+	if (nextFetchTime == undefined) {
+		updateSetting('nextFetchTime', setNextTime());
+	}
+	let currentTime = DateTime.now();
+	if (nextFetchTime.minute + 2 > currentTime.minute) {
+		helperItems.Get.innerText = 'Please wait...';
+		helperItems.Get.setAttribute('disabled', 'true');
+		return false;
+	} else {
+		helperItems.Get.innerText = 'Update';
+		helperItems.Get.removeAttribute('disabled');
+		return true;
+	}
+}
 
 function fetchVos() {
 	fetch('https://vos-alt1.fly.dev/vos', {
@@ -132,6 +138,44 @@ function fetchVos() {
 			let clan_2 = titleCase(last_vos['clan_2']);
 			helperItems.Last.innerHTML = `<img src="./asset/resource/${clan_1}.png"> <img src="./asset/resource/${clan_2}.png">`;
 		});
+	helperItems.Get.setAttribute('disabled', 'true');
+	updateSetting('nextFetchTime', setNextTime());
+}
+
+function canVoteAgain() {
+	let nextVoteTime = DateTime.fromISO(getSetting('nextVoteTime'));
+	if (nextVoteTime == undefined) {
+		updateSetting('nextVoteTime', setNextTime());
+	}
+	let currentTime = DateTime.now();
+	if (nextVoteTime.hour > currentTime.hour) {
+		helperItems.Vote.innerText = 'Already Submitted';
+		helperItems.Vote.setAttribute('disabled', 'true');
+		return false;
+	} else {
+		helperItems.Vote.innerText = 'Submit Data';
+		helperItems.Vote.removeAttribute('disabled');
+		return true;
+	}
+}
+
+function voteVos() {
+	if (!canVoteAgain()) {
+		return;
+	}
+	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
+		fetch('https://vos-alt1.fly.dev/increase_counter', {
+			method: 'POST',
+			body: JSON.stringify({
+				clans: clanVote,
+			}),
+			headers: {
+				'Content-type': 'application/json; charset=UTF-8',
+			},
+		});
+		helperItems.Vote.setAttribute('disabled', 'true');
+	}
+	updateSetting('nextVoteTime', setNextTime());
 }
 
 function titleCase(string) {
@@ -161,9 +205,24 @@ export function startvos() {
 		return;
 	}
 
+	if (getSetting('uuid') == undefined) {
+		updateSetting('uuid', crypto.randomUUID());
+	}
 	fetchVos();
+	setInterval(checkTime, 1000);
 
 	//setInterval(updateOverlay, 100);
+}
+
+function checkTime() {
+	if (canVoteAgain()) {
+		helperItems.Vote.innerText = 'Submit Data';
+		helperItems.Vote.removeAttribute('disabled');
+	}
+	if (canFetchAgain()) {
+		helperItems.Get.innerText = 'Update';
+		helperItems.Get.removeAttribute('disabled');
+	}
 }
 
 function updateLocation(e) {
@@ -201,11 +260,6 @@ function setDefaultSettings() {
 	localStorage.setItem(
 		'vos',
 		JSON.stringify({
-			uuid: undefined,
-			lastFetch: undefined,
-			lastVote: undefined,
-			currentVos: undefined,
-			lastVos: undefined,
 			overlayPosition: { x: 100, y: 100 },
 			updatingOverlayPosition: false,
 		})
@@ -257,9 +311,11 @@ function updateSetting(setting, value) {
 
 let resetAllSettingsButton = getByID('ResetAllSettings');
 resetAllSettingsButton.addEventListener('click', () => {
+	let uuid = getSetting('uuid');
 	localStorage.removeItem('vos');
 	localStorage.clear();
 	initSettings();
+	updateSetting('uuid', uuid);
 	location.reload();
 });
 
