@@ -11452,8 +11452,8 @@ function fetchVos() {
 }
 function timeHasElapsed() {
     var nextVoteTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.fromISO(getSetting('nextVoteTime'));
-    if (nextVoteTime == undefined) {
-        updateSetting('nextVoteTime', setNextTime());
+    if (!getSetting('nextVoteTime')) {
+        return true;
     }
     var currentTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
     if (nextVoteTime.hour == 0 && currentTime.hour == 23) {

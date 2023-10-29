@@ -148,8 +148,8 @@ function fetchVos() {
 
 function timeHasElapsed() {
 	let nextVoteTime = DateTime.fromISO(getSetting('nextVoteTime'));
-	if (nextVoteTime == undefined) {
-		updateSetting('nextVoteTime', setNextTime());
+	if (!getSetting('nextVoteTime')) {
+		return true;
 	}
 	let currentTime = DateTime.now();
 	if (nextVoteTime.hour == 0 && currentTime.hour == 23) {
