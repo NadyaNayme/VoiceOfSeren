@@ -11451,19 +11451,21 @@ function fetchVos() {
 }
 function votedThisHour() {
     var votedHour = getSetting('voted');
+    var votedDay = getSetting('votedDay');
     if (!getSetting('voted')) {
         return false;
     }
     var currentHour = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour;
-    console.log(currentHour);
-    ;
+    var currentDay = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day;
+    if (currentDay != votedDay) {
+        return true;
+    }
     return votedHour == currentHour;
 }
 function voteVos() {
     if (votedThisHour()) {
         return;
     }
-    updateSetting('voted', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour);
     if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
         fetch('https://vos-alt1.fly.dev/increase_counter', {
             method: 'POST',
@@ -11475,10 +11477,13 @@ function voteVos() {
             },
         }).then(function (res) {
             console.log(res.text());
+            updateSetting('voted', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour);
+            updateSetting('votedDay', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day);
             fetchVos();
         }).catch(function (err) {
             helperItems.VoteOutput.innerHTML = "API Error: Please try again";
             updateSetting('voted', undefined);
+            updateSetting('votedDay', undefined);
         });
     }
 }

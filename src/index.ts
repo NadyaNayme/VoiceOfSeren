@@ -146,11 +146,15 @@ function fetchVos() {
 
 function votedThisHour() {
 	let votedHour = getSetting('voted');
+	let votedDay = getSetting('votedDay');
 	if (!getSetting('voted')) {
 		return false;
 	}
 	let currentHour = DateTime.now().hour;
-	console.log(currentHour);;
+	let currentDay = DateTime.now().day;
+	if (currentDay != votedDay) {
+		return true;
+	}
 	return votedHour == currentHour;
 }
 
@@ -158,7 +162,6 @@ function voteVos() {
 	if (votedThisHour()) {
 		return;
 	}
-	updateSetting('voted', DateTime.now().hour);
 	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
 		fetch('https://vos-alt1.fly.dev/increase_counter', {
 			method: 'POST',
@@ -170,10 +173,13 @@ function voteVos() {
 			},
 		}).then((res) => {
 			console.log(res.text());
+			updateSetting('voted', DateTime.now().hour);
+			updateSetting('votedDay', DateTime.now().day);
 			fetchVos();
 		}).catch((err) => {
 			helperItems.VoteOutput.innerHTML = `API Error: Please try again`
 			updateSetting('voted' , undefined);
+			updateSetting('votedDay', undefined);
 		});
 	}
 }
