@@ -11376,6 +11376,7 @@ helperItems.Vote.addEventListener('mouseenter', function (e) {
     validateVotes();
 });
 function validateVotes() {
+    helperItems.VoteOutput.innerText = 'Validating Data...';
     if (!clanVote[0] || !clanVote[1]) {
         helperItems.VoteOutput.innerHTML =
             '<p>You must make a selection for both clans to vote.</p>';
@@ -11401,23 +11402,6 @@ function setNextTime() {
     var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
     var nextTime = now.plus({ hours: 1 });
     return nextTime;
-}
-function canFetchAgain() {
-    var nextFetchTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.fromISO(getSetting('nextFetchTime'));
-    if (nextFetchTime == undefined) {
-        updateSetting('nextFetchTime', setNextTime());
-    }
-    var currentTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-    if (nextFetchTime.minute + 1 > currentTime.minute) {
-        helperItems.Get.innerText = 'Updated!';
-        helperItems.Get.setAttribute('disabled', 'true');
-        return false;
-    }
-    else {
-        helperItems.Get.innerText = 'Update';
-        helperItems.Get.removeAttribute('disabled');
-        return true;
-    }
 }
 function fetchVos() {
     fetch('https://vos-alt1.fly.dev/vos', {
@@ -11458,7 +11442,11 @@ function fetchVos() {
         helperItems.Last.innerHTML = "<img src=\"./asset/resource/".concat(clan_1, ".png\"> <img src=\"./asset/resource/").concat(clan_2, ".png\">");
     });
     helperItems.Get.setAttribute('disabled', 'true');
-    updateSetting('nextFetchTime', setNextTime());
+    helperItems.Get.innerText = 'Updated!';
+    setTimeout(function () {
+        helperItems.Get.removeAttribute('disabled');
+        helperItems.Get.innerText = 'Update';
+    }, 60000);
 }
 function canVoteAgain() {
     var nextVoteTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.fromISO(getSetting('nextVoteTime'));
@@ -11520,10 +11508,6 @@ function checkTime() {
     if (canVoteAgain()) {
         helperItems.Vote.innerText = 'Submit Data';
         helperItems.Vote.removeAttribute('disabled');
-    }
-    if (canFetchAgain()) {
-        helperItems.Get.innerText = 'Update';
-        helperItems.Get.removeAttribute('disabled');
     }
 }
 function updateLocation(e) {

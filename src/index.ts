@@ -72,6 +72,7 @@ helperItems.Vote.addEventListener('mouseenter', (e) => {
 });
 
 function validateVotes() {
+	helperItems.VoteOutput.innerText = 'Validating Data...';
 	if (!clanVote[0] || !clanVote[1]) {
 		helperItems.VoteOutput.innerHTML =
 			'<p>You must make a selection for both clans to vote.</p>';
@@ -99,23 +100,6 @@ function setNextTime() {
 	let now = DateTime.now();
 	let nextTime = now.plus({ hours: 1 });
 	return nextTime;
-}
-
-function canFetchAgain() {
-	let nextFetchTime = DateTime.fromISO(getSetting('nextFetchTime'));
-	if (nextFetchTime == undefined) {
-		updateSetting('nextFetchTime', setNextTime());
-	}
-	let currentTime = DateTime.now();
-	if (nextFetchTime.minute + 1 > currentTime.minute) {
-		helperItems.Get.innerText = 'Updated!';
-		helperItems.Get.setAttribute('disabled', 'true');
-		return false;
-	} else {
-		helperItems.Get.innerText = 'Update';
-		helperItems.Get.removeAttribute('disabled');
-		return true;
-	}
 }
 
 function fetchVos() {
@@ -159,7 +143,11 @@ function fetchVos() {
 			helperItems.Last.innerHTML = `<img src="./asset/resource/${clan_1}.png"> <img src="./asset/resource/${clan_2}.png">`;
 		});
 	helperItems.Get.setAttribute('disabled', 'true');
-	updateSetting('nextFetchTime', setNextTime());
+	helperItems.Get.innerText = 'Updated!';
+	setTimeout(() => {
+		helperItems.Get.removeAttribute('disabled');
+		helperItems.Get.innerText = 'Update';
+	}, 60000)
 }
 
 function canVoteAgain() {
@@ -236,10 +224,6 @@ function checkTime() {
 	if (canVoteAgain()) {
 		helperItems.Vote.innerText = 'Submit Data';
 		helperItems.Vote.removeAttribute('disabled');
-	}
-	if (canFetchAgain()) {
-		helperItems.Get.innerText = 'Update';
-		helperItems.Get.removeAttribute('disabled');
 	}
 }
 
