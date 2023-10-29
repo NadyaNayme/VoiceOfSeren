@@ -2,8 +2,10 @@
 
 Crowdsourced data to share the current Voice of Seren.
 
-To install Better Buff Bar copy & paste this link into your browser:
-alt1://addapp/https://nadyanayme.github.io/VoiceOfSeren/dist/appconfig.json
+To install Voice of Seren copy & paste this link into your browser:
+`alt1://addapp/https://nadyanayme.github.io/VoiceOfSeren/dist/appconfig.json`
+
+![Voice of Seren](./vos.png)
 
 ## Features
 
