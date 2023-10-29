@@ -146,7 +146,13 @@ ___CSS_LOADER_EXPORT___.push([module.id, `body {
 #last {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+}
+
+#current p,
+#last p {
+  margin: 0;
+  font-size: .85rem;
 }
 
 #current img,
@@ -175,6 +181,7 @@ hr {
 
 h2 {
   font-size: 1.25rem;
+  margin-bottom: 0;
 }
 
 h3 {
@@ -11415,7 +11422,7 @@ function fetchVos() {
         }
         var clan_1 = titleCase(vos['clan_1']);
         var clan_2 = titleCase(vos['clan_2']);
-        helperItems.Current.innerHTML = "<img src=\"./asset/resource/".concat(clan_1, ".png\"> <img src=\"./asset/resource/").concat(clan_2, ".png\">");
+        helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
     });
     fetch('https://vos-alt1.fly.dev/last_vos', {
         method: 'GET',
@@ -11434,7 +11441,7 @@ function fetchVos() {
         }
         var clan_1 = titleCase(last_vos['clan_1']);
         var clan_2 = titleCase(last_vos['clan_2']);
-        helperItems.Last.innerHTML = "<img src=\"./asset/resource/".concat(clan_1, ".png\"> <img src=\"./asset/resource/").concat(clan_2, ".png\">");
+        helperItems.Last.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
     });
     helperItems.Get.setAttribute('disabled', 'true');
     helperItems.Get.innerText = 'Updated!';

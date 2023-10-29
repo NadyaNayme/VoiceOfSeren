@@ -115,7 +115,7 @@ function fetchVos() {
 			}
 			let clan_1 = titleCase(vos['clan_1']);
 			let clan_2 = titleCase(vos['clan_2']);
-			helperItems.Current.innerHTML = `<img src="./asset/resource/${clan_1}.png"> <img src="./asset/resource/${clan_2}.png">`;
+			helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
 		});
 	fetch('https://vos-alt1.fly.dev/last_vos', {
 		method: 'GET',
@@ -136,7 +136,7 @@ function fetchVos() {
 			}
 			let clan_1 = titleCase(last_vos['clan_1']);
 			let clan_2 = titleCase(last_vos['clan_2']);
-			helperItems.Last.innerHTML = `<img src="./asset/resource/${clan_1}.png"> <img src="./asset/resource/${clan_2}.png">`;
+			helperItems.Last.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
 		});
 	helperItems.Get.setAttribute('disabled', 'true');
 	helperItems.Get.innerText = 'Updated!';

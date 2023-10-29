@@ -18,7 +18,13 @@ body {
 #last {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+}
+
+#current p,
+#last p {
+  margin: 0;
+  font-size: .85rem;
 }
 
 #current img,
@@ -47,6 +53,7 @@ hr {
 
 h2 {
   font-size: 1.25rem;
+  margin-bottom: 0;
 }
 
 h3 {
