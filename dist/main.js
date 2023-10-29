@@ -11329,8 +11329,6 @@ var helperItems = {
     Current: getByID('current'),
     Get: getByID('get'),
     Last: getByID('last'),
-    Clan1: getByID('clan1'),
-    Clan2: getByID('clan2'),
     VoteOutput: getByID('vote_output'),
     Vote: getByID('send_vote'),
     settings: getByID('Settings'),
@@ -11361,37 +11359,21 @@ function tryFindClans() {
     return foundClans;
 }
 var clanVote = [];
-helperItems.Clan1.addEventListener('change', function (e) {
-    clanVote[0] = helperItems.Clan1.value;
-    validateVotes();
-});
-helperItems.Clan2.addEventListener('change', function (e) {
-    clanVote[1] = helperItems.Clan2.value;
-    validateVotes();
-});
-helperItems.Clan1.addEventListener('mouseenter', function (e) {
+helperItems.Vote.addEventListener('mouseenter', function (e) {
+    if (helperItems.Vote.getAttribute('disabled') == 'true') {
+        return;
+    }
     var findClans = tryFindClans();
     var foundClans = [];
     for (var _i = 0, _a = Object.entries(findClans); _i < _a.length; _i++) {
         var _b = _a[_i], key = _b[0], value = _b[1];
         if (value > 0) {
             foundClans.push(key.toString());
-            helperItems.Clan1.value = foundClans[0];
-            helperItems.Clan2.value = foundClans[1];
+            clanVote[0] = foundClans[0];
+            clanVote[1] = foundClans[1];
         }
     }
-});
-helperItems.Clan2.addEventListener('mouseenter', function (e) {
-    var findClans = tryFindClans();
-    var foundClans = [];
-    for (var _i = 0, _a = Object.entries(findClans); _i < _a.length; _i++) {
-        var _b = _a[_i], key = _b[0], value = _b[1];
-        if (value > 0) {
-            foundClans.push(key.toString());
-            helperItems.Clan1.value = foundClans[0];
-            helperItems.Clan2.value = foundClans[1];
-        }
-    }
+    validateVotes();
 });
 function validateVotes() {
     if (!clanVote[0] || !clanVote[1]) {
@@ -11426,8 +11408,8 @@ function canFetchAgain() {
         updateSetting('nextFetchTime', setNextTime());
     }
     var currentTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-    if (nextFetchTime.minute + 2 > currentTime.minute) {
-        helperItems.Get.innerText = 'Please wait...';
+    if (nextFetchTime.minute + 1 > currentTime.minute) {
+        helperItems.Get.innerText = 'Updated!';
         helperItems.Get.setAttribute('disabled', 'true');
         return false;
     }
@@ -11496,9 +11478,6 @@ function canVoteAgain() {
     }
 }
 function voteVos() {
-    if (!canVoteAgain()) {
-        return;
-    }
     if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
         fetch('https://vos-alt1.fly.dev/increase_counter', {
             method: 'POST',
@@ -11510,8 +11489,9 @@ function voteVos() {
             },
         });
         helperItems.Vote.setAttribute('disabled', 'true');
+        updateSetting('nextVoteTime', setNextTime());
+        fetchVos();
     }
-    updateSetting('nextVoteTime', setNextTime());
 }
 function titleCase(string) {
     return string[0].toUpperCase() + string.slice(1).toLowerCase();

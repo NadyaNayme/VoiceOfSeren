@@ -21,8 +21,6 @@ let helperItems = {
 	Current: getByID('current'),
 	Get: getByID('get'),
 	Last: getByID('last'),
-	Clan1: <HTMLSelectElement>getByID('clan1'),
-	Clan2: <HTMLSelectElement>getByID('clan2'),
 	VoteOutput: getByID('vote_output'),
 	Vote: getByID('send_vote'),
 	settings: getByID('Settings'),
@@ -57,38 +55,20 @@ function tryFindClans() {
 
 let clanVote = [];
 
-helperItems.Clan1.addEventListener('change', (e) => {
-	clanVote[0] = helperItems.Clan1.value;
-	validateVotes();
-});
-
-helperItems.Clan2.addEventListener('change', (e) => {
-	clanVote[1] = helperItems.Clan2.value;
-	validateVotes();
-});
-
-helperItems.Clan1.addEventListener('mouseenter', (e) => {
+helperItems.Vote.addEventListener('mouseenter', (e) => {
+	if (helperItems.Vote.getAttribute('disabled') == 'true') {
+		return;
+	}
 	let findClans = tryFindClans();
 	let foundClans = [];
 	for (let [key, value] of Object.entries(findClans)) {
 		if (value > 0) {
 			foundClans.push(key.toString());
-			helperItems.Clan1.value = foundClans[0];
-			helperItems.Clan2.value = foundClans[1];
+			clanVote[0] = foundClans[0];
+			clanVote[1] = foundClans[1];
 		}
 	}
-});
-
-helperItems.Clan2.addEventListener('mouseenter', (e) => {
-	let findClans = tryFindClans();
-	let foundClans = [];
-	for (let [key, value] of Object.entries(findClans)) {
-		if (value > 0) {
-			foundClans.push(key.toString());
-			helperItems.Clan1.value = foundClans[0];
-			helperItems.Clan2.value = foundClans[1];
-		}
-	}
+	validateVotes();
 });
 
 function validateVotes() {
@@ -127,8 +107,8 @@ function canFetchAgain() {
 		updateSetting('nextFetchTime', setNextTime());
 	}
 	let currentTime = DateTime.now();
-	if (nextFetchTime.minute + 2 > currentTime.minute) {
-		helperItems.Get.innerText = 'Please wait...';
+	if (nextFetchTime.minute + 1 > currentTime.minute) {
+		helperItems.Get.innerText = 'Updated!';
 		helperItems.Get.setAttribute('disabled', 'true');
 		return false;
 	} else {
@@ -200,9 +180,6 @@ function canVoteAgain() {
 }
 
 function voteVos() {
-	if (!canVoteAgain()) {
-		return;
-	}
 	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
 		fetch('https://vos-alt1.fly.dev/increase_counter', {
 			method: 'POST',
@@ -214,8 +191,9 @@ function voteVos() {
 			},
 		});
 		helperItems.Vote.setAttribute('disabled', 'true');
+		updateSetting('nextVoteTime', setNextTime());
+		fetchVos();
 	}
-	updateSetting('nextVoteTime', setNextTime());
 }
 
 function titleCase(string) {
