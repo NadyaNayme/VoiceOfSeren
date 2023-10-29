@@ -11450,18 +11450,20 @@ function fetchVos() {
     }, 60000);
 }
 function votedThisHour() {
-    var voted = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.fromISO(getSetting('voted'));
+    var votedHour = getSetting('voted');
     if (!getSetting('voted')) {
         return false;
     }
-    var currentTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-    return voted.hour == currentTime.hour;
+    var currentHour = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour;
+    console.log(currentHour);
+    ;
+    return votedHour == currentHour;
 }
 function voteVos() {
     if (votedThisHour()) {
         return;
     }
-    updateSetting('voted', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now());
+    updateSetting('voted', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour);
     if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
         fetch('https://vos-alt1.fly.dev/increase_counter', {
             method: 'POST',
@@ -11471,12 +11473,14 @@ function voteVos() {
             headers: {
                 'Content-type': 'application/json; charset=UTF-8',
             },
+        }).then(function (res) {
+            console.log(res.text());
+            fetchVos();
         }).catch(function (err) {
             helperItems.VoteOutput.innerHTML = "API Error: Please try again";
             updateSetting('voted', undefined);
         });
     }
-    fetchVos();
 }
 function titleCase(string) {
     return string[0].toUpperCase() + string.slice(1).toLowerCase();
@@ -11502,7 +11506,7 @@ function startvos() {
     //setInterval(updateOverlay, 100);
 }
 function checkTime() {
-    if (votedThisHour()) {
+    if (!votedThisHour()) {
         helperItems.Vote.innerText = 'Submit Data';
         helperItems.Vote.removeAttribute('disabled');
     }
@@ -11546,6 +11550,7 @@ function initSettings() {
 function setDefaultSettings() {
     localStorage.setItem('vos', JSON.stringify({
         overlayPosition: { x: 100, y: 100 },
+        voted: false,
         updatingOverlayPosition: false,
     }));
 }

@@ -145,19 +145,20 @@ function fetchVos() {
 }
 
 function votedThisHour() {
-	let voted = DateTime.fromISO(getSetting('voted'));
+	let votedHour = getSetting('voted');
 	if (!getSetting('voted')) {
 		return false;
 	}
-	let currentTime = DateTime.now();
-	return voted.hour == currentTime.hour;
+	let currentHour = DateTime.now().hour;
+	console.log(currentHour);;
+	return votedHour == currentHour;
 }
 
 function voteVos() {
 	if (votedThisHour()) {
 		return;
 	}
-	updateSetting('voted', DateTime.now());
+	updateSetting('voted', DateTime.now().hour);
 	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
 		fetch('https://vos-alt1.fly.dev/increase_counter', {
 			method: 'POST',
@@ -167,12 +168,14 @@ function voteVos() {
 			headers: {
 				'Content-type': 'application/json; charset=UTF-8',
 			},
+		}).then((res) => {
+			console.log(res.text());
+			fetchVos();
 		}).catch((err) => {
 			helperItems.VoteOutput.innerHTML = `API Error: Please try again`
 			updateSetting('voted' , undefined);
 		});
 	}
-	fetchVos();
 }
 
 function titleCase(string) {
@@ -212,7 +215,7 @@ export function startvos() {
 }
 
 function checkTime() {
-	if (votedThisHour()) {
+	if (!votedThisHour()) {
 		helperItems.Vote.innerText = 'Submit Data';
 		helperItems.Vote.removeAttribute('disabled');
 	} else {
@@ -257,6 +260,7 @@ function setDefaultSettings() {
 		'vos',
 		JSON.stringify({
 			overlayPosition: { x: 100, y: 100 },
+			voted: false,
 			updatingOverlayPosition: false,
 		})
 	);
