@@ -39,6 +39,22 @@ var clanImages = a1lib.webpackImages({
 	trahaearn: require('./asset/data/Trahaearn_Clan.data.png'),
 });
 
+function tryFindClans() {
+	let client_screen = a1lib.captureHoldFullRs();
+	let foundClans = {
+		amlodd: client_screen.findSubimage(clanImages.amlodd).length,
+		cadarn: client_screen.findSubimage(clanImages.cadarn).length,
+		crwys: client_screen.findSubimage(clanImages.crwys).length,
+		hefin: client_screen.findSubimage(clanImages.hefin).length,
+		iorwerth: client_screen.findSubimage(clanImages.iorwerth).length,
+		ithell: client_screen.findSubimage(clanImages.ithell).length,
+		meilyr: client_screen.findSubimage(clanImages.meilyr).length,
+		trahaearn: client_screen.findSubimage(clanImages.trahaearn).length,
+	}
+	console.log(foundClans);
+	return foundClans;
+}
+
 let clanVote = [];
 
 helperItems.Clan1.addEventListener('change', (e) => {
@@ -49,6 +65,30 @@ helperItems.Clan1.addEventListener('change', (e) => {
 helperItems.Clan2.addEventListener('change', (e) => {
 	clanVote[1] = helperItems.Clan2.value;
 	validateVotes();
+});
+
+helperItems.Clan1.addEventListener('mouseenter', (e) => {
+	let findClans = tryFindClans();
+	let foundClans = [];
+	for (let [key, value] of Object.entries(findClans)) {
+		if (value > 0) {
+			foundClans.push(key.toString());
+			helperItems.Clan1.value = foundClans[0];
+			helperItems.Clan2.value = foundClans[1];
+		}
+	}
+});
+
+helperItems.Clan2.addEventListener('mouseenter', (e) => {
+	let findClans = tryFindClans();
+	let foundClans = [];
+	for (let [key, value] of Object.entries(findClans)) {
+		if (value > 0) {
+			foundClans.push(key.toString());
+			helperItems.Clan1.value = foundClans[0];
+			helperItems.Clan2.value = foundClans[1];
+		}
+	}
 });
 
 function validateVotes() {

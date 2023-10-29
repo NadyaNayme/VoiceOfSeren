@@ -11345,6 +11345,21 @@ var clanImages = alt1__WEBPACK_IMPORTED_MODULE_5__.webpackImages({
     meilyr: __webpack_require__(/*! ./asset/data/Meilyr_Clan.data.png */ "./asset/data/Meilyr_Clan.data.png"),
     trahaearn: __webpack_require__(/*! ./asset/data/Trahaearn_Clan.data.png */ "./asset/data/Trahaearn_Clan.data.png"),
 });
+function tryFindClans() {
+    var client_screen = alt1__WEBPACK_IMPORTED_MODULE_5__.captureHoldFullRs();
+    var foundClans = {
+        amlodd: client_screen.findSubimage(clanImages.amlodd).length,
+        cadarn: client_screen.findSubimage(clanImages.cadarn).length,
+        crwys: client_screen.findSubimage(clanImages.crwys).length,
+        hefin: client_screen.findSubimage(clanImages.hefin).length,
+        iorwerth: client_screen.findSubimage(clanImages.iorwerth).length,
+        ithell: client_screen.findSubimage(clanImages.ithell).length,
+        meilyr: client_screen.findSubimage(clanImages.meilyr).length,
+        trahaearn: client_screen.findSubimage(clanImages.trahaearn).length,
+    };
+    console.log(foundClans);
+    return foundClans;
+}
 var clanVote = [];
 helperItems.Clan1.addEventListener('change', function (e) {
     clanVote[0] = helperItems.Clan1.value;
@@ -11353,6 +11368,30 @@ helperItems.Clan1.addEventListener('change', function (e) {
 helperItems.Clan2.addEventListener('change', function (e) {
     clanVote[1] = helperItems.Clan2.value;
     validateVotes();
+});
+helperItems.Clan1.addEventListener('mouseenter', function (e) {
+    var findClans = tryFindClans();
+    var foundClans = [];
+    for (var _i = 0, _a = Object.entries(findClans); _i < _a.length; _i++) {
+        var _b = _a[_i], key = _b[0], value = _b[1];
+        if (value > 0) {
+            foundClans.push(key.toString());
+            helperItems.Clan1.value = foundClans[0];
+            helperItems.Clan2.value = foundClans[1];
+        }
+    }
+});
+helperItems.Clan2.addEventListener('mouseenter', function (e) {
+    var findClans = tryFindClans();
+    var foundClans = [];
+    for (var _i = 0, _a = Object.entries(findClans); _i < _a.length; _i++) {
+        var _b = _a[_i], key = _b[0], value = _b[1];
+        if (value > 0) {
+            foundClans.push(key.toString());
+            helperItems.Clan1.value = foundClans[0];
+            helperItems.Clan2.value = foundClans[1];
+        }
+    }
 });
 function validateVotes() {
     if (!clanVote[0] || !clanVote[1]) {
