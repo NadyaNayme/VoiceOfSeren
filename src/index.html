@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			#Settings,
+			body {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="output"></div>
+		<div id="vos">
+			<div id="current"></div>
+			<div id="last"></div>
+			<div id="vote">
+				<select id="clan1">
+					<option value="">Select Clan</option>
+					<option value="amlodd">Amlodd</option>
+					<option value="cadarn">Cadarn</option>
+					<option value="crwys">Crwys</option>
+					<option value="hefin">Hefin</option>
+					<option value="iorwerth">Iorwerth</option>
+					<option value="ithell">Ithell</option>
+					<option value="meilyr">Meilyr</option>
+					<option value="trahaearn">Trahaearn</option>
+				</select>
+				<select id="clan2">
+					<option value="">Select Clan</option>
+					<option value="amlodd">Amlodd</option>
+					<option value="cadarn">Cadarn</option>
+					<option value="crwys">Crwys</option>
+					<option value="hefin">Hefin</option>
+					<option value="iorwerth">Iorwerth</option>
+					<option value="ithell">Ithell</option>
+					<option value="meilyr">Meilyr</option>
+					<option value="trahaearn">Trahaearn</option>
+				</select>
+				<button id="submit">Submit Vote</button>
+			</div>
+		</div>
+		<div id="Settings">
+			<div class="container">
+				<h2>Settings</h2>
+				<h3>General</h3>
+				<h3>Overlay</h3>
+				<small>Make sure the "Show overlay" permission has been enabled for this plugin. You can check by clicking the wrench icon in the top right.</small><br><br>
+				<button style="margin-bottom:1rem;" id="OverlayPosition" data-setting="overlayPosition">Set Overlay Position</button>
+				<hr>
+				<h3>Hard Reset</h3>
+				<p>Bad configuration values can break the plugin. This attempts to reset your configuration and reload the plugin. When troubleshooting this should be the first thing you should try to resolve your problem.</p>
+				<div class="flex"><button id="ResetAllSettings">Reset All Settings</button></div>
+			</div>
+		</div>
+		<script src="./main.js" defer></script>
+	</body>
+</html>
