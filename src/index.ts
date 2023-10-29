@@ -130,7 +130,7 @@ function fetchVos() {
 				last_vos['clan_1'] == undefined ||
 				last_vos['clan_2'] == undefined
 			) {
-				helperItems.Output.innerHTML =
+				helperItems.Last.innerHTML =
 					'Server was reset - no data for previous hour.';
 				return;
 			}
