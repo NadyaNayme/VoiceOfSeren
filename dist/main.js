@@ -11400,11 +11400,6 @@ helperItems.Get.addEventListener('click', function (e) {
 helperItems.Vote.addEventListener('click', function (e) {
     voteVos();
 });
-function setNextTime() {
-    var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-    var nextTime = now.plus({ hours: 1 });
-    return nextTime;
-}
 function fetchVos() {
     fetch('https://vos-alt1.fly.dev/vos', {
         method: 'GET',
@@ -11423,6 +11418,8 @@ function fetchVos() {
         var clan_1 = titleCase(vos['clan_1']);
         var clan_2 = titleCase(vos['clan_2']);
         helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+    }).catch(function (err) {
+        helperItems.Current.innerHTML = "API Error: Please try again in a minute";
     });
     fetch('https://vos-alt1.fly.dev/last_vos', {
         method: 'GET',
@@ -11442,6 +11439,8 @@ function fetchVos() {
         var clan_1 = titleCase(last_vos['clan_1']);
         var clan_2 = titleCase(last_vos['clan_2']);
         helperItems.Last.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+    }).catch(function (err) {
+        helperItems.Last.innerHTML = "API Error: Please try again in a minute";
     });
     helperItems.Get.setAttribute('disabled', 'true');
     helperItems.Get.innerText = 'Updated!';
@@ -11450,24 +11449,19 @@ function fetchVos() {
         helperItems.Get.innerText = 'Update';
     }, 60000);
 }
-function timeHasElapsed() {
-    var nextVoteTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.fromISO(getSetting('nextVoteTime'));
-    if (!getSetting('nextVoteTime')) {
-        return true;
-    }
-    var currentTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-    if (nextVoteTime.hour == 0 && currentTime.hour == 23) {
+function votedThisHour() {
+    var voted = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.fromISO(getSetting('voted'));
+    if (!getSetting('voted')) {
         return false;
     }
-    else {
-        return nextVoteTime.hour <= currentTime.hour;
-    }
+    var currentTime = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+    return voted.hour == currentTime.hour;
 }
 function voteVos() {
-    if (!timeHasElapsed()) {
+    if (votedThisHour()) {
         return;
     }
-    updateSetting('nextVoteTime', setNextTime());
+    updateSetting('voted', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now());
     if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
         fetch('https://vos-alt1.fly.dev/increase_counter', {
             method: 'POST',
@@ -11477,8 +11471,10 @@ function voteVos() {
             headers: {
                 'Content-type': 'application/json; charset=UTF-8',
             },
+        }).catch(function (err) {
+            helperItems.VoteOutput.innerHTML = "API Error: Please try again";
+            updateSetting('voted', undefined);
         });
-        helperItems.Vote.setAttribute('disabled', 'true');
     }
     fetchVos();
 }
@@ -11506,7 +11502,7 @@ function startvos() {
     //setInterval(updateOverlay, 100);
 }
 function checkTime() {
-    if (timeHasElapsed()) {
+    if (votedThisHour()) {
         helperItems.Vote.innerText = 'Submit Data';
         helperItems.Vote.removeAttribute('disabled');
     }

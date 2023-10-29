@@ -92,12 +92,6 @@ helperItems.Vote.addEventListener('click', (e) => {
 	voteVos();
 });
 
-function setNextTime() {
-	let now = DateTime.now();
-	let nextTime = now.plus({ hours: 1 });
-	return nextTime;
-}
-
 function fetchVos() {
 	fetch('https://vos-alt1.fly.dev/vos', {
 		method: 'GET',
@@ -116,6 +110,8 @@ function fetchVos() {
 			let clan_1 = titleCase(vos['clan_1']);
 			let clan_2 = titleCase(vos['clan_2']);
 			helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
+		}).catch((err) => {
+			helperItems.Current.innerHTML = `API Error: Please try again in a minute`;
 		});
 	fetch('https://vos-alt1.fly.dev/last_vos', {
 		method: 'GET',
@@ -137,6 +133,8 @@ function fetchVos() {
 			let clan_1 = titleCase(last_vos['clan_1']);
 			let clan_2 = titleCase(last_vos['clan_2']);
 			helperItems.Last.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
+		}).catch((err) => {
+			helperItems.Last.innerHTML = `API Error: Please try again in a minute`;
 		});
 	helperItems.Get.setAttribute('disabled', 'true');
 	helperItems.Get.innerText = 'Updated!';
@@ -146,24 +144,20 @@ function fetchVos() {
 	}, 60000)
 }
 
-function timeHasElapsed() {
-	let nextVoteTime = DateTime.fromISO(getSetting('nextVoteTime'));
-	if (!getSetting('nextVoteTime')) {
-		return true;
+function votedThisHour() {
+	let voted = DateTime.fromISO(getSetting('voted'));
+	if (!getSetting('voted')) {
+		return false;
 	}
 	let currentTime = DateTime.now();
-	if (nextVoteTime.hour == 0 && currentTime.hour == 23) {
-		return false;
-	} else {
-		return nextVoteTime.hour <= currentTime.hour;
-	}
+	return voted.hour == currentTime.hour;
 }
 
 function voteVos() {
-	if (!timeHasElapsed()) {
+	if (votedThisHour()) {
 		return;
 	}
-	updateSetting('nextVoteTime', setNextTime());
+	updateSetting('voted', DateTime.now());
 	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
 		fetch('https://vos-alt1.fly.dev/increase_counter', {
 			method: 'POST',
@@ -173,8 +167,10 @@ function voteVos() {
 			headers: {
 				'Content-type': 'application/json; charset=UTF-8',
 			},
+		}).catch((err) => {
+			helperItems.VoteOutput.innerHTML = `API Error: Please try again`
+			updateSetting('voted' , undefined);
 		});
-		helperItems.Vote.setAttribute('disabled', 'true');
 	}
 	fetchVos();
 }
@@ -216,7 +212,7 @@ export function startvos() {
 }
 
 function checkTime() {
-	if (timeHasElapsed()) {
+	if (votedThisHour()) {
 		helperItems.Vote.innerText = 'Submit Data';
 		helperItems.Vote.removeAttribute('disabled');
 	} else {
