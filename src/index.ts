@@ -2,6 +2,7 @@
 // also gives your editor info about the window.alt1 api
 import * as a1lib from 'alt1';
 import { DateTime } from 'luxon';
+import * as sauce from './a1sauce';
 
 // tell webpack that this file relies index.html, appconfig.json and icon.png, this makes webpack
 // add these files to the output directory
@@ -56,6 +57,10 @@ function tryFindClans() {
 let clanVote = [];
 
 helperItems.Vote.addEventListener('mouseenter', (e) => {
+	getClanData()
+});
+
+async function getClanData() {
 	if (helperItems.Vote.getAttribute('disabled') == 'true') {
 		return;
 	}
@@ -72,7 +77,7 @@ helperItems.Vote.addEventListener('mouseenter', (e) => {
 		clanVote = [];
 	}
 	validateVotes();
-});
+}
 
 function validateVotes() {
 	if (!clanVote[0] || !clanVote[1]) {
@@ -145,9 +150,9 @@ function fetchVos() {
 }
 
 function votedThisHour() {
-	let votedHour = getSetting('voted');
-	let votedDay = getSetting('votedDay');
-	if (!getSetting('voted')) {
+	let votedHour = sauce.getSetting('voted');
+	let votedDay = sauce.getSetting('votedDay');
+	if (!sauce.getSetting('voted')) {
 		return false;
 	}
 	let currentHour = DateTime.now().hour;
@@ -158,7 +163,7 @@ function votedThisHour() {
 	return votedHour == currentHour;
 }
 
-function voteVos() {
+async function voteVos() {
 	if (votedThisHour()) {
 		return;
 	}
@@ -173,15 +178,24 @@ function voteVos() {
 			},
 		}).then((res) => {
 			console.log(res.text());
-			updateSetting('voted', DateTime.now().hour);
-			updateSetting('votedDay', DateTime.now().day);
+			sauce.updateSetting('voted', DateTime.now().hour);
+			sauce.updateSetting('votedDay', DateTime.now().day);
 			fetchVos();
+			console.log(clanVote);
+		}).then((res) => {
+			clanVote = [];
+			console.log(clanVote);
 		}).catch((err) => {
 			helperItems.VoteOutput.innerHTML = `API Error: Please try again`
-			updateSetting('voted' , undefined);
-			updateSetting('votedDay', undefined);
+			sauce.updateSetting('voted' , undefined);
+			sauce.updateSetting('votedDay', undefined);
 		});
 	}
+}
+
+async function scanForClans() {
+	await getClanData();
+	await voteVos();
 }
 
 function titleCase(string) {
@@ -211,11 +225,15 @@ export function startvos() {
 		return;
 	}
 
-	if (getSetting('uuid') == undefined) {
-		updateSetting('uuid', crypto.randomUUID());
+	if (sauce.getSetting('uuid') == undefined) {
+		sauce.updateSetting('uuid', crypto.randomUUID());
 	}
 	fetchVos();
 	setInterval(checkTime, 1000);
+
+	if (sauce.getSetting('automaticScanning')) {
+		setInterval(scanForClans, 10000);
+	}
 
 	//setInterval(updateOverlay, 100);
 }
@@ -231,7 +249,7 @@ function checkTime() {
 }
 
 function updateLocation(e) {
-	updateSetting('overlayPosition', {
+	sauce.updateSetting('overlayPosition', {
 		x: Math.floor(
 			e.x
 		),
@@ -239,12 +257,12 @@ function updateLocation(e) {
 			e.y
 		),
 	});
-	updateSetting('updatingOverlayPosition', false);
+	sauce.updateSetting('updatingOverlayPosition', false);
 	alt1.overLayClearGroup('overlayPositionHelper');
 }
 
 async function updateOverlay() {
-	let overlayPosition = getSetting('overlayPosition');
+	let overlayPosition = sauce.getSetting('overlayPosition');
 
 	alt1.overLaySetGroup('vos');
 	alt1.overLayFreezeGroup('vos');
@@ -265,6 +283,7 @@ function setDefaultSettings() {
 	localStorage.setItem(
 		'vos',
 		JSON.stringify({
+			automaticScanning: true,
 			overlayPosition: { x: 100, y: 100 },
 			voted: false,
 			updatingOverlayPosition: false,
@@ -272,12 +291,10 @@ function setDefaultSettings() {
 	);
 }
 
-let posBtn = getByID('OverlayPosition');
-posBtn.addEventListener('click', setOverlayPosition);
 async function setOverlayPosition() {
 	a1lib.once('alt1pressed', updateLocation);
-	updateSetting('updatingOverlayPosition', true);
-	while (getSetting('updatingOverlayPosition')) {
+	sauce.updateSetting('updatingOverlayPosition', true);
+	while (sauce.getSetting('updatingOverlayPosition')) {
 		alt1.setTooltip('Press Alt+1 to set overlay position.');
 		alt1.overLaySetGroup('overlayPositionHelper');
 		alt1.overLayRect(
@@ -298,32 +315,17 @@ async function setOverlayPosition() {
 	alt1.clearTooltip();
 }
 
+const settingsObject = {
+	settingsHeader: sauce.createHeading('h2', 'Settings'),
+	automaticScanning: sauce.createCheckboxSetting(
+		'automaticScanning',
+		'Automatic Scanning'
+	),
+};
 
-function getSetting(setting) {
-	if (!localStorage.vos) {
-		initSettings();
-	}
-	return JSON.parse(localStorage.getItem('vos'))[setting];
-}
-
-function updateSetting(setting, value) {
-	if (!localStorage.getItem('vos')) {
-		localStorage.setItem('vos', JSON.stringify({}));
-	}
-	var save_data = JSON.parse(localStorage.getItem('vos'));
-	save_data[setting] = value;
-	localStorage.setItem('vos', JSON.stringify(save_data));
-}
-
-let resetAllSettingsButton = getByID('ResetAllSettings');
-resetAllSettingsButton.addEventListener('click', () => {
-	let uuid = getSetting('uuid');
-	localStorage.removeItem('vos');
-	localStorage.clear();
-	initSettings();
-	updateSetting('uuid', uuid);
+settingsObject.automaticScanning.addEventListener('input',(e) => {
 	location.reload();
-});
+})
 
 
 window.onload = function () {
@@ -333,6 +335,9 @@ window.onload = function () {
 		//this makes alt1 show the add app button when running inside the embedded browser
 		//also updates app settings if they are changed
 		alt1.identifyAppUrl('./appconfig.json');
+		Object.values(settingsObject).forEach((val) => {
+			helperItems.settings.before(val);
+		});
 		initSettings();
 		startvos();
 	} else {
