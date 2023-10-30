@@ -11792,6 +11792,7 @@ helperItems.Vote.addEventListener('click', function (e) {
     voteVos();
 });
 function fetchVos() {
+    alt1.setTitleBarText('');
     fetch('https://vos-alt1.fly.dev/vos', {
         method: 'GET',
         headers: {
@@ -11809,7 +11810,6 @@ function fetchVos() {
         var clan_1 = titleCase(vos['clan_1']);
         var clan_2 = titleCase(vos['clan_2']);
         helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
-        alt1.setTitleBarText('');
         setTimeout(function () {
             var title = "VoS: ".concat(clan_1, " | ").concat(clan_2, " ");
             alt1.setTitleBarText(title);

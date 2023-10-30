@@ -98,6 +98,7 @@ helperItems.Vote.addEventListener('click', (e) => {
 });
 
 function fetchVos() {
+	alt1.setTitleBarText('');
 	fetch('https://vos-alt1.fly.dev/vos', {
 		method: 'GET',
 		headers: {
@@ -115,7 +116,6 @@ function fetchVos() {
 			let clan_1: string = titleCase(vos['clan_1']);
 			let clan_2: string = titleCase(vos['clan_2']);
 			helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
-			alt1.setTitleBarText('');
 			setTimeout(() => {
 				let title = `VoS: ${clan_1} | ${clan_2} `;
 				alt1.setTitleBarText(title);
