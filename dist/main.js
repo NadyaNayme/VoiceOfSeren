@@ -11792,59 +11792,64 @@ helperItems.Vote.addEventListener('click', function (e) {
     voteVos();
 });
 function fetchVos() {
-    alt1.setTitleBarText('');
-    fetch('https://vos-alt1.fly.dev/vos', {
-        method: 'GET',
-        headers: {
-            'Content-type': 'application/json; charset=UTF-8',
-        },
-    })
-        .then(function (res) { return res.text(); })
-        .then(function (data) {
-        var vos = JSON.parse(data);
-        if (vos['clan_1'] == undefined || vos['clan_2'] == undefined) {
-            helperItems.Current.innerHTML =
-                '<p>No data found. You can help by visiting Prifddinas and submitting data!</p>';
-            return;
-        }
-        var clan_1 = titleCase(vos['clan_1']);
-        var clan_2 = titleCase(vos['clan_2']);
-        helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
-        setTimeout(function () {
-            var title = "The Voice of Seren is currently at " + clan_1 + " and " + clan_2 + ".";
-            alt1.setTitleBarText("<span title='" + title + "'><img width='80' height='80' src='./asset/resource/" + clan_1 + ".png'/><img src='./asset/resource/" + clan_2 + ".png'/></span>");
-        }, 300);
-    }).catch(function (err) {
-        helperItems.Current.innerHTML = "API Error: Please try again in a minute";
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            alt1.setTitleBarText('');
+            fetch('https://vos-alt1.fly.dev/vos', {
+                method: 'GET',
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            })
+                .then(function (res) { return res.text(); })
+                .then(function (data) {
+                var vos = JSON.parse(data);
+                if (vos['clan_1'] == undefined || vos['clan_2'] == undefined) {
+                    helperItems.Current.innerHTML =
+                        '<p>No data found. You can help by visiting Prifddinas and submitting data!</p>';
+                    return;
+                }
+                var clan_1 = titleCase(vos['clan_1']);
+                var clan_2 = titleCase(vos['clan_2']);
+                helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+                setTimeout(function () {
+                    var title = "The Voice of Seren is currently at " + clan_1 + " and " + clan_2 + ".";
+                    alt1.setTitleBarText("<span title='" + title + "'><img width='80' height='80' src='./asset/resource/" + clan_1 + ".png'/><img src='./asset/resource/" + clan_2 + ".png'/></span>");
+                }, 300);
+            }).catch(function (err) {
+                helperItems.Current.innerHTML = "API Error: Please try again in a minute";
+            });
+            fetch('https://vos-alt1.fly.dev/last_vos', {
+                method: 'GET',
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            })
+                .then(function (res) { return res.text(); })
+                .then(function (data) {
+                var last_vos = JSON.parse(data);
+                if (last_vos['clan_1'] == undefined ||
+                    last_vos['clan_2'] == undefined) {
+                    helperItems.Last.innerHTML =
+                        'Server was reset - no data for previous hour.';
+                    return;
+                }
+                var clan_1 = titleCase(last_vos['clan_1']);
+                var clan_2 = titleCase(last_vos['clan_2']);
+                helperItems.Last.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('lastClans', [last_vos['clan_1'], last_vos['clan_2']]);
+            }).catch(function (err) {
+                helperItems.Last.innerHTML = "API Error: Please try again in a minute";
+            });
+            helperItems.Get.setAttribute('disabled', 'true');
+            helperItems.Get.innerText = 'Updated!';
+            setTimeout(function () {
+                helperItems.Get.removeAttribute('disabled');
+                helperItems.Get.innerText = 'Update';
+            }, 60000);
+            return [2 /*return*/];
+        });
     });
-    fetch('https://vos-alt1.fly.dev/last_vos', {
-        method: 'GET',
-        headers: {
-            'Content-type': 'application/json; charset=UTF-8',
-        },
-    })
-        .then(function (res) { return res.text(); })
-        .then(function (data) {
-        var last_vos = JSON.parse(data);
-        if (last_vos['clan_1'] == undefined ||
-            last_vos['clan_2'] == undefined) {
-            helperItems.Last.innerHTML =
-                'Server was reset - no data for previous hour.';
-            return;
-        }
-        var clan_1 = titleCase(last_vos['clan_1']);
-        var clan_2 = titleCase(last_vos['clan_2']);
-        helperItems.Last.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
-        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('lastClans', [last_vos['clan_1'], last_vos['clan_2']]);
-    }).catch(function (err) {
-        helperItems.Last.innerHTML = "API Error: Please try again in a minute";
-    });
-    helperItems.Get.setAttribute('disabled', 'true');
-    helperItems.Get.innerText = 'Updated!';
-    setTimeout(function () {
-        helperItems.Get.removeAttribute('disabled');
-        helperItems.Get.innerText = 'Update';
-    }, 60000);
 }
 function votedThisHour() {
     var votedHour = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('voted');
@@ -11862,42 +11867,48 @@ function votedThisHour() {
 function voteVos() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            if (votedThisHour()) {
-                return [2 /*return*/];
-            }
-            if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans')) {
-                if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[0]) ||
-                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[1])) {
-                    console.log("Won't allow votes for last VoS hour.");
+            switch (_a.label) {
+                case 0:
+                    if (votedThisHour()) {
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, fetchVos()];
+                case 1:
+                    _a.sent();
+                    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans')) {
+                        if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[0]) ||
+                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[1])) {
+                            console.log("Won't allow votes for last VoS hour.");
+                            return [2 /*return*/];
+                        }
+                    }
+                    if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
+                        fetch('https://vos-alt1.fly.dev/increase_counter', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                clans: clanVote,
+                            }),
+                            headers: {
+                                'Content-type': 'application/json; charset=UTF-8',
+                            },
+                        }).then(function (res) {
+                            console.log(res.text());
+                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('voted', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour);
+                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day);
+                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
+                            fetchVos();
+                            console.log(clanVote);
+                        }).then(function (res) {
+                            clanVote = [];
+                            console.log(clanVote);
+                        }).catch(function (err) {
+                            helperItems.VoteOutput.innerHTML = "API Error: Please try again";
+                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('voted', undefined);
+                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', undefined);
+                        });
+                    }
                     return [2 /*return*/];
-                }
             }
-            if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
-                fetch('https://vos-alt1.fly.dev/increase_counter', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        clans: clanVote,
-                    }),
-                    headers: {
-                        'Content-type': 'application/json; charset=UTF-8',
-                    },
-                }).then(function (res) {
-                    console.log(res.text());
-                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('voted', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour);
-                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day);
-                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
-                    fetchVos();
-                    console.log(clanVote);
-                }).then(function (res) {
-                    clanVote = [];
-                    console.log(clanVote);
-                }).catch(function (err) {
-                    helperItems.VoteOutput.innerHTML = "API Error: Please try again";
-                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('voted', undefined);
-                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', undefined);
-                });
-            }
-            return [2 /*return*/];
         });
     });
 }

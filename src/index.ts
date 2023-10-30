@@ -97,7 +97,7 @@ helperItems.Vote.addEventListener('click', (e) => {
 	voteVos();
 });
 
-function fetchVos() {
+async function fetchVos() {
 	alt1.setTitleBarText('');
 	fetch('https://vos-alt1.fly.dev/vos', {
 		method: 'GET',
@@ -173,6 +173,7 @@ async function voteVos() {
 	if (votedThisHour()) {
 		return;
 	}
+	await fetchVos();
 	if (sauce.getSetting('lastClans')) {
 		if (
 			sauce.getSetting('lastClans').includes(clanVote[0]) ||
