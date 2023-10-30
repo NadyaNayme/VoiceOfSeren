@@ -10,5 +10,6 @@ To install Voice of Seren copy & paste this link into your browser:
 ## Features
 
 - See the current Voice of Seren & vote in a consensus for the current voices
-- Coming Soon: Overlay that shows the current Voice of Seren - so you can minimize the app!
+- Automatically contributes data as long as the app is open (can be minimized) when you are in Prif (can opt-out of automatic scanning)
+- Active VoS are in Title Bar (exactly the same as D&D Notifications)
 - Coming Soon: Be alerted when a favorited voice is active!
