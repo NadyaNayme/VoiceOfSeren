@@ -112,9 +112,14 @@ function fetchVos() {
 					'<p>No data found. You can help by visiting Prifddinas and submitting data!</p>';
 				return;
 			}
-			let clan_1 = titleCase(vos['clan_1']);
-			let clan_2 = titleCase(vos['clan_2']);
+			let clan_1: string = titleCase(vos['clan_1']);
+			let clan_2: string = titleCase(vos['clan_2']);
 			helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
+			alt1.setTitleBarText('');
+			setTimeout(() => {
+				let title = `VoS: ${clan_1} | ${clan_2} `;
+				alt1.setTitleBarText(title);
+			}, 300);
 		}).catch((err) => {
 			helperItems.Current.innerHTML = `API Error: Please try again in a minute`;
 		});
@@ -168,9 +173,14 @@ async function voteVos() {
 	if (votedThisHour()) {
 		return;
 	}
-	if (sauce.getSetting('lastClans').includes(clanVote[0]) || sauce.getSetting('lastClans').includes(clanVote[1])) {
-		console.log(`Won't allow votes for last VoS hour.`)
-		return;
+	if (sauce.getSetting('lastClans')) {
+		if (
+			sauce.getSetting('lastClans').includes(clanVote[0]) ||
+			sauce.getSetting('lastClans').includes(clanVote[1])
+		) {
+			console.log(`Won't allow votes for last VoS hour.`);
+			return;
+		}
 	}
 	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
 		fetch('https://vos-alt1.fly.dev/increase_counter', {
@@ -185,6 +195,7 @@ async function voteVos() {
 			console.log(res.text());
 			sauce.updateSetting('voted', DateTime.now().hour);
 			sauce.updateSetting('votedDay', DateTime.now().day);
+			sauce.updateSetting('votedCount', sauce.getSetting('votedCount') + 1);
 			fetchVos();
 			console.log(clanVote);
 		}).then((res) => {
@@ -234,6 +245,7 @@ export function startvos() {
 		sauce.updateSetting('uuid', crypto.randomUUID());
 	}
 	fetchVos();
+	setInterval(fetchHourly, 1000);
 	setInterval(checkTime, 1000);
 
 	if (sauce.getSetting('automaticScanning')) {
@@ -278,6 +290,16 @@ async function updateOverlay() {
 	await new Promise((done) => setTimeout(done, 300));
 }
 
+function fetchHourly() {
+	let date = DateTime.now();
+	if (date.minute == 1 && !helperItems.Get.getAttribute('disabled')) {
+		let delay = Math.random() * 20000;
+		setTimeout(() => {
+			fetchVos();
+		}, delay);
+	}
+}
+
 function initSettings() {
 	if (!localStorage.vos) {
 		setDefaultSettings();
@@ -291,6 +313,7 @@ function setDefaultSettings() {
 			automaticScanning: true,
 			overlayPosition: { x: 100, y: 100 },
 			voted: false,
+			votedCount: 0,
 			updatingOverlayPosition: false,
 		})
 	);
@@ -345,6 +368,10 @@ window.onload = function () {
 		});
 		initSettings();
 		startvos();
+		if (!sauce.getSetting('votedCount')) {
+			sauce.updateSetting('votedCount', 0);
+		}
+
 	} else {
 		let addappurl = `alt1://addapp/${
 			new URL('./appconfig.json', document.location.href).href
