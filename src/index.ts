@@ -79,6 +79,11 @@ async function getClanData() {
 	}
 	let foundClans = Object.entries(tryFindClans());
 
+	if (Object.keys(foundClans).length == 0) {
+		clanVote = [];
+		return;
+	}
+
 	let firstClan = foundClans[0][0];
 	let firstClanPos = foundClans[0][1].x
 
@@ -94,10 +99,6 @@ async function getClanData() {
 	}
 
 	console.log(clanVote);
-
-	if (Object.keys(foundClans).length == 0) {
-		clanVote = [];
-	}
 
 	validateVotes();
 }
@@ -122,6 +123,21 @@ helperItems.Vote.addEventListener('click', (e) => {
 
 async function fetchVos() {
 	alt1.setTitleBarText('');
+	getLastVos();
+	getCurrentVos();
+	throttleUpdating();
+}
+
+async function throttleUpdating() {
+	helperItems.Get.setAttribute('disabled', 'true');
+	helperItems.Get.innerText = 'Updated!';
+	setTimeout(() => {
+		helperItems.Get.removeAttribute('disabled');
+		helperItems.Get.innerText = 'Update';
+	}, 60000);
+}
+
+async function getCurrentVos() {
 	fetch('https://vos-alt1.fly.dev/vos', {
 		method: 'GET',
 		headers: {
@@ -140,12 +156,29 @@ async function fetchVos() {
 			let clan_2: string = titleCase(vos['clan_2']);
 			helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
 			setTimeout(() => {
-				let title = "The Voice of Seren is currently at " + clan_1 + " and " + clan_2 + ".";
-				alt1.setTitleBarText("<span title='" + title + "'><img width='80' height='80' src='./asset/resource/" + clan_1 + ".png'/><img src='./asset/resource/" + clan_2 + ".png'/></span>");
+				let title =
+					'The Voice of Seren is currently at ' +
+					clan_1 +
+					' and ' +
+					clan_2 +
+					'.';
+				alt1.setTitleBarText(
+					"<span title='" +
+						title +
+						"'><img width='80' height='80' src='./asset/resource/" +
+						clan_1 +
+						".png'/><img src='./asset/resource/" +
+						clan_2 +
+						".png'/></span>"
+				);
 			}, 300);
-		}).catch((err) => {
+		})
+		.catch((err) => {
 			helperItems.Current.innerHTML = `API Error: Please try again in a minute`;
 		});
+}
+
+async function getLastVos() {
 	fetch('https://vos-alt1.fly.dev/last_vos', {
 		method: 'GET',
 		headers: {
@@ -166,16 +199,14 @@ async function fetchVos() {
 			let clan_1 = titleCase(last_vos['clan_1']);
 			let clan_2 = titleCase(last_vos['clan_2']);
 			helperItems.Last.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
-			sauce.updateSetting('lastClans', [last_vos['clan_1'], last_vos['clan_2']]);
-		}).catch((err) => {
+			sauce.updateSetting('lastClans', [
+				last_vos['clan_1'],
+				last_vos['clan_2'],
+			]);
+		})
+		.catch((err) => {
 			helperItems.Last.innerHTML = `API Error: Please try again in a minute`;
 		});
-	helperItems.Get.setAttribute('disabled', 'true');
-	helperItems.Get.innerText = 'Updated!';
-	setTimeout(() => {
-		helperItems.Get.removeAttribute('disabled');
-		helperItems.Get.innerText = 'Update';
-	}, 60000)
 }
 
 function votedThisHour() {
@@ -197,8 +228,9 @@ async function voteVos() {
 		return;
 	}
 	await fetchVos().then((res) => {
-		console.log('Updating data...');
 		if (sauce.getSetting('lastClans')) {
+			console.log(`Checking the current vote is not for last hours' clans`);
+			setTimeout(() => {}, 500);
 			if (
 				sauce.getSetting('lastClans').includes(clanVote[0]) ||
 				sauce.getSetting('lastClans').includes(clanVote[1])

@@ -11771,6 +11771,10 @@ function getClanData() {
                 return [2 /*return*/];
             }
             foundClans = Object.entries(tryFindClans());
+            if (Object.keys(foundClans).length == 0) {
+                clanVote = [];
+                return [2 /*return*/];
+            }
             firstClan = foundClans[0][0];
             firstClanPos = foundClans[0][1].x;
             secondClan = foundClans[1][0];
@@ -11784,9 +11788,6 @@ function getClanData() {
                 clanVote[0] = secondClan;
             }
             console.log(clanVote);
-            if (Object.keys(foundClans).length == 0) {
-                clanVote = [];
-            }
             validateVotes();
             return [2 /*return*/];
         });
@@ -11811,6 +11812,29 @@ function fetchVos() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             alt1.setTitleBarText('');
+            getLastVos();
+            getCurrentVos();
+            throttleUpdating();
+            return [2 /*return*/];
+        });
+    });
+}
+function throttleUpdating() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            helperItems.Get.setAttribute('disabled', 'true');
+            helperItems.Get.innerText = 'Updated!';
+            setTimeout(function () {
+                helperItems.Get.removeAttribute('disabled');
+                helperItems.Get.innerText = 'Update';
+            }, 60000);
+            return [2 /*return*/];
+        });
+    });
+}
+function getCurrentVos() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
             fetch('https://vos-alt1.fly.dev/vos', {
                 method: 'GET',
                 headers: {
@@ -11829,12 +11853,30 @@ function fetchVos() {
                 var clan_2 = titleCase(vos['clan_2']);
                 helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
                 setTimeout(function () {
-                    var title = "The Voice of Seren is currently at " + clan_1 + " and " + clan_2 + ".";
-                    alt1.setTitleBarText("<span title='" + title + "'><img width='80' height='80' src='./asset/resource/" + clan_1 + ".png'/><img src='./asset/resource/" + clan_2 + ".png'/></span>");
+                    var title = 'The Voice of Seren is currently at ' +
+                        clan_1 +
+                        ' and ' +
+                        clan_2 +
+                        '.';
+                    alt1.setTitleBarText("<span title='" +
+                        title +
+                        "'><img width='80' height='80' src='./asset/resource/" +
+                        clan_1 +
+                        ".png'/><img src='./asset/resource/" +
+                        clan_2 +
+                        ".png'/></span>");
                 }, 300);
-            }).catch(function (err) {
+            })
+                .catch(function (err) {
                 helperItems.Current.innerHTML = "API Error: Please try again in a minute";
             });
+            return [2 /*return*/];
+        });
+    });
+}
+function getLastVos() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
             fetch('https://vos-alt1.fly.dev/last_vos', {
                 method: 'GET',
                 headers: {
@@ -11853,16 +11895,14 @@ function fetchVos() {
                 var clan_1 = titleCase(last_vos['clan_1']);
                 var clan_2 = titleCase(last_vos['clan_2']);
                 helperItems.Last.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
-                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('lastClans', [last_vos['clan_1'], last_vos['clan_2']]);
-            }).catch(function (err) {
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('lastClans', [
+                    last_vos['clan_1'],
+                    last_vos['clan_2'],
+                ]);
+            })
+                .catch(function (err) {
                 helperItems.Last.innerHTML = "API Error: Please try again in a minute";
             });
-            helperItems.Get.setAttribute('disabled', 'true');
-            helperItems.Get.innerText = 'Updated!';
-            setTimeout(function () {
-                helperItems.Get.removeAttribute('disabled');
-                helperItems.Get.innerText = 'Update';
-            }, 60000);
             return [2 /*return*/];
         });
     });
@@ -11889,8 +11929,9 @@ function voteVos() {
                         return [2 /*return*/];
                     }
                     return [4 /*yield*/, fetchVos().then(function (res) {
-                            console.log('Updating data...');
                             if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans')) {
+                                console.log("Checking the current vote is not for last hours' clans");
+                                setTimeout(function () { }, 500);
                                 if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[0]) ||
                                     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[1])) {
                                     console.log("Won't allow votes for last VoS hour's clans.");
