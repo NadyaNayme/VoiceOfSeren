@@ -241,9 +241,9 @@ export function startvos() {
 		return;
 	}
 
-	if (sauce.getSetting('uuid') == undefined) {
-		sauce.updateSetting('uuid', crypto.randomUUID());
-	}
+	// if (sauce.getSetting('uuid') == undefined) {
+	// 	sauce.updateSetting('uuid', crypto.randomUUID());
+	// }
 	fetchVos();
 	setInterval(fetchHourly, 1000);
 	setInterval(checkTime, 1000);
@@ -363,11 +363,11 @@ window.onload = function () {
 		//this makes alt1 show the add app button when running inside the embedded browser
 		//also updates app settings if they are changed
 
-		if (!a1lib.hasAlt1Version('1.6.0')) {
-			helperItems.Output.innerHTML =
-				'<strong style="color:red;">OUTDATED ALT1 INSTALL FOUND- PLEASE UPDATE TO VERSION 1.6.0 - THIS MAY REQUIRE A MANUAL UPDATE BY REINSTALLING FROM <a href="https://runeapps.org/">RUNEAPPS.ORG</a></strong>';
-			return;
-		}
+		// if (!a1lib.hasAlt1Version('1.6.0')) {
+		// 	helperItems.Output.innerHTML =
+		// 		'<strong style="color:red;">OUTDATED ALT1 INSTALL FOUND- PLEASE UPDATE TO VERSION 1.6.0 - THIS MAY REQUIRE A MANUAL UPDATE BY REINSTALLING FROM <a href="https://runeapps.org/">RUNEAPPS.ORG</a></strong>';
+		// 	return;
+		// }
 
 		alt1.identifyAppUrl('./appconfig.json');
 		Object.values(settingsObject).forEach((val) => {

@@ -11942,9 +11942,9 @@ function startvos() {
         helperItems.Output.insertAdjacentHTML('beforeend', "<div><p>Attempted to use Overlay but app overlay permission is not enabled. Please enable \"Show Overlay\" permission in Alt1 settinsg (wrench icon in corner).</p></div>");
         return;
     }
-    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uuid') == undefined) {
-        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('uuid', crypto.randomUUID());
-    }
+    // if (sauce.getSetting('uuid') == undefined) {
+    // 	sauce.updateSetting('uuid', crypto.randomUUID());
+    // }
     fetchVos();
     setInterval(fetchHourly, 1000);
     setInterval(checkTime, 1000);
@@ -12050,11 +12050,11 @@ window.onload = function () {
         //tell alt1 about the app
         //this makes alt1 show the add app button when running inside the embedded browser
         //also updates app settings if they are changed
-        if (!alt1__WEBPACK_IMPORTED_MODULE_6__.hasAlt1Version('1.6.0')) {
-            helperItems.Output.innerHTML =
-                '<strong style="color:red;">OUTDATED ALT1 INSTALL FOUND- PLEASE UPDATE TO VERSION 1.6.0 - THIS MAY REQUIRE A MANUAL UPDATE BY REINSTALLING FROM <a href="https://runeapps.org/">RUNEAPPS.ORG</a></strong>';
-            return;
-        }
+        // if (!a1lib.hasAlt1Version('1.6.0')) {
+        // 	helperItems.Output.innerHTML =
+        // 		'<strong style="color:red;">OUTDATED ALT1 INSTALL FOUND- PLEASE UPDATE TO VERSION 1.6.0 - THIS MAY REQUIRE A MANUAL UPDATE BY REINSTALLING FROM <a href="https://runeapps.org/">RUNEAPPS.ORG</a></strong>';
+        // 	return;
+        // }
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
             helperItems.settings.before(val);
