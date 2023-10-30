@@ -117,8 +117,8 @@ function fetchVos() {
 			let clan_2: string = titleCase(vos['clan_2']);
 			helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
 			setTimeout(() => {
-				let title = `VoS: ${clan_1} | ${clan_2} `;
-				alt1.setTitleBarText(title);
+				let title = "The Voice of Seren is currently at " + clan_1 + " and " + clan_2 + ".";
+				alt1.setTitleBarText("<span title='" + title + "'><img width='80' height='80' src='./asset/resource/" + clan_1 + ".png'/><img src='./asset/resource/" + clan_2 + ".png'/></span>");
 			}, 300);
 		}).catch((err) => {
 			helperItems.Current.innerHTML = `API Error: Please try again in a minute`;

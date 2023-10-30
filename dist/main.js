@@ -11811,8 +11811,8 @@ function fetchVos() {
         var clan_2 = titleCase(vos['clan_2']);
         helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
         setTimeout(function () {
-            var title = "VoS: ".concat(clan_1, " | ").concat(clan_2, " ");
-            alt1.setTitleBarText(title);
+            var title = "The Voice of Seren is currently at " + clan_1 + " and " + clan_2 + ".";
+            alt1.setTitleBarText("<span title='" + title + "'><img width='80' height='80' src='./asset/resource/" + clan_1 + ".png'/><img src='./asset/resource/" + clan_2 + ".png'/></span>");
         }, 300);
     }).catch(function (err) {
         helperItems.Current.innerHTML = "API Error: Please try again in a minute";
