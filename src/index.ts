@@ -228,6 +228,7 @@ async function voteVos() {
 		return;
 	}
 	await fetchVos().then((res) => {
+		let badData = false;
 		if (sauce.getSetting('lastClans')) {
 			console.log(`Checking the current vote is not for last hours' clans`);
 			setTimeout(() => {}, 500);
@@ -236,10 +237,16 @@ async function voteVos() {
 				sauce.getSetting('lastClans').includes(clanVote[1])
 			) {
 				console.log(`Won't allow votes for last VoS hour's clans.`);
+				badData = true;
 				return;
 			}
 		}
-		if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
+		if (
+			clanVote[0] &&
+			clanVote[1] &&
+			clanVote[0] != clanVote[1] &&
+			!badData
+		) {
 			fetch('https://vos-alt1.fly.dev/increase_counter', {
 				method: 'POST',
 				body: JSON.stringify({
@@ -248,18 +255,24 @@ async function voteVos() {
 				headers: {
 					'Content-type': 'application/json; charset=UTF-8',
 				},
-			}).then((res) => {
-				sauce.updateSetting('voted', DateTime.now().hour);
-				sauce.updateSetting('votedDay', DateTime.now().day);
-				sauce.updateSetting('votedCount', sauce.getSetting('votedCount') + 1);
-				fetchVos();
-			}).then((res) => {
-				clanVote = [];
-			}).catch((err) => {
-				helperItems.VoteOutput.innerHTML = `API Error: Please try again`
-				sauce.updateSetting('voted' , undefined);
-				sauce.updateSetting('votedDay', undefined);
-			});
+			})
+				.then((res) => {
+					sauce.updateSetting('voted', DateTime.now().hour);
+					sauce.updateSetting('votedDay', DateTime.now().day);
+					sauce.updateSetting(
+						'votedCount',
+						sauce.getSetting('votedCount') + 1
+					);
+					fetchVos();
+				})
+				.then((res) => {
+					clanVote = [];
+				})
+				.catch((err) => {
+					helperItems.VoteOutput.innerHTML = `API Error: Please try again`;
+					sauce.updateSetting('voted', undefined);
+					sauce.updateSetting('votedDay', undefined);
+				});
 		}
 	});
 }

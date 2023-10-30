@@ -11929,16 +11929,21 @@ function voteVos() {
                         return [2 /*return*/];
                     }
                     return [4 /*yield*/, fetchVos().then(function (res) {
+                            var badData = false;
                             if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans')) {
                                 console.log("Checking the current vote is not for last hours' clans");
                                 setTimeout(function () { }, 500);
                                 if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[0]) ||
                                     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[1])) {
                                     console.log("Won't allow votes for last VoS hour's clans.");
+                                    badData = true;
                                     return;
                                 }
                             }
-                            if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
+                            if (clanVote[0] &&
+                                clanVote[1] &&
+                                clanVote[0] != clanVote[1] &&
+                                !badData) {
                                 fetch('https://vos-alt1.fly.dev/increase_counter', {
                                     method: 'POST',
                                     body: JSON.stringify({
@@ -11947,14 +11952,17 @@ function voteVos() {
                                     headers: {
                                         'Content-type': 'application/json; charset=UTF-8',
                                     },
-                                }).then(function (res) {
+                                })
+                                    .then(function (res) {
                                     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('voted', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour);
                                     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day);
                                     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
                                     fetchVos();
-                                }).then(function (res) {
+                                })
+                                    .then(function (res) {
                                     clanVote = [];
-                                }).catch(function (err) {
+                                })
+                                    .catch(function (err) {
                                     helperItems.VoteOutput.innerHTML = "API Error: Please try again";
                                     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('voted', undefined);
                                     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', undefined);
