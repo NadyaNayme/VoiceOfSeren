@@ -138,6 +138,7 @@ function fetchVos() {
 			let clan_1 = titleCase(last_vos['clan_1']);
 			let clan_2 = titleCase(last_vos['clan_2']);
 			helperItems.Last.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
+			sauce.updateSetting('lastClans', [last_vos['clan_1'], last_vos['clan_2']]);
 		}).catch((err) => {
 			helperItems.Last.innerHTML = `API Error: Please try again in a minute`;
 		});
@@ -165,6 +166,10 @@ function votedThisHour() {
 
 async function voteVos() {
 	if (votedThisHour()) {
+		return;
+	}
+	if (sauce.getSetting('lastClans').includes(clanVote[0]) || sauce.getSetting('lastClans').includes(clanVote[1])) {
+		console.log(`Won't allow votes for last VoS hour.`)
 		return;
 	}
 	if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {

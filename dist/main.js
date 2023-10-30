@@ -11830,6 +11830,7 @@ function fetchVos() {
         var clan_1 = titleCase(last_vos['clan_1']);
         var clan_2 = titleCase(last_vos['clan_2']);
         helperItems.Last.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('lastClans', [last_vos['clan_1'], last_vos['clan_2']]);
     }).catch(function (err) {
         helperItems.Last.innerHTML = "API Error: Please try again in a minute";
     });
@@ -11857,6 +11858,10 @@ function voteVos() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             if (votedThisHour()) {
+                return [2 /*return*/];
+            }
+            if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[0]) || _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[1])) {
+                console.log("Won't allow votes for last VoS hour.");
                 return [2 /*return*/];
             }
             if (clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1]) {
