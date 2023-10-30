@@ -11734,17 +11734,29 @@ var clanImages = alt1__WEBPACK_IMPORTED_MODULE_6__.webpackImages({
 });
 function tryFindClans() {
     var client_screen = alt1__WEBPACK_IMPORTED_MODULE_6__.captureHoldFullRs();
-    var foundClans = {
-        amlodd: client_screen.findSubimage(clanImages.amlodd).length,
-        cadarn: client_screen.findSubimage(clanImages.cadarn).length,
-        crwys: client_screen.findSubimage(clanImages.crwys).length,
-        hefin: client_screen.findSubimage(clanImages.hefin).length,
-        iorwerth: client_screen.findSubimage(clanImages.iorwerth).length,
-        ithell: client_screen.findSubimage(clanImages.ithell).length,
-        meilyr: client_screen.findSubimage(clanImages.meilyr).length,
-        trahaearn: client_screen.findSubimage(clanImages.trahaearn).length,
+    var clanIcons = {
+        amlodd: client_screen.findSubimage(clanImages.amlodd),
+        cadarn: client_screen.findSubimage(clanImages.cadarn),
+        crwys: client_screen.findSubimage(clanImages.crwys),
+        hefin: client_screen.findSubimage(clanImages.hefin),
+        iorwerth: client_screen.findSubimage(clanImages.iorwerth),
+        ithell: client_screen.findSubimage(clanImages.ithell),
+        meilyr: client_screen.findSubimage(clanImages.meilyr),
+        trahaearn: client_screen.findSubimage(clanImages.trahaearn),
     };
-    console.log(foundClans);
+    var foundClans = {
+        amlodd: clanIcons.amlodd[0],
+        cadarn: clanIcons.cadarn[0],
+        crwys: clanIcons.crwys[0],
+        hefin: clanIcons.hefin[0],
+        iorwerth: clanIcons.iorwerth[0],
+        ithell: clanIcons.ithell[0],
+        meilyr: clanIcons.meilyr[0],
+        trahaearn: clanIcons.trahaearn[0],
+    };
+    Object.keys(foundClans).forEach(function (key) {
+        return foundClans[key] === undefined ? delete foundClans[key] : {};
+    });
     return foundClans;
 }
 var clanVote = [];
@@ -11753,22 +11765,26 @@ helperItems.Vote.addEventListener('mouseenter', function (e) {
 });
 function getClanData() {
     return __awaiter(this, void 0, void 0, function () {
-        var findClans, foundClans, _i, _a, _b, key, value;
-        return __generator(this, function (_c) {
+        var foundClans, firstClan, firstClanPos, secondClan, secondClanPos;
+        return __generator(this, function (_a) {
             if (helperItems.Vote.getAttribute('disabled') == 'true') {
                 return [2 /*return*/];
             }
-            findClans = tryFindClans();
-            foundClans = [];
-            for (_i = 0, _a = Object.entries(findClans); _i < _a.length; _i++) {
-                _b = _a[_i], key = _b[0], value = _b[1];
-                if (value > 0) {
-                    foundClans.push(key.toString());
-                    clanVote[0] = foundClans[0];
-                    clanVote[1] = foundClans[1];
-                }
+            foundClans = Object.entries(tryFindClans());
+            firstClan = foundClans[0][0];
+            firstClanPos = foundClans[0][1].x;
+            secondClan = foundClans[1][0];
+            secondClanPos = foundClans[1][1].x;
+            if (firstClanPos < secondClanPos) {
+                clanVote[0] = firstClan;
+                clanVote[1] = secondClan;
             }
-            if (foundClans.length == 0) {
+            else {
+                clanVote[1] = firstClan;
+                clanVote[0] = secondClan;
+            }
+            console.log(clanVote);
+            if (Object.keys(foundClans).length == 0) {
                 clanVote = [];
             }
             validateVotes();

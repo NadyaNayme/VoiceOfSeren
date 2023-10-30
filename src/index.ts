@@ -40,17 +40,30 @@ var clanImages = a1lib.webpackImages({
 
 function tryFindClans() {
 	let client_screen = a1lib.captureHoldFullRs();
+	let clanIcons = {
+		amlodd: client_screen.findSubimage(clanImages.amlodd),
+		cadarn: client_screen.findSubimage(clanImages.cadarn),
+		crwys: client_screen.findSubimage(clanImages.crwys),
+		hefin: client_screen.findSubimage(clanImages.hefin),
+		iorwerth: client_screen.findSubimage(clanImages.iorwerth),
+		ithell: client_screen.findSubimage(clanImages.ithell),
+		meilyr: client_screen.findSubimage(clanImages.meilyr),
+		trahaearn: client_screen.findSubimage(clanImages.trahaearn),
+	};
 	let foundClans = {
-		amlodd: client_screen.findSubimage(clanImages.amlodd).length,
-		cadarn: client_screen.findSubimage(clanImages.cadarn).length,
-		crwys: client_screen.findSubimage(clanImages.crwys).length,
-		hefin: client_screen.findSubimage(clanImages.hefin).length,
-		iorwerth: client_screen.findSubimage(clanImages.iorwerth).length,
-		ithell: client_screen.findSubimage(clanImages.ithell).length,
-		meilyr: client_screen.findSubimage(clanImages.meilyr).length,
-		trahaearn: client_screen.findSubimage(clanImages.trahaearn).length,
-	}
-	console.log(foundClans);
+		amlodd: clanIcons.amlodd[0],
+		cadarn: clanIcons.cadarn[0],
+		crwys: clanIcons.crwys[0],
+		hefin: clanIcons.hefin[0],
+		iorwerth: clanIcons.iorwerth[0],
+		ithell: clanIcons.ithell[0],
+		meilyr: clanIcons.meilyr[0],
+		trahaearn: clanIcons.trahaearn[0],
+	};
+	Object.keys(foundClans).forEach((key) =>
+		foundClans[key] === undefined ? delete foundClans[key] : {}
+	);
+
 	return foundClans;
 }
 
@@ -64,18 +77,28 @@ async function getClanData() {
 	if (helperItems.Vote.getAttribute('disabled') == 'true') {
 		return;
 	}
-	let findClans = tryFindClans();
-	let foundClans = [];
-	for (let [key, value] of Object.entries(findClans)) {
-		if (value > 0) {
-			foundClans.push(key.toString());
-			clanVote[0] = foundClans[0];
-			clanVote[1] = foundClans[1];
-		}
+	let foundClans = Object.entries(tryFindClans());
+
+	let firstClan = foundClans[0][0];
+	let firstClanPos = foundClans[0][1].x
+
+	let secondClan = foundClans[1][0];
+	let secondClanPos = foundClans[1][1].x;
+
+	if (firstClanPos < secondClanPos) {
+		clanVote[0] = firstClan;
+		clanVote[1] = secondClan;
+	} else {
+		clanVote[1] = firstClan;
+		clanVote[0] = secondClan;
 	}
-	if (foundClans.length == 0) {
+
+	console.log(clanVote);
+
+	if (Object.keys(foundClans).length == 0) {
 		clanVote = [];
 	}
+
 	validateVotes();
 }
 
