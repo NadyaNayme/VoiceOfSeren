@@ -11854,12 +11854,12 @@ function fetchVos() {
 function votedThisHour() {
     var votedHour = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('voted');
     var votedDay = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedDay');
-    if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('voted')) {
+    if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('voted') && _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('voted') != 0) {
         return false;
     }
     var currentHour = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour;
     var currentDay = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day;
-    if (currentDay != votedDay) {
+    if (currentDay != votedDay && votedHour == currentHour) {
         return true;
     }
     return votedHour == currentHour;
@@ -11954,13 +11954,13 @@ function startvos() {
     //setInterval(updateOverlay, 100);
 }
 function checkTime() {
-    if (!votedThisHour()) {
-        helperItems.Vote.innerText = 'Submit Data';
-        helperItems.Vote.removeAttribute('disabled');
-    }
-    else {
+    if (votedThisHour()) {
         helperItems.Vote.innerText = 'Submitted';
         helperItems.Vote.setAttribute('disabled', 'true');
+    }
+    else {
+        helperItems.Vote.innerText = 'Submit Data';
+        helperItems.Vote.removeAttribute('disabled');
     }
 }
 function updateLocation(e) {

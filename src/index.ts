@@ -156,14 +156,14 @@ async function fetchVos() {
 }
 
 function votedThisHour() {
-	let votedHour = sauce.getSetting('voted');
-	let votedDay = sauce.getSetting('votedDay');
-	if (!sauce.getSetting('voted')) {
+	let votedHour: number = sauce.getSetting('voted');
+	let votedDay: number = sauce.getSetting('votedDay');
+	if (!sauce.getSetting('voted') && sauce.getSetting('voted') != 0) {
 		return false;
 	}
-	let currentHour = DateTime.now().hour;
-	let currentDay = DateTime.now().day;
-	if (currentDay != votedDay) {
+	let currentHour: number = DateTime.now().hour;
+	let currentDay: number = DateTime.now().day;
+	if (currentDay != votedDay && votedHour == currentHour) {
 		return true;
 	}
 	return votedHour == currentHour;
@@ -256,12 +256,12 @@ export function startvos() {
 }
 
 function checkTime() {
-	if (!votedThisHour()) {
-		helperItems.Vote.innerText = 'Submit Data';
-		helperItems.Vote.removeAttribute('disabled');
-	} else {
+	if (votedThisHour()) {
 		helperItems.Vote.innerText = 'Submitted';
 		helperItems.Vote.setAttribute('disabled', 'true');
+	} else {
+		helperItems.Vote.innerText = 'Submit Data';
+		helperItems.Vote.removeAttribute('disabled');
 	}
 }
 
