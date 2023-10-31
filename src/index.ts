@@ -374,9 +374,13 @@ async function checkVersion(version: string) {
 		return latestVersion
 	}).then((latestVersion) => {
 		if (version != latestVersion.version) {
-			console.log(`App is out of date. Expected version: ${latestVersion} ; found: ${version}`);
+			helperItems.Output.innerHTML = `<p>App is out of date. Expected version: ${latestVersion} ; found: ${version} - reloading in 3 seconds to update...</p>`;
+			setTimeout(() => {}, 3000);
+			location.reload();
 		} else {
-			console.log('App is up-to-date');
+			console.log(
+				`App is running latest version. Expected version: ${latestVersion} ; found: ${version}`
+			);
 		}
 	});
 }
@@ -429,7 +433,6 @@ export function startvos() {
 	// if (sauce.getSetting('uuid') == undefined) {
 	// 	sauce.updateSetting('uuid', crypto.randomUUID());
 	// }
-	setInterval(checkVersion, 30000);
 	fetchVos();
 	setInterval(fetchHourly, 1000);
 	setInterval(setSubmitButtonState
@@ -451,7 +454,8 @@ window.onload = function () {
 		// 	return;
 		// }
 
-		checkVersion("1.0.0");
+		// check version every 30 minutes
+		setInterval(() => {checkVersion("1.0.0")}, 1000 * 60 * 30);
 
 		alt1.identifyAppUrl('./appconfig.json');
 		Object.values(settingsObject).forEach((val) => {

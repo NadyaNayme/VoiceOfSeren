@@ -12066,10 +12066,12 @@ function checkVersion(version) {
                 return latestVersion;
             }).then(function (latestVersion) {
                 if (version != latestVersion.version) {
-                    console.log("App is out of date. Expected version: ".concat(latestVersion, " ; found: ").concat(version));
+                    helperItems.Output.innerHTML = "<p>App is out of date. Expected version: ".concat(latestVersion, " ; found: ").concat(version, " - reloading in 3 seconds to update...</p>");
+                    setTimeout(function () { }, 3000);
+                    location.reload();
                 }
                 else {
-                    console.log('App is up-to-date');
+                    console.log("App is running latest version. Expected version: ".concat(latestVersion, " ; found: ").concat(version));
                 }
             });
             return [2 /*return*/];
@@ -12106,7 +12108,6 @@ function startvos() {
     // if (sauce.getSetting('uuid') == undefined) {
     // 	sauce.updateSetting('uuid', crypto.randomUUID());
     // }
-    setInterval(checkVersion, 30000);
     fetchVos();
     setInterval(fetchHourly, 1000);
     setInterval(setSubmitButtonState, 1000);
@@ -12123,7 +12124,8 @@ window.onload = function () {
         // 		'<strong style="color:red;">OUTDATED ALT1 INSTALL FOUND- PLEASE UPDATE TO VERSION 1.6.0 - THIS MAY REQUIRE A MANUAL UPDATE BY REINSTALLING FROM <a href="https://runeapps.org/">RUNEAPPS.ORG</a></strong>';
         // 	return;
         // }
-        checkVersion("1.0.0");
+        // check version every 30 minutes
+        setInterval(function () { checkVersion("1.0.0"); }, 1000 * 60 * 30);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
             helperItems.settings.before(val);
