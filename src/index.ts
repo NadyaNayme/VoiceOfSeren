@@ -89,6 +89,7 @@ helperItems.Get.addEventListener('click', (e) => {
 
 helperItems.Vote.addEventListener('click', (e) => {
 	voteVos();
+	throttleVoting();
 });
 
 async function getClanData() {
@@ -145,6 +146,15 @@ function throttleUpdating() {
 		helperItems.Get.removeAttribute('disabled');
 		helperItems.Get.innerText = 'Update';
 	}, 30000);
+}
+
+function throttleVoting() {
+	helperItems.Vote.setAttribute('disabled', 'true');
+	helperItems.Vote.innerText = 'Submitted!';
+	setTimeout(() => {
+		helperItems.Vote.removeAttribute('disabled');
+		helperItems.Vote.innerText = 'Submit Data';
+	}, 5000);
 }
 
 async function getCurrentVos() {
@@ -210,8 +220,8 @@ async function getLastVos() {
 function voteVos() {
 	console.log('Checking data for submission...');
 	// Check to see if we have already voted and that our data is valid
-	if (!eligibleToSubmitData() || !hasValidData()) {
-		console.log('Invalid data or already voted - not allowing vote.');
+	if (!hasValidData()) {
+		console.log('Invalid data - not allowing vote.');
 		return;
 	}
 
@@ -221,7 +231,25 @@ function voteVos() {
 		return;
 	}
 
-	if (eligibleToSubmitData() && hasValidData() && !dataMatchesLastHour()) {
+	if (sauce.getSetting('justVoted')) {
+		let now = DateTime.now();
+		if (now.minute < 1) {
+			sauce.updateSetting('justVoted', false);
+			setTimeout(() => {
+				return
+			}, 1000 * 61);
+		}
+		setTimeout(() => {
+			sauce.updateSetting('justVoted', false);
+		}, 1000 * 60 * 15)
+		return;
+	}
+
+	if (
+		hasValidData() &&
+		!dataMatchesLastHour() &&
+		!sauce.getSetting('justVoted')
+	) {
 		console.log('Data is valid - fetching current VoS...');
 		getLastVos().then((res) => {
 			console.log('Last VoS obtained - submitting new data...');
@@ -235,22 +263,19 @@ function voteVos() {
 				},
 			})
 				.then((res) => {
-					sauce.updateSetting('votedHour', DateTime.now().hour);
-					sauce.updateSetting('votedDay', DateTime.now().day);
 					sauce.updateSetting(
 						'votedCount',
 						sauce.getSetting('votedCount') + 1
 					);
 					console.log('Data submitted - refreshing VoS...');
 					fetchVos();
+					sauce.updateSetting('justVoted', true);
 				})
 				.then((res) => {
 					clanVote = [];
 				})
 				.catch((err) => {
 					helperItems.VoteOutput.innerHTML = `<p>API Error: Please try again</p>`;
-					sauce.updateSetting('votedHour', undefined);
-					sauce.updateSetting('votedDay', undefined);
 				});
 		});
 	}
@@ -291,66 +316,12 @@ function updateTitleBar(clan_1, clan_2) {
 	}, 300);
 }
 
-function setSubmitButtonState() {
-	if (eligibleToSubmitData()) {
-		helperItems.Vote.innerText = 'Submit Data';
-		helperItems.Vote.removeAttribute('disabled');
-	} else {
-		helperItems.Vote.innerText = 'Submitted!';
-		helperItems.Vote.setAttribute('disabled', 'true');
-	}
-}
-
 function dataMatchesLastHour() {
 	return lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
 }
 
 function hasValidData() {
 	return clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1];
-}
-
-function eligibleToSubmitData() {
-	initVoteSettings();
-
-	let votedCount: number = parseInt(sauce.getSetting('votedCount'), 10);
-	let votedHour: number = parseInt(sauce.getSetting('votedHour'), 10);
-	let votedDay: number = parseInt(sauce.getSetting('votedDay'), 10);
-	let currentHour: number = DateTime.now().hour;
-	let currentDay: number = DateTime.now().day;
-
-	// If the user has never voted - they are eligible to vote
-	if (votedCount === 0) {
-		return true;
-	}
-
-	// If the user voted at 5pm yesterday and it is now 5pm today - make sure they can vote
-	else if (currentDay != votedDay && votedHour == currentHour) {
-		return true;
-	}
-
-	// At midnight the hours roll over to 0 and it is the only time where currentHour will not be greater than votedHour if eligible to vote
-	else if (votedHour == 23 && currentHour == 0) {
-		return true;
-	}
-
-	// If the user voted at 5 and it is now 6 then votedHour is less than currentHour
-	else if (votedHour < currentHour) {
-		return true;
-	}
-
-	// If the above conditions have not been met then the user is not eligible to vote
-	else {
-		return false;
-	}
-}
-
-function initVoteSettings() {
-	if (sauce.getSetting('votedHour') == undefined) {
-		sauce.updateSetting('votedHour', 0);
-	}
-	if (sauce.getSetting('votedDay') == undefined) {
-		sauce.updateSetting('votedDay', 0);
-	}
 }
 
 function fetchHourly() {
@@ -393,8 +364,6 @@ function initSettings() {
 			'vos',
 			JSON.stringify({
 				automaticScanning: true,
-				votedHour: 0,
-				votedDay: 0,
 				votedCount: 0,
 			})
 		);
@@ -437,8 +406,6 @@ export function startvos() {
 	// }
 	fetchVos();
 	setInterval(fetchHourly, 1000);
-	setInterval(setSubmitButtonState, 1000);
-
 	setInterval(scanForClans, 3000);
 }
 
@@ -456,9 +423,9 @@ window.onload = function () {
 		// }
 
 		// check version then check every 30 minutes after
-		checkVersion('1.0.0');
+		checkVersion('1.0.1');
 		setInterval(() => {
-			checkVersion('1.0.0');
+			checkVersion('1.0.1');
 		}, 1000 * 60 * 30);
 
 		alt1.identifyAppUrl('./appconfig.json');

@@ -11787,6 +11787,7 @@ helperItems.Get.addEventListener('click', function (e) {
 });
 helperItems.Vote.addEventListener('click', function (e) {
     voteVos();
+    throttleVoting();
 });
 function getClanData() {
     return __awaiter(this, void 0, void 0, function () {
@@ -11840,6 +11841,14 @@ function throttleUpdating() {
         helperItems.Get.removeAttribute('disabled');
         helperItems.Get.innerText = 'Update';
     }, 30000);
+}
+function throttleVoting() {
+    helperItems.Vote.setAttribute('disabled', 'true');
+    helperItems.Vote.innerText = 'Submitted!';
+    setTimeout(function () {
+        helperItems.Vote.removeAttribute('disabled');
+        helperItems.Vote.innerText = 'Submit Data';
+    }, 5000);
 }
 function getCurrentVos() {
     return __awaiter(this, void 0, void 0, function () {
@@ -11909,8 +11918,8 @@ function getLastVos() {
 function voteVos() {
     console.log('Checking data for submission...');
     // Check to see if we have already voted and that our data is valid
-    if (!eligibleToSubmitData() || !hasValidData()) {
-        console.log('Invalid data or already voted - not allowing vote.');
+    if (!hasValidData()) {
+        console.log('Invalid data - not allowing vote.');
         return;
     }
     // If our vote data matches data in last vos our data is outdated and we are not allowed to vote
@@ -11918,7 +11927,22 @@ function voteVos() {
         console.log('Data matches that of last hour - not allowing vote.');
         return;
     }
-    if (eligibleToSubmitData() && hasValidData() && !dataMatchesLastHour()) {
+    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
+        var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+        if (now.minute < 1) {
+            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+            setTimeout(function () {
+                return;
+            }, 1000 * 61);
+        }
+        setTimeout(function () {
+            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+        }, 1000 * 60 * 15);
+        return;
+    }
+    if (hasValidData() &&
+        !dataMatchesLastHour() &&
+        !_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
         console.log('Data is valid - fetching current VoS...');
         getLastVos().then(function (res) {
             console.log('Last VoS obtained - submitting new data...');
@@ -11932,19 +11956,16 @@ function voteVos() {
                 },
             })
                 .then(function (res) {
-                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedHour', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour);
-                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day);
                 _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
                 console.log('Data submitted - refreshing VoS...');
                 fetchVos();
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', true);
             })
                 .then(function (res) {
                 clanVote = [];
             })
                 .catch(function (err) {
                 helperItems.VoteOutput.innerHTML = "<p>API Error: Please try again</p>";
-                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedHour', undefined);
-                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', undefined);
             });
         });
     }
@@ -11990,57 +12011,11 @@ function updateTitleBar(clan_1, clan_2) {
             ".png'/></span>");
     }, 300);
 }
-function setSubmitButtonState() {
-    if (eligibleToSubmitData()) {
-        helperItems.Vote.innerText = 'Submit Data';
-        helperItems.Vote.removeAttribute('disabled');
-    }
-    else {
-        helperItems.Vote.innerText = 'Submitted!';
-        helperItems.Vote.setAttribute('disabled', 'true');
-    }
-}
 function dataMatchesLastHour() {
     return lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
 }
 function hasValidData() {
     return clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1];
-}
-function eligibleToSubmitData() {
-    initVoteSettings();
-    var votedCount = parseInt(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount'), 10);
-    var votedHour = parseInt(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedHour'), 10);
-    var votedDay = parseInt(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedDay'), 10);
-    var currentHour = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour;
-    var currentDay = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day;
-    // If the user has never voted - they are eligible to vote
-    if (votedCount === 0) {
-        return true;
-    }
-    // If the user voted at 5pm yesterday and it is now 5pm today - make sure they can vote
-    else if (currentDay != votedDay && votedHour == currentHour) {
-        return true;
-    }
-    // At midnight the hours roll over to 0 and it is the only time where currentHour will not be greater than votedHour if eligible to vote
-    else if (votedHour == 23 && currentHour == 0) {
-        return true;
-    }
-    // If the user voted at 5 and it is now 6 then votedHour is less than currentHour
-    else if (votedHour < currentHour) {
-        return true;
-    }
-    // If the above conditions have not been met then the user is not eligible to vote
-    else {
-        return false;
-    }
-}
-function initVoteSettings() {
-    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedHour') == undefined) {
-        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedHour', 0);
-    }
-    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedDay') == undefined) {
-        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', 0);
-    }
 }
 function fetchHourly() {
     var date = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
@@ -12077,8 +12052,6 @@ function initSettings() {
     if (!localStorage.vos) {
         localStorage.setItem('vos', JSON.stringify({
             automaticScanning: true,
-            votedHour: 0,
-            votedDay: 0,
             votedCount: 0,
         }));
     }
@@ -12105,7 +12078,6 @@ function startvos() {
     // }
     fetchVos();
     setInterval(fetchHourly, 1000);
-    setInterval(setSubmitButtonState, 1000);
     setInterval(scanForClans, 3000);
 }
 window.onload = function () {
@@ -12120,9 +12092,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version then check every 30 minutes after
-        checkVersion('1.0.0');
+        checkVersion('1.0.1');
         setInterval(function () {
-            checkVersion('1.0.0');
+            checkVersion('1.0.1');
         }, 1000 * 60 * 30);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
