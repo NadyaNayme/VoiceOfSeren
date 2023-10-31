@@ -39,7 +39,10 @@ var clanImages = a1lib.webpackImages({
 });
 
 function tryFindClans() {
+	// Capture RS Window
 	let client_screen = a1lib.captureHoldFullRs();
+
+	// Check screen for clan icons
 	let clanIcons = {
 		amlodd: client_screen.findSubimage(clanImages.amlodd),
 		cadarn: client_screen.findSubimage(clanImages.cadarn),
@@ -50,6 +53,8 @@ function tryFindClans() {
 		meilyr: client_screen.findSubimage(clanImages.meilyr),
 		trahaearn: client_screen.findSubimage(clanImages.trahaearn),
 	};
+
+	// Get the x,y of any captured clans -- 6 of these will return as `undefined`
 	let foundClans = {
 		amlodd: clanIcons.amlodd[0],
 		cadarn: clanIcons.cadarn[0],
@@ -60,36 +65,53 @@ function tryFindClans() {
 		meilyr: clanIcons.meilyr[0],
 		trahaearn: clanIcons.trahaearn[0],
 	};
+
+	// Filter out `undefined` leaving only two clains
 	Object.keys(foundClans).forEach((key) =>
 		foundClans[key] === undefined ? delete foundClans[key] : {}
 	);
 
+	// Returns the 2 captured clans as {clan: {x,y}, clan: {x, y}}
 	return foundClans;
 }
 
 let clanVote = [];
+let lastVos = [];
 
 helperItems.Vote.addEventListener('mouseenter', (e) => {
 	getClanData()
 });
 
+helperItems.Get.addEventListener('click', (e) => {
+	fetchVos();
+});
+
+helperItems.Vote.addEventListener('click', (e) => {
+	voteVos();
+});
+
 async function getClanData() {
+	// If we have already voted - skip trying to capture data
 	if (helperItems.Vote.getAttribute('disabled') == 'true') {
 		return;
 	}
+
+	// Turn the {clan_1: {x,y}, clan_2: {x,y}} into an array
 	let foundClans = Object.entries(tryFindClans());
 
+	// If we captured 0 instead of 2 clans we are not in Prif so return early
 	if (Object.keys(foundClans).length == 0) {
 		clanVote = [];
 		return;
 	}
 
 	let firstClan = foundClans[0][0];
-	let firstClanPos = foundClans[0][1].x
+	let firstClanPos = foundClans[0][1].x;
 
 	let secondClan = foundClans[1][0];
 	let secondClanPos = foundClans[1][1].x;
 
+	// Compare the clan positions and set priority appropriately
 	if (firstClanPos < secondClanPos) {
 		clanVote[0] = firstClan;
 		clanVote[1] = secondClan;
@@ -100,41 +122,28 @@ async function getClanData() {
 
 	console.log(clanVote);
 
-	validateVotes();
-}
-
-function validateVotes() {
 	if (!clanVote[0] || !clanVote[1]) {
 		helperItems.VoteOutput.innerHTML =
 			'<p>You must be in Prifddinas to submit data.</p>';
-	}
-	else {
+	} else {
 		helperItems.VoteOutput.innerHTML = '';
 	}
 }
 
-helperItems.Get.addEventListener('click', (e) => {
-	fetchVos();
-});
-
-helperItems.Vote.addEventListener('click', (e) => {
-	voteVos();
-});
-
-async function fetchVos() {
+function fetchVos() {
 	alt1.setTitleBarText('');
 	getLastVos();
 	getCurrentVos();
 	throttleUpdating();
 }
 
-async function throttleUpdating() {
+function throttleUpdating() {
 	helperItems.Get.setAttribute('disabled', 'true');
 	helperItems.Get.innerText = 'Updated!';
 	setTimeout(() => {
 		helperItems.Get.removeAttribute('disabled');
 		helperItems.Get.innerText = 'Update';
-	}, 60000);
+	}, 30000);
 }
 
 async function getCurrentVos() {
@@ -154,24 +163,7 @@ async function getCurrentVos() {
 			}
 			let clan_1: string = titleCase(vos['clan_1']);
 			let clan_2: string = titleCase(vos['clan_2']);
-			helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
-			setTimeout(() => {
-				let title =
-					'The Voice of Seren is currently at ' +
-					clan_1 +
-					' and ' +
-					clan_2 +
-					'.';
-				alt1.setTitleBarText(
-					"<span title='" +
-						title +
-						"'><img width='80' height='80' src='./asset/resource/" +
-						clan_1 +
-						".png'/><img src='./asset/resource/" +
-						clan_2 +
-						".png'/></span>"
-				);
-			}, 300);
+			updateTitleBar(clan_1, clan_2);
 		})
 		.catch((err) => {
 			helperItems.Current.innerHTML = `API Error: Please try again in a minute`;
@@ -199,54 +191,39 @@ async function getLastVos() {
 			let clan_1 = titleCase(last_vos['clan_1']);
 			let clan_2 = titleCase(last_vos['clan_2']);
 			helperItems.Last.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
-			sauce.updateSetting('lastClans', [
-				last_vos['clan_1'],
-				last_vos['clan_2'],
-			]);
+
+			lastVos = [];
+			// Only push new clans to the array - if the clans already exist its because we refetched data
+			if (!lastVos.includes(last_vos['clan_1'])) {
+				lastVos.push(last_vos['clan_1']);
+			}
+			if (!lastVos.includes(last_vos['clan_2'])) {
+				lastVos.push(last_vos['clan_2']);
+			}
 		})
 		.catch((err) => {
 			helperItems.Last.innerHTML = `API Error: Please try again in a minute`;
 		});
 }
 
-function votedThisHour() {
-	let votedHour: number = sauce.getSetting('voted');
-	let votedDay: number = sauce.getSetting('votedDay');
-	if (!sauce.getSetting('voted') && sauce.getSetting('voted') != 0) {
-		return false;
-	}
-	let currentHour: number = DateTime.now().hour;
-	let currentDay: number = DateTime.now().day;
-	if (currentDay != votedDay && votedHour == currentHour) {
-		return true;
-	}
-	return votedHour == currentHour;
-}
-
-async function voteVos() {
-	if (votedThisHour()) {
+function voteVos() {
+	console.log('Checking data for submission...')
+	// Check to see if we have already voted and that our data is valid
+	if (!eligibleToSubmitData() || !hasValidData()) {
+		console.log('Invalid data or already voted - not allowing vote.');
 		return;
 	}
-	await fetchVos().then((res) => {
-		let badData = false;
-		if (sauce.getSetting('lastClans')) {
-			console.log(`Checking the current vote is not for last hours' clans`);
-			setTimeout(() => {}, 500);
-			if (
-				sauce.getSetting('lastClans').includes(clanVote[0]) ||
-				sauce.getSetting('lastClans').includes(clanVote[1])
-			) {
-				console.log(`Won't allow votes for last VoS hour's clans.`);
-				badData = true;
-				return;
-			}
-		}
-		if (
-			clanVote[0] &&
-			clanVote[1] &&
-			clanVote[0] != clanVote[1] &&
-			!badData
-		) {
+
+	// If our vote data matches data in last vos our data is outdated and we are not allowed to vote
+	if (dataMatchesLastHour()) {
+		console.log('Data matches that of last hour - not allowing vote.');
+		return;
+	}
+
+	if (eligibleToSubmitData() && hasValidData() && !dataMatchesLastHour()) {
+		console.log('Data is valid - fetching current VoS...');
+		getLastVos().then((res) => {
+			console.log('Last VoS obtained - submitting new data...');
 			fetch('https://vos-alt1.fly.dev/increase_counter', {
 				method: 'POST',
 				body: JSON.stringify({
@@ -257,12 +234,13 @@ async function voteVos() {
 				},
 			})
 				.then((res) => {
-					sauce.updateSetting('voted', DateTime.now().hour);
+					sauce.updateSetting('votedHour', DateTime.now().hour);
 					sauce.updateSetting('votedDay', DateTime.now().day);
 					sauce.updateSetting(
 						'votedCount',
 						sauce.getSetting('votedCount') + 1
 					);
+					console.log('Data submitted - refreshing VoS...');
 					fetchVos();
 				})
 				.then((res) => {
@@ -270,21 +248,141 @@ async function voteVos() {
 				})
 				.catch((err) => {
 					helperItems.VoteOutput.innerHTML = `API Error: Please try again`;
-					sauce.updateSetting('voted', undefined);
+					sauce.updateSetting('votedHour', undefined);
 					sauce.updateSetting('votedDay', undefined);
 				});
-		}
-	});
+		});
+	}
 }
 
 async function scanForClans() {
+	if (!sauce.getSetting('automaticScanning')) {
+		return
+	}
+	console.log('Scanning for VoS clans...');
 	await getClanData();
+	new Promise((resolve) => setTimeout(resolve, 50));
 	await voteVos();
 }
 
 function titleCase(string) {
 	return string[0].toUpperCase() + string.slice(1).toLowerCase();
 }
+
+function updateTitleBar(clan_1, clan_2) {
+	helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
+	setTimeout(() => {
+		let title =
+			'The Voice of Seren is currently at ' +
+			clan_1 +
+			' and ' +
+			clan_2 +
+			'.';
+		alt1.setTitleBarText(
+			"<span title='" +
+				title +
+				"'><img width='80' height='80' src='./asset/resource/" +
+				clan_1 +
+				".png'/><img src='./asset/resource/" +
+				clan_2 +
+				".png'/></span>"
+		);
+	}, 300);
+}
+
+function setSubmitButtonState() {
+	if (eligibleToSubmitData()) {
+		helperItems.Vote.innerText = 'Submit Data';
+		helperItems.Vote.removeAttribute('disabled');
+	} else {
+		helperItems.Vote.innerText = 'Submitted!';
+		helperItems.Vote.setAttribute('disabled', 'true');
+	}
+}
+
+function dataMatchesLastHour() {
+	return lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
+}
+
+function hasValidData() {
+	return clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1];
+}
+
+function eligibleToSubmitData() {
+	initVoteSettings();
+
+	let votedCount: number = parseInt(sauce.getSetting('votedCount'), 10);
+	let votedHour: number = parseInt(sauce.getSetting('votedHour'), 10);;
+	let votedDay: number = parseInt(sauce.getSetting('votedDay'), 10);;
+	let currentHour: number = DateTime.now().hour;
+	let currentDay: number = DateTime.now().day;
+
+	// If the user has never voted - they are eligible to vote
+	if (votedCount === 0) {
+		return true;
+	}
+
+	// If the user voted at 5pm yesterday and it is now 5pm today - make sure they can vote
+	else if (currentDay != votedDay && votedHour == currentHour) {
+		return true;
+	}
+
+	// At midnight the hours roll over to 0 and it is the only time where currentHour will not be greater than votedHour if eligible to vote
+	else if (votedHour == 23 && currentHour == 0) {
+		return true;
+	}
+
+	// If the user voted at 5 and it is now 6 then votedHour is less than currentHour
+	else if (votedHour < currentHour) {
+		return true;
+	}
+
+	// If the above conditions have not been met then the user is not eligible to vote
+	else {
+		return false;
+	}
+}
+
+function initVoteSettings() {
+	if (sauce.getSetting('votedHour') == undefined) {
+		sauce.updateSetting('votedHour', 0);
+	}
+	if (sauce.getSetting('votedDay') == undefined) {
+		sauce.updateSetting('votedDay', 0);
+	}
+}
+
+function fetchHourly() {
+	let date = DateTime.now();
+	if (date.minute == 3 && !helperItems.Get.getAttribute('disabled')) {
+		let delay = Math.random() * 3000;
+		setTimeout(() => {
+			fetchVos();
+		}, delay);
+	}
+}
+
+function initSettings() {
+	if (!localStorage.vos) {
+		localStorage.setItem(
+			'vos',
+			JSON.stringify({
+				automaticScanning: true,
+				votedHour: 0,
+				votedDay: 0,
+				votedCount: 0,
+			})
+		);
+	}
+}
+
+const settingsObject = {
+	settingsHeader: sauce.createHeading('h2', 'Settings'),
+	automaticScanning: sauce.createCheckboxSetting(
+		'automaticScanning',
+		'Automatic Scanning'
+	),
+};
 
 export function startvos() {
 	if (!window.alt1) {
@@ -314,115 +412,11 @@ export function startvos() {
 	// }
 	fetchVos();
 	setInterval(fetchHourly, 1000);
-	setInterval(checkTime, 1000);
+	setInterval(setSubmitButtonState
+	, 1000);
 
-	if (sauce.getSetting('automaticScanning')) {
-		setInterval(scanForClans, 10000);
-	}
-
-	//setInterval(updateOverlay, 100);
+	setInterval(scanForClans, 3000);
 }
-
-function checkTime() {
-	if (votedThisHour()) {
-		helperItems.Vote.innerText = 'Submitted';
-		helperItems.Vote.setAttribute('disabled', 'true');
-	} else {
-		helperItems.Vote.innerText = 'Submit Data';
-		helperItems.Vote.removeAttribute('disabled');
-	}
-}
-
-function updateLocation(e) {
-	sauce.updateSetting('overlayPosition', {
-		x: Math.floor(
-			e.x
-		),
-		y: Math.floor(
-			e.y
-		),
-	});
-	sauce.updateSetting('updatingOverlayPosition', false);
-	alt1.overLayClearGroup('overlayPositionHelper');
-}
-
-async function updateOverlay() {
-	let overlayPosition = sauce.getSetting('overlayPosition');
-
-	alt1.overLaySetGroup('vos');
-	alt1.overLayFreezeGroup('vos');
-
-	alt1.overLayClearGroup('vos');
-
-	alt1.overLayRefreshGroup('vos');
-	await new Promise((done) => setTimeout(done, 300));
-}
-
-function fetchHourly() {
-	let date = DateTime.now();
-	if (date.minute == 1 && !helperItems.Get.getAttribute('disabled')) {
-		let delay = Math.random() * 20000;
-		setTimeout(() => {
-			fetchVos();
-		}, delay);
-	}
-}
-
-function initSettings() {
-	if (!localStorage.vos) {
-		setDefaultSettings();
-	}
-}
-
-function setDefaultSettings() {
-	localStorage.setItem(
-		'vos',
-		JSON.stringify({
-			automaticScanning: true,
-			overlayPosition: { x: 100, y: 100 },
-			voted: false,
-			votedCount: 0,
-			updatingOverlayPosition: false,
-		})
-	);
-}
-
-async function setOverlayPosition() {
-	a1lib.once('alt1pressed', updateLocation);
-	sauce.updateSetting('updatingOverlayPosition', true);
-	while (sauce.getSetting('updatingOverlayPosition')) {
-		alt1.setTooltip('Press Alt+1 to set overlay position.');
-		alt1.overLaySetGroup('overlayPositionHelper');
-		alt1.overLayRect(
-			a1lib.mixColor(255, 255, 255),
-			Math.floor(
-				a1lib.getMousePosition().x
-			),
-			Math.floor(
-				a1lib.getMousePosition().y
-			),
-			300,
-			50,
-			200,
-			2
-		);
-		await new Promise((done) => setTimeout(done, 200));
-	}
-	alt1.clearTooltip();
-}
-
-const settingsObject = {
-	settingsHeader: sauce.createHeading('h2', 'Settings'),
-	automaticScanning: sauce.createCheckboxSetting(
-		'automaticScanning',
-		'Automatic Scanning'
-	),
-};
-
-settingsObject.automaticScanning.addEventListener('input',(e) => {
-	location.reload();
-})
-
 
 window.onload = function () {
 	//check if we are running inside alt1 by checking if the alt1 global exists

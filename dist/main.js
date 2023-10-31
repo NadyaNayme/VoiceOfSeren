@@ -11733,7 +11733,9 @@ var clanImages = alt1__WEBPACK_IMPORTED_MODULE_6__.webpackImages({
     trahaearn: __webpack_require__(/*! ./asset/data/Trahaearn_Clan.data.png */ "./asset/data/Trahaearn_Clan.data.png"),
 });
 function tryFindClans() {
+    // Capture RS Window
     var client_screen = alt1__WEBPACK_IMPORTED_MODULE_6__.captureHoldFullRs();
+    // Check screen for clan icons
     var clanIcons = {
         amlodd: client_screen.findSubimage(clanImages.amlodd),
         cadarn: client_screen.findSubimage(clanImages.cadarn),
@@ -11744,6 +11746,7 @@ function tryFindClans() {
         meilyr: client_screen.findSubimage(clanImages.meilyr),
         trahaearn: client_screen.findSubimage(clanImages.trahaearn),
     };
+    // Get the x,y of any captured clans -- 6 of these will return as `undefined`
     var foundClans = {
         amlodd: clanIcons.amlodd[0],
         cadarn: clanIcons.cadarn[0],
@@ -11754,23 +11757,34 @@ function tryFindClans() {
         meilyr: clanIcons.meilyr[0],
         trahaearn: clanIcons.trahaearn[0],
     };
+    // Filter out `undefined` leaving only two clains
     Object.keys(foundClans).forEach(function (key) {
         return foundClans[key] === undefined ? delete foundClans[key] : {};
     });
+    // Returns the 2 captured clans as {clan: {x,y}, clan: {x, y}}
     return foundClans;
 }
 var clanVote = [];
+var lastVos = [];
 helperItems.Vote.addEventListener('mouseenter', function (e) {
     getClanData();
+});
+helperItems.Get.addEventListener('click', function (e) {
+    fetchVos();
+});
+helperItems.Vote.addEventListener('click', function (e) {
+    voteVos();
 });
 function getClanData() {
     return __awaiter(this, void 0, void 0, function () {
         var foundClans, firstClan, firstClanPos, secondClan, secondClanPos;
         return __generator(this, function (_a) {
+            // If we have already voted - skip trying to capture data
             if (helperItems.Vote.getAttribute('disabled') == 'true') {
                 return [2 /*return*/];
             }
             foundClans = Object.entries(tryFindClans());
+            // If we captured 0 instead of 2 clans we are not in Prif so return early
             if (Object.keys(foundClans).length == 0) {
                 clanVote = [];
                 return [2 /*return*/];
@@ -11779,6 +11793,7 @@ function getClanData() {
             firstClanPos = foundClans[0][1].x;
             secondClan = foundClans[1][0];
             secondClanPos = foundClans[1][1].x;
+            // Compare the clan positions and set priority appropriately
             if (firstClanPos < secondClanPos) {
                 clanVote[0] = firstClan;
                 clanVote[1] = secondClan;
@@ -11788,49 +11803,30 @@ function getClanData() {
                 clanVote[0] = secondClan;
             }
             console.log(clanVote);
-            validateVotes();
+            if (!clanVote[0] || !clanVote[1]) {
+                helperItems.VoteOutput.innerHTML =
+                    '<p>You must be in Prifddinas to submit data.</p>';
+            }
+            else {
+                helperItems.VoteOutput.innerHTML = '';
+            }
             return [2 /*return*/];
         });
     });
 }
-function validateVotes() {
-    if (!clanVote[0] || !clanVote[1]) {
-        helperItems.VoteOutput.innerHTML =
-            '<p>You must be in Prifddinas to submit data.</p>';
-    }
-    else {
-        helperItems.VoteOutput.innerHTML = '';
-    }
-}
-helperItems.Get.addEventListener('click', function (e) {
-    fetchVos();
-});
-helperItems.Vote.addEventListener('click', function (e) {
-    voteVos();
-});
 function fetchVos() {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            alt1.setTitleBarText('');
-            getLastVos();
-            getCurrentVos();
-            throttleUpdating();
-            return [2 /*return*/];
-        });
-    });
+    alt1.setTitleBarText('');
+    getLastVos();
+    getCurrentVos();
+    throttleUpdating();
 }
 function throttleUpdating() {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            helperItems.Get.setAttribute('disabled', 'true');
-            helperItems.Get.innerText = 'Updated!';
-            setTimeout(function () {
-                helperItems.Get.removeAttribute('disabled');
-                helperItems.Get.innerText = 'Update';
-            }, 60000);
-            return [2 /*return*/];
-        });
-    });
+    helperItems.Get.setAttribute('disabled', 'true');
+    helperItems.Get.innerText = 'Updated!';
+    setTimeout(function () {
+        helperItems.Get.removeAttribute('disabled');
+        helperItems.Get.innerText = 'Update';
+    }, 30000);
 }
 function getCurrentVos() {
     return __awaiter(this, void 0, void 0, function () {
@@ -11851,21 +11847,7 @@ function getCurrentVos() {
                 }
                 var clan_1 = titleCase(vos['clan_1']);
                 var clan_2 = titleCase(vos['clan_2']);
-                helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
-                setTimeout(function () {
-                    var title = 'The Voice of Seren is currently at ' +
-                        clan_1 +
-                        ' and ' +
-                        clan_2 +
-                        '.';
-                    alt1.setTitleBarText("<span title='" +
-                        title +
-                        "'><img width='80' height='80' src='./asset/resource/" +
-                        clan_1 +
-                        ".png'/><img src='./asset/resource/" +
-                        clan_2 +
-                        ".png'/></span>");
-                }, 300);
+                updateTitleBar(clan_1, clan_2);
             })
                 .catch(function (err) {
                 helperItems.Current.innerHTML = "API Error: Please try again in a minute";
@@ -11895,10 +11877,14 @@ function getLastVos() {
                 var clan_1 = titleCase(last_vos['clan_1']);
                 var clan_2 = titleCase(last_vos['clan_2']);
                 helperItems.Last.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
-                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('lastClans', [
-                    last_vos['clan_1'],
-                    last_vos['clan_2'],
-                ]);
+                lastVos = [];
+                // Only push new clans to the array - if the clans already exist its because we refetched data
+                if (!lastVos.includes(last_vos['clan_1'])) {
+                    lastVos.push(last_vos['clan_1']);
+                }
+                if (!lastVos.includes(last_vos['clan_2'])) {
+                    lastVos.push(last_vos['clan_2']);
+                }
             })
                 .catch(function (err) {
                 helperItems.Last.innerHTML = "API Error: Please try again in a minute";
@@ -11907,82 +11893,62 @@ function getLastVos() {
         });
     });
 }
-function votedThisHour() {
-    var votedHour = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('voted');
-    var votedDay = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedDay');
-    if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('voted') && _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('voted') != 0) {
-        return false;
-    }
-    var currentHour = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour;
-    var currentDay = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day;
-    if (currentDay != votedDay && votedHour == currentHour) {
-        return true;
-    }
-    return votedHour == currentHour;
-}
 function voteVos() {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (votedThisHour()) {
-                        return [2 /*return*/];
-                    }
-                    return [4 /*yield*/, fetchVos().then(function (res) {
-                            var badData = false;
-                            if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans')) {
-                                console.log("Checking the current vote is not for last hours' clans");
-                                setTimeout(function () { }, 500);
-                                if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[0]) ||
-                                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('lastClans').includes(clanVote[1])) {
-                                    console.log("Won't allow votes for last VoS hour's clans.");
-                                    badData = true;
-                                    return;
-                                }
-                            }
-                            if (clanVote[0] &&
-                                clanVote[1] &&
-                                clanVote[0] != clanVote[1] &&
-                                !badData) {
-                                fetch('https://vos-alt1.fly.dev/increase_counter', {
-                                    method: 'POST',
-                                    body: JSON.stringify({
-                                        clans: clanVote,
-                                    }),
-                                    headers: {
-                                        'Content-type': 'application/json; charset=UTF-8',
-                                    },
-                                })
-                                    .then(function (res) {
-                                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('voted', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour);
-                                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day);
-                                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
-                                    fetchVos();
-                                })
-                                    .then(function (res) {
-                                    clanVote = [];
-                                })
-                                    .catch(function (err) {
-                                    helperItems.VoteOutput.innerHTML = "API Error: Please try again";
-                                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('voted', undefined);
-                                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', undefined);
-                                });
-                            }
-                        })];
-                case 1:
-                    _a.sent();
-                    return [2 /*return*/];
-            }
+    console.log('Checking data for submission...');
+    // Check to see if we have already voted and that our data is valid
+    if (!eligibleToSubmitData() || !hasValidData()) {
+        console.log('Invalid data or already voted - not allowing vote.');
+        return;
+    }
+    // If our vote data matches data in last vos our data is outdated and we are not allowed to vote
+    if (dataMatchesLastHour()) {
+        console.log('Data matches that of last hour - not allowing vote.');
+        return;
+    }
+    if (eligibleToSubmitData() && hasValidData() && !dataMatchesLastHour()) {
+        console.log('Data is valid - fetching current VoS...');
+        getLastVos().then(function (res) {
+            console.log('Last VoS obtained - submitting new data...');
+            fetch('https://vos-alt1.fly.dev/increase_counter', {
+                method: 'POST',
+                body: JSON.stringify({
+                    clans: clanVote,
+                }),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            })
+                .then(function (res) {
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedHour', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour);
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day);
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
+                console.log('Data submitted - refreshing VoS...');
+                fetchVos();
+            })
+                .then(function (res) {
+                clanVote = [];
+            })
+                .catch(function (err) {
+                helperItems.VoteOutput.innerHTML = "API Error: Please try again";
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedHour', undefined);
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', undefined);
+            });
         });
-    });
+    }
 }
 function scanForClans() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, getClanData()];
+                case 0:
+                    if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) {
+                        return [2 /*return*/];
+                    }
+                    console.log('Scanning for VoS clans...');
+                    return [4 /*yield*/, getClanData()];
                 case 1:
                     _a.sent();
+                    new Promise(function (resolve) { return setTimeout(resolve, 50); });
                     return [4 /*yield*/, voteVos()];
                 case 2:
                     _a.sent();
@@ -11994,6 +11960,100 @@ function scanForClans() {
 function titleCase(string) {
     return string[0].toUpperCase() + string.slice(1).toLowerCase();
 }
+function updateTitleBar(clan_1, clan_2) {
+    helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+    setTimeout(function () {
+        var title = 'The Voice of Seren is currently at ' +
+            clan_1 +
+            ' and ' +
+            clan_2 +
+            '.';
+        alt1.setTitleBarText("<span title='" +
+            title +
+            "'><img width='80' height='80' src='./asset/resource/" +
+            clan_1 +
+            ".png'/><img src='./asset/resource/" +
+            clan_2 +
+            ".png'/></span>");
+    }, 300);
+}
+function setSubmitButtonState() {
+    if (eligibleToSubmitData()) {
+        helperItems.Vote.innerText = 'Submit Data';
+        helperItems.Vote.removeAttribute('disabled');
+    }
+    else {
+        helperItems.Vote.innerText = 'Submitted!';
+        helperItems.Vote.setAttribute('disabled', 'true');
+    }
+}
+function dataMatchesLastHour() {
+    return lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
+}
+function hasValidData() {
+    return clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1];
+}
+function eligibleToSubmitData() {
+    initVoteSettings();
+    var votedCount = parseInt(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount'), 10);
+    var votedHour = parseInt(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedHour'), 10);
+    ;
+    var votedDay = parseInt(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedDay'), 10);
+    ;
+    var currentHour = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour;
+    var currentDay = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day;
+    // If the user has never voted - they are eligible to vote
+    if (votedCount === 0) {
+        return true;
+    }
+    // If the user voted at 5pm yesterday and it is now 5pm today - make sure they can vote
+    else if (currentDay != votedDay && votedHour == currentHour) {
+        return true;
+    }
+    // At midnight the hours roll over to 0 and it is the only time where currentHour will not be greater than votedHour if eligible to vote
+    else if (votedHour == 23 && currentHour == 0) {
+        return true;
+    }
+    // If the user voted at 5 and it is now 6 then votedHour is less than currentHour
+    else if (votedHour < currentHour) {
+        return true;
+    }
+    // If the above conditions have not been met then the user is not eligible to vote
+    else {
+        return false;
+    }
+}
+function initVoteSettings() {
+    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedHour') == undefined) {
+        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedHour', 0);
+    }
+    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedDay') == undefined) {
+        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', 0);
+    }
+}
+function fetchHourly() {
+    var date = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+    if (date.minute == 3 && !helperItems.Get.getAttribute('disabled')) {
+        var delay = Math.random() * 3000;
+        setTimeout(function () {
+            fetchVos();
+        }, delay);
+    }
+}
+function initSettings() {
+    if (!localStorage.vos) {
+        localStorage.setItem('vos', JSON.stringify({
+            automaticScanning: true,
+            votedHour: 0,
+            votedDay: 0,
+            votedCount: 0,
+        }));
+    }
+}
+var settingsObject = {
+    settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),
+    automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning'),
+};
 function startvos() {
     if (!window.alt1) {
         helperItems.Output.insertAdjacentHTML('beforeend', "<div>You need to run this page in alt1 to capture the screen</div>");
@@ -12012,103 +12072,9 @@ function startvos() {
     // }
     fetchVos();
     setInterval(fetchHourly, 1000);
-    setInterval(checkTime, 1000);
-    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) {
-        setInterval(scanForClans, 10000);
-    }
-    //setInterval(updateOverlay, 100);
+    setInterval(setSubmitButtonState, 1000);
+    setInterval(scanForClans, 3000);
 }
-function checkTime() {
-    if (votedThisHour()) {
-        helperItems.Vote.innerText = 'Submitted';
-        helperItems.Vote.setAttribute('disabled', 'true');
-    }
-    else {
-        helperItems.Vote.innerText = 'Submit Data';
-        helperItems.Vote.removeAttribute('disabled');
-    }
-}
-function updateLocation(e) {
-    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('overlayPosition', {
-        x: Math.floor(e.x),
-        y: Math.floor(e.y),
-    });
-    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('updatingOverlayPosition', false);
-    alt1.overLayClearGroup('overlayPositionHelper');
-}
-function updateOverlay() {
-    return __awaiter(this, void 0, void 0, function () {
-        var overlayPosition;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    overlayPosition = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('overlayPosition');
-                    alt1.overLaySetGroup('vos');
-                    alt1.overLayFreezeGroup('vos');
-                    alt1.overLayClearGroup('vos');
-                    alt1.overLayRefreshGroup('vos');
-                    return [4 /*yield*/, new Promise(function (done) { return setTimeout(done, 300); })];
-                case 1:
-                    _a.sent();
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
-function fetchHourly() {
-    var date = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-    if (date.minute == 1 && !helperItems.Get.getAttribute('disabled')) {
-        var delay = Math.random() * 20000;
-        setTimeout(function () {
-            fetchVos();
-        }, delay);
-    }
-}
-function initSettings() {
-    if (!localStorage.vos) {
-        setDefaultSettings();
-    }
-}
-function setDefaultSettings() {
-    localStorage.setItem('vos', JSON.stringify({
-        automaticScanning: true,
-        overlayPosition: { x: 100, y: 100 },
-        voted: false,
-        votedCount: 0,
-        updatingOverlayPosition: false,
-    }));
-}
-function setOverlayPosition() {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    alt1__WEBPACK_IMPORTED_MODULE_6__.once('alt1pressed', updateLocation);
-                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('updatingOverlayPosition', true);
-                    _a.label = 1;
-                case 1:
-                    if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('updatingOverlayPosition')) return [3 /*break*/, 3];
-                    alt1.setTooltip('Press Alt+1 to set overlay position.');
-                    alt1.overLaySetGroup('overlayPositionHelper');
-                    alt1.overLayRect(alt1__WEBPACK_IMPORTED_MODULE_6__.mixColor(255, 255, 255), Math.floor(alt1__WEBPACK_IMPORTED_MODULE_6__.getMousePosition().x), Math.floor(alt1__WEBPACK_IMPORTED_MODULE_6__.getMousePosition().y), 300, 50, 200, 2);
-                    return [4 /*yield*/, new Promise(function (done) { return setTimeout(done, 200); })];
-                case 2:
-                    _a.sent();
-                    return [3 /*break*/, 1];
-                case 3:
-                    alt1.clearTooltip();
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
-var settingsObject = {
-    settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),
-    automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning'),
-};
-settingsObject.automaticScanning.addEventListener('input', function (e) {
-    location.reload();
-});
 window.onload = function () {
     //check if we are running inside alt1 by checking if the alt1 global exists
     if (window.alt1) {
