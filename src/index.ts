@@ -236,10 +236,10 @@ function voteVos() {
 	if (sauce.getSetting('justVoted')) {
 		let now = DateTime.now();
 		if (now.minute <= 2) {
-			sauce.updateSetting('justVoted', false);
 			setTimeout(() => {
-				return
+				return;
 			}, 1000 * 20);
+			sauce.updateSetting('justVoted', false);
 		}
 		setTimeout(() => {
 			sauce.updateSetting('justVoted', false);
@@ -291,20 +291,21 @@ async function scanForClans() {
 		console.log('Recently voted - skipping scan...');
 		let now = DateTime.now();
 		if (now.minute <= 2) {
-			sauce.updateSetting('justVoted', false);
 			setTimeout(() => {
 				return;
 			}, 1000 * 20);
+			sauce.updateSetting('justVoted', false);
 		}
 		setTimeout(() => {
 			sauce.updateSetting('justVoted', false);
 		}, 1000 * 60 * 15);
 		return;
+	} else {
+		console.log('Scanning for VoS clans...');
+		await getClanData();
+		new Promise((resolve) => setTimeout(resolve, 50));
+		await voteVos();
 	}
-	console.log('Scanning for VoS clans...');
-	await getClanData();
-	new Promise((resolve) => setTimeout(resolve, 50));
-	await voteVos();
 }
 
 function titleCase(string) {
@@ -439,9 +440,9 @@ window.onload = function () {
 		// }
 
 		// check version then check every 30 minutes after
-		checkVersion('1.0.4');
+		checkVersion('1.0.5');
 		setInterval(() => {
-			checkVersion('1.0.4');
+			checkVersion('1.0.5');
 		}, 1000 * 60 * 10);
 
 		alt1.identifyAppUrl('./appconfig.json');

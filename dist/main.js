@@ -11932,10 +11932,10 @@ function voteVos() {
     if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
         var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
         if (now.minute <= 2) {
-            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
             setTimeout(function () {
                 return;
             }, 1000 * 20);
+            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
         }
         setTimeout(function () {
             _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
@@ -11981,29 +11981,30 @@ function scanForClans() {
                     if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) {
                         return [2 /*return*/];
                     }
-                    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
-                        console.log('Recently voted - skipping scan...');
-                        now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-                        if (now.minute <= 2) {
-                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
-                            setTimeout(function () {
-                                return;
-                            }, 1000 * 20);
-                        }
+                    if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) return [3 /*break*/, 1];
+                    console.log('Recently voted - skipping scan...');
+                    now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+                    if (now.minute <= 2) {
                         setTimeout(function () {
-                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
-                        }, 1000 * 60 * 15);
-                        return [2 /*return*/];
+                            return;
+                        }, 1000 * 20);
+                        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
                     }
+                    setTimeout(function () {
+                        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+                    }, 1000 * 60 * 15);
+                    return [2 /*return*/];
+                case 1:
                     console.log('Scanning for VoS clans...');
                     return [4 /*yield*/, getClanData()];
-                case 1:
+                case 2:
                     _a.sent();
                     new Promise(function (resolve) { return setTimeout(resolve, 50); });
                     return [4 /*yield*/, voteVos()];
-                case 2:
+                case 3:
                     _a.sent();
-                    return [2 /*return*/];
+                    _a.label = 4;
+                case 4: return [2 /*return*/];
             }
         });
     });
@@ -12109,9 +12110,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version then check every 30 minutes after
-        checkVersion('1.0.4');
+        checkVersion('1.0.5');
         setInterval(function () {
-            checkVersion('1.0.4');
+            checkVersion('1.0.5');
         }, 1000 * 60 * 10);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
