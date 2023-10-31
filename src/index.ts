@@ -429,9 +429,9 @@ window.onload = function () {
 		// }
 
 		// check version then check every 30 minutes after
-		checkVersion('1.0.1');
+		checkVersion('1.0.2');
 		setInterval(() => {
-			checkVersion('1.0.1');
+			checkVersion('1.0.2');
 		}, 1000 * 60 * 30);
 
 		alt1.identifyAppUrl('./appconfig.json');
