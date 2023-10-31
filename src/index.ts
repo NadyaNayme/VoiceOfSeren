@@ -370,13 +370,13 @@ async function checkVersion(version: string) {
 			'Content-type': 'application/json; charset=UTF-8',
 		},
 	}).then((res) => {
-		let latestVersion = res.text();
+		let latestVersion = res.json();
 		return latestVersion
 	}).then((latestVersion) => {
-		if (version != latestVersion) {
+		if (version != latestVersion.version) {
 			console.log(`App is out of date. Expected version: ${latestVersion} ; found: ${version}`);
 		} else {
-			console.log('App is up-to-date')
+			console.log('App is up-to-date');
 		}
 	});
 }

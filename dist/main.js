@@ -12062,10 +12062,10 @@ function checkVersion(version) {
                     'Content-type': 'application/json; charset=UTF-8',
                 },
             }).then(function (res) {
-                var latestVersion = res.text();
+                var latestVersion = res.json();
                 return latestVersion;
             }).then(function (latestVersion) {
-                if (version != latestVersion) {
+                if (version != latestVersion.version) {
                     console.log("App is out of date. Expected version: ".concat(latestVersion, " ; found: ").concat(version));
                 }
                 else {
