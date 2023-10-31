@@ -11979,7 +11979,7 @@ function scanForClans() {
                         return [2 /*return*/];
                     }
                     if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
-                        console.log('Recently voted - skipping skan...');
+                        console.log('Recently voted - skipping scan...');
                         return [2 /*return*/];
                     }
                     console.log('Scanning for VoS clans...');

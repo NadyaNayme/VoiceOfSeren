@@ -286,7 +286,7 @@ async function scanForClans() {
 		return;
 	}
 	if (sauce.getSetting('justVoted')) {
-		console.log('Recently voted - skipping skan...');
+		console.log('Recently voted - skipping scan...');
 		return;
 	}
 	console.log('Scanning for VoS clans...');
