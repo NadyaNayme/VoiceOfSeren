@@ -10,6 +10,7 @@ import * as sauce from './a1sauce';
 // as assets
 import './index.html';
 import './appconfig.json';
+import './version.json';
 import './icon.png';
 import './css/styles.css';
 
@@ -362,6 +363,15 @@ function fetchHourly() {
 	}
 }
 
+async function getVersion() {
+	fetch('./version.json', {
+		method: 'GET',
+		headers: {
+			'Content-type': 'application/json; charset=UTF-8',
+		},
+	}).then((res) => console.log(res.json));
+}
+
 function initSettings() {
 	if (!localStorage.vos) {
 		localStorage.setItem(
@@ -430,6 +440,8 @@ window.onload = function () {
 		// 		'<strong style="color:red;">OUTDATED ALT1 INSTALL FOUND- PLEASE UPDATE TO VERSION 1.6.0 - THIS MAY REQUIRE A MANUAL UPDATE BY REINSTALLING FROM <a href="https://runeapps.org/">RUNEAPPS.ORG</a></strong>';
 		// 	return;
 		// }
+
+		getVersion();
 
 		alt1.identifyAppUrl('./appconfig.json');
 		Object.values(settingsObject).forEach((val) => {

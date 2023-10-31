@@ -1292,6 +1292,17 @@ module.exports = __webpack_require__.p + "index.html";
 
 /***/ }),
 
+/***/ "./version.json":
+/*!**********************!*\
+  !*** ./version.json ***!
+  \**********************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "version.json";
+
+/***/ }),
+
 /***/ "canvas":
 /*!*************************!*\
   !*** external "canvas" ***!
@@ -11653,14 +11664,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   startvos: () => (/* binding */ startvos)
 /* harmony export */ });
-/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! alt1 */ "../node_modules/alt1/dist/base/index.js");
-/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(alt1__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! alt1 */ "../node_modules/alt1/dist/base/index.js");
+/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(alt1__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var luxon__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! luxon */ "../node_modules/luxon/src/luxon.js");
 /* harmony import */ var _a1sauce__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./a1sauce */ "./a1sauce.ts");
 /* harmony import */ var _index_html__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./index.html */ "./index.html");
 /* harmony import */ var _appconfig_json__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./appconfig.json */ "./appconfig.json");
-/* harmony import */ var _icon_png__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./icon.png */ "./icon.png");
-/* harmony import */ var _css_styles_css__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./css/styles.css */ "./css/styles.css");
+/* harmony import */ var _version_json__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./version.json */ "./version.json");
+/* harmony import */ var _icon_png__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./icon.png */ "./icon.png");
+/* harmony import */ var _css_styles_css__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./css/styles.css */ "./css/styles.css");
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -11710,6 +11722,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 
 
 
+
 function getByID(id) {
     return document.getElementById(id);
 }
@@ -11722,7 +11735,7 @@ var helperItems = {
     Vote: getByID('send_vote'),
     settings: getByID('Settings'),
 };
-var clanImages = alt1__WEBPACK_IMPORTED_MODULE_6__.webpackImages({
+var clanImages = alt1__WEBPACK_IMPORTED_MODULE_7__.webpackImages({
     amlodd: __webpack_require__(/*! ./asset/data/Amlodd_Clan.data.png */ "./asset/data/Amlodd_Clan.data.png"),
     cadarn: __webpack_require__(/*! ./asset/data/Cadarn_Clan.data.png */ "./asset/data/Cadarn_Clan.data.png"),
     crwys: __webpack_require__(/*! ./asset/data/Crwys_Clan.data.png */ "./asset/data/Crwys_Clan.data.png"),
@@ -11734,7 +11747,7 @@ var clanImages = alt1__WEBPACK_IMPORTED_MODULE_6__.webpackImages({
 });
 function tryFindClans() {
     // Capture RS Window
-    var client_screen = alt1__WEBPACK_IMPORTED_MODULE_6__.captureHoldFullRs();
+    var client_screen = alt1__WEBPACK_IMPORTED_MODULE_7__.captureHoldFullRs();
     // Check screen for clan icons
     var clanIcons = {
         amlodd: client_screen.findSubimage(clanImages.amlodd),
@@ -12040,6 +12053,19 @@ function fetchHourly() {
         }, delay);
     }
 }
+function getVersion() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            fetch('./version.json', {
+                method: 'GET',
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            }).then(function (res) { return console.log(res.json); });
+            return [2 /*return*/];
+        });
+    });
+}
 function initSettings() {
     if (!localStorage.vos) {
         localStorage.setItem('vos', JSON.stringify({
@@ -12086,6 +12112,7 @@ window.onload = function () {
         // 		'<strong style="color:red;">OUTDATED ALT1 INSTALL FOUND- PLEASE UPDATE TO VERSION 1.6.0 - THIS MAY REQUIRE A MANUAL UPDATE BY REINSTALLING FROM <a href="https://runeapps.org/">RUNEAPPS.ORG</a></strong>';
         // 	return;
         // }
+        getVersion();
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
             helperItems.settings.before(val);
