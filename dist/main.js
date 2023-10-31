@@ -11770,7 +11770,7 @@ function tryFindClans() {
         meilyr: clanIcons.meilyr[0],
         trahaearn: clanIcons.trahaearn[0],
     };
-    // Filter out `undefined` leaving only two clains
+    // Filter out `undefined` leaving only two clans
     Object.keys(foundClans).forEach(function (key) {
         return foundClans[key] === undefined ? delete foundClans[key] : {};
     });
@@ -11863,7 +11863,7 @@ function getCurrentVos() {
                 updateTitleBar(clan_1, clan_2);
             })
                 .catch(function (err) {
-                helperItems.Current.innerHTML = "API Error: Please try again in a minute";
+                helperItems.Current.innerHTML = "<p>API Error: Please try again in a minute</p>";
             });
             return [2 /*return*/];
         });
@@ -11884,7 +11884,7 @@ function getLastVos() {
                 if (last_vos['clan_1'] == undefined ||
                     last_vos['clan_2'] == undefined) {
                     helperItems.Last.innerHTML =
-                        'Server was reset - no data for previous hour.';
+                        '<p>Server was reset - no data for previous hour.</p>';
                     return;
                 }
                 var clan_1 = titleCase(last_vos['clan_1']);
@@ -11900,7 +11900,7 @@ function getLastVos() {
                 }
             })
                 .catch(function (err) {
-                helperItems.Last.innerHTML = "API Error: Please try again in a minute";
+                helperItems.Last.innerHTML = "<p>API Error: Please try again in a minute</p>";
             });
             return [2 /*return*/];
         });
@@ -11942,7 +11942,7 @@ function voteVos() {
                 clanVote = [];
             })
                 .catch(function (err) {
-                helperItems.VoteOutput.innerHTML = "API Error: Please try again";
+                helperItems.VoteOutput.innerHTML = "<p>API Error: Please try again</p>";
                 _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedHour', undefined);
                 _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedDay', undefined);
             });

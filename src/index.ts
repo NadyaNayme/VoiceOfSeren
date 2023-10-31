@@ -67,7 +67,7 @@ function tryFindClans() {
 		trahaearn: clanIcons.trahaearn[0],
 	};
 
-	// Filter out `undefined` leaving only two clains
+	// Filter out `undefined` leaving only two clans
 	Object.keys(foundClans).forEach((key) =>
 		foundClans[key] === undefined ? delete foundClans[key] : {}
 	);
@@ -167,7 +167,7 @@ async function getCurrentVos() {
 			updateTitleBar(clan_1, clan_2);
 		})
 		.catch((err) => {
-			helperItems.Current.innerHTML = `API Error: Please try again in a minute`;
+			helperItems.Current.innerHTML = `<p>API Error: Please try again in a minute</p>`;
 		});
 }
 
@@ -186,7 +186,7 @@ async function getLastVos() {
 				last_vos['clan_2'] == undefined
 			) {
 				helperItems.Last.innerHTML =
-					'Server was reset - no data for previous hour.';
+					'<p>Server was reset - no data for previous hour.</p>';
 				return;
 			}
 			let clan_1 = titleCase(last_vos['clan_1']);
@@ -203,7 +203,7 @@ async function getLastVos() {
 			}
 		})
 		.catch((err) => {
-			helperItems.Last.innerHTML = `API Error: Please try again in a minute`;
+			helperItems.Last.innerHTML = `<p>API Error: Please try again in a minute</p>`;
 		});
 }
 
@@ -248,7 +248,7 @@ function voteVos() {
 					clanVote = [];
 				})
 				.catch((err) => {
-					helperItems.VoteOutput.innerHTML = `API Error: Please try again`;
+					helperItems.VoteOutput.innerHTML = `<p>API Error: Please try again</p>`;
 					sauce.updateSetting('votedHour', undefined);
 					sauce.updateSetting('votedDay', undefined);
 				});
