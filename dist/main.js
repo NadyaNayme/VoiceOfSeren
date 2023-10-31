@@ -11786,6 +11786,7 @@ helperItems.Get.addEventListener('click', function (e) {
     fetchVos();
 });
 helperItems.Vote.addEventListener('click', function (e) {
+    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
     voteVos();
     throttleVoting();
 });
@@ -11846,6 +11847,7 @@ function throttleVoting() {
     helperItems.Vote.setAttribute('disabled', 'true');
     helperItems.Vote.innerText = 'Submitted!';
     setTimeout(function () {
+        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
         helperItems.Vote.removeAttribute('disabled');
         helperItems.Vote.innerText = 'Submit Data';
     }, 5000);

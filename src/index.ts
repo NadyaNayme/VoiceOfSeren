@@ -88,6 +88,7 @@ helperItems.Get.addEventListener('click', (e) => {
 });
 
 helperItems.Vote.addEventListener('click', (e) => {
+	sauce.updateSetting('justVoted', false);
 	voteVos();
 	throttleVoting();
 });
@@ -152,6 +153,7 @@ function throttleVoting() {
 	helperItems.Vote.setAttribute('disabled', 'true');
 	helperItems.Vote.innerText = 'Submitted!';
 	setTimeout(() => {
+		sauce.updateSetting('justVoted', false);
 		helperItems.Vote.removeAttribute('disabled');
 		helperItems.Vote.innerText = 'Submit Data';
 	}, 5000);
