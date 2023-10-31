@@ -12119,7 +12119,8 @@ window.onload = function () {
         // 		'<strong style="color:red;">OUTDATED ALT1 INSTALL FOUND- PLEASE UPDATE TO VERSION 1.6.0 - THIS MAY REQUIRE A MANUAL UPDATE BY REINSTALLING FROM <a href="https://runeapps.org/">RUNEAPPS.ORG</a></strong>';
         // 	return;
         // }
-        // check version every 30 minutes
+        // check version then check every 30 minutes after
+        checkVersion('1.0.0');
         setInterval(function () { checkVersion("1.0.0"); }, 1000 * 60 * 30);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
