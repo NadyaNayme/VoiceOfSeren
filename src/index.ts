@@ -369,7 +369,7 @@ async function getVersion() {
 		headers: {
 			'Content-type': 'application/json; charset=UTF-8',
 		},
-	}).then((res) => console.log(res.json));
+	}).then((res) => console.log(res.json()));
 }
 
 function initSettings() {

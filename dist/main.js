@@ -12061,7 +12061,7 @@ function getVersion() {
                 headers: {
                     'Content-type': 'application/json; charset=UTF-8',
                 },
-            }).then(function (res) { return console.log(res.json); });
+            }).then(function (res) { return console.log(res.json()); });
             return [2 /*return*/];
         });
     });
