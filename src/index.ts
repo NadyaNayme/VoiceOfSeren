@@ -363,7 +363,7 @@ function fetchHourly() {
 	}
 }
 
-async function checkVersion(version: string) {
+function checkVersion(version: string) {
 	fetch('./version.json', {
 		method: 'GET',
 		headers: {

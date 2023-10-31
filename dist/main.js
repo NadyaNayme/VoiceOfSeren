@@ -12054,28 +12054,23 @@ function fetchHourly() {
     }
 }
 function checkVersion(version) {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            fetch('./version.json', {
-                method: 'GET',
-                headers: {
-                    'Content-type': 'application/json; charset=UTF-8',
-                },
-            }).then(function (res) {
-                var latestVersion = res.json();
-                return latestVersion;
-            }).then(function (latestVersion) {
-                if (version != latestVersion.version) {
-                    helperItems.Output.innerHTML = "<p>App is out of date. Expected version: ".concat(latestVersion, " ; found: ").concat(version, " - reloading in 3 seconds to update...</p>");
-                    setTimeout(function () { }, 3000);
-                    location.reload();
-                }
-                else {
-                    console.log("App is running latest version. Expected version: ".concat(latestVersion, " ; found: ").concat(version));
-                }
-            });
-            return [2 /*return*/];
-        });
+    fetch('./version.json', {
+        method: 'GET',
+        headers: {
+            'Content-type': 'application/json; charset=UTF-8',
+        },
+    }).then(function (res) {
+        var latestVersion = res.json();
+        return latestVersion;
+    }).then(function (latestVersion) {
+        if (version != latestVersion.version) {
+            helperItems.Output.innerHTML = "<p>App is out of date. Expected version: ".concat(latestVersion, " ; found: ").concat(version, " - reloading in 3 seconds to update...</p>");
+            setTimeout(function () { }, 3000);
+            location.reload();
+        }
+        else {
+            console.log("App is running latest version. Expected version: ".concat(latestVersion, " ; found: ").concat(version));
+        }
     });
 }
 function initSettings() {
