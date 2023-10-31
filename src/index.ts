@@ -235,11 +235,11 @@ function voteVos() {
 
 	if (sauce.getSetting('justVoted')) {
 		let now = DateTime.now();
-		if (now.minute < 1) {
+		if (now.minute <= 2) {
 			sauce.updateSetting('justVoted', false);
 			setTimeout(() => {
 				return
-			}, 1000 * 61);
+			}, 1000 * 20);
 		}
 		setTimeout(() => {
 			sauce.updateSetting('justVoted', false);
@@ -429,9 +429,9 @@ window.onload = function () {
 		// }
 
 		// check version then check every 30 minutes after
-		checkVersion('1.0.2');
+		checkVersion('1.0.3');
 		setInterval(() => {
-			checkVersion('1.0.2');
+			checkVersion('1.0.3');
 		}, 1000 * 60 * 30);
 
 		alt1.identifyAppUrl('./appconfig.json');

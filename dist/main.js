@@ -11931,11 +11931,11 @@ function voteVos() {
     }
     if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
         var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-        if (now.minute < 1) {
+        if (now.minute <= 2) {
             _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
             setTimeout(function () {
                 return;
-            }, 1000 * 61);
+            }, 1000 * 20);
         }
         setTimeout(function () {
             _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
@@ -12098,9 +12098,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version then check every 30 minutes after
-        checkVersion('1.0.2');
+        checkVersion('1.0.3');
         setInterval(function () {
-            checkVersion('1.0.2');
+            checkVersion('1.0.3');
         }, 1000 * 60 * 30);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
