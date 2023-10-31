@@ -80,7 +80,7 @@ let clanVote = [];
 let lastVos = [];
 
 helperItems.Vote.addEventListener('mouseenter', (e) => {
-	getClanData()
+	getClanData();
 });
 
 helperItems.Get.addEventListener('click', (e) => {
@@ -208,7 +208,7 @@ async function getLastVos() {
 }
 
 function voteVos() {
-	console.log('Checking data for submission...')
+	console.log('Checking data for submission...');
 	// Check to see if we have already voted and that our data is valid
 	if (!eligibleToSubmitData() || !hasValidData()) {
 		console.log('Invalid data or already voted - not allowing vote.');
@@ -258,7 +258,7 @@ function voteVos() {
 
 async function scanForClans() {
 	if (!sauce.getSetting('automaticScanning')) {
-		return
+		return;
 	}
 	console.log('Scanning for VoS clans...');
 	await getClanData();
@@ -313,8 +313,8 @@ function eligibleToSubmitData() {
 	initVoteSettings();
 
 	let votedCount: number = parseInt(sauce.getSetting('votedCount'), 10);
-	let votedHour: number = parseInt(sauce.getSetting('votedHour'), 10);;
-	let votedDay: number = parseInt(sauce.getSetting('votedDay'), 10);;
+	let votedHour: number = parseInt(sauce.getSetting('votedHour'), 10);
+	let votedDay: number = parseInt(sauce.getSetting('votedDay'), 10);
 	let currentHour: number = DateTime.now().hour;
 	let currentDay: number = DateTime.now().day;
 
@@ -369,20 +369,22 @@ function checkVersion(version: string) {
 		headers: {
 			'Content-type': 'application/json; charset=UTF-8',
 		},
-	}).then((res) => {
-		let latestVersion = res.json();
-		return latestVersion
-	}).then((latestVersion) => {
-		if (version != latestVersion.version) {
-			helperItems.Output.innerHTML = `<p>App is out of date. Expected version: ${latestVersion.version} ; found: ${version} - reloading in 3 seconds to update...</p>`;
-			setTimeout(() => {}, 3000);
-			location.reload();
-		} else {
-			console.log(
-				`App is running latest version. Expected version: ${latestVersion.version} ; found: ${version}`
-			);
-		}
-	});
+	})
+		.then((res) => {
+			let latestVersion = res.json();
+			return latestVersion;
+		})
+		.then((latestVersion) => {
+			if (version != latestVersion.version) {
+				helperItems.Output.innerHTML = `<p>App is out of date. Expected version: ${latestVersion.version} ; found: ${version} - reloading in 3 seconds to update...</p>`;
+				setTimeout(() => {}, 3000);
+				location.reload();
+			} else {
+				console.log(
+					`App is running latest version. Expected version: ${latestVersion.version} ; found: ${version}`
+				);
+			}
+		});
 }
 
 function initSettings() {
@@ -435,8 +437,7 @@ export function startvos() {
 	// }
 	fetchVos();
 	setInterval(fetchHourly, 1000);
-	setInterval(setSubmitButtonState
-	, 1000);
+	setInterval(setSubmitButtonState, 1000);
 
 	setInterval(scanForClans, 3000);
 }
@@ -456,7 +457,9 @@ window.onload = function () {
 
 		// check version then check every 30 minutes after
 		checkVersion('1.0.0');
-		setInterval(() => {checkVersion("1.0.0")}, 1000 * 60 * 30);
+		setInterval(() => {
+			checkVersion('1.0.0');
+		}, 1000 * 60 * 30);
 
 		alt1.identifyAppUrl('./appconfig.json');
 		Object.values(settingsObject).forEach((val) => {
@@ -467,7 +470,6 @@ window.onload = function () {
 		if (!sauce.getSetting('votedCount')) {
 			sauce.updateSetting('votedCount', 0);
 		}
-
 	} else {
 		let addappurl = `alt1://addapp/${
 			new URL('./appconfig.json', document.location.href).href

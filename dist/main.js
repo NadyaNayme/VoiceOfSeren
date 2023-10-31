@@ -12010,9 +12010,7 @@ function eligibleToSubmitData() {
     initVoteSettings();
     var votedCount = parseInt(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount'), 10);
     var votedHour = parseInt(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedHour'), 10);
-    ;
     var votedDay = parseInt(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedDay'), 10);
-    ;
     var currentHour = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().hour;
     var currentDay = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now().day;
     // If the user has never voted - they are eligible to vote
@@ -12059,10 +12057,12 @@ function checkVersion(version) {
         headers: {
             'Content-type': 'application/json; charset=UTF-8',
         },
-    }).then(function (res) {
+    })
+        .then(function (res) {
         var latestVersion = res.json();
         return latestVersion;
-    }).then(function (latestVersion) {
+    })
+        .then(function (latestVersion) {
         if (version != latestVersion.version) {
             helperItems.Output.innerHTML = "<p>App is out of date. Expected version: ".concat(latestVersion.version, " ; found: ").concat(version, " - reloading in 3 seconds to update...</p>");
             setTimeout(function () { }, 3000);
@@ -12121,7 +12121,9 @@ window.onload = function () {
         // }
         // check version then check every 30 minutes after
         checkVersion('1.0.0');
-        setInterval(function () { checkVersion("1.0.0"); }, 1000 * 60 * 30);
+        setInterval(function () {
+            checkVersion('1.0.0');
+        }, 1000 * 60 * 30);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
             helperItems.settings.before(val);
