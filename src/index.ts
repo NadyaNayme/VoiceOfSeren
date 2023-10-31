@@ -285,6 +285,10 @@ async function scanForClans() {
 	if (!sauce.getSetting('automaticScanning')) {
 		return;
 	}
+	if (sauce.getSetting('justVoted')) {
+		console.log('Recently voted - skipping skan...');
+		return;
+	}
 	console.log('Scanning for VoS clans...');
 	await getClanData();
 	new Promise((resolve) => setTimeout(resolve, 50));
