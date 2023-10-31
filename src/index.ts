@@ -363,13 +363,22 @@ function fetchHourly() {
 	}
 }
 
-async function getVersion() {
+async function checkVersion(version: string) {
 	fetch('./version.json', {
 		method: 'GET',
 		headers: {
 			'Content-type': 'application/json; charset=UTF-8',
 		},
-	}).then((res) => console.log(res.json()));
+	}).then((res) => {
+		let latestVersion = res.text();
+		return latestVersion
+	}).then((latestVersion) => {
+		if (version != latestVersion) {
+			location.reload();
+		} else {
+			console.log('App is up-to-date')
+		}
+	});
 }
 
 function initSettings() {
@@ -420,6 +429,7 @@ export function startvos() {
 	// if (sauce.getSetting('uuid') == undefined) {
 	// 	sauce.updateSetting('uuid', crypto.randomUUID());
 	// }
+	setInterval(checkVersion, 30000);
 	fetchVos();
 	setInterval(fetchHourly, 1000);
 	setInterval(setSubmitButtonState
@@ -441,7 +451,7 @@ window.onload = function () {
 		// 	return;
 		// }
 
-		getVersion();
+		checkVersion("1.0.0");
 
 		alt1.identifyAppUrl('./appconfig.json');
 		Object.values(settingsObject).forEach((val) => {

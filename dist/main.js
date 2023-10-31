@@ -12053,7 +12053,7 @@ function fetchHourly() {
         }, delay);
     }
 }
-function getVersion() {
+function checkVersion(version) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             fetch('./version.json', {
@@ -12061,7 +12061,17 @@ function getVersion() {
                 headers: {
                     'Content-type': 'application/json; charset=UTF-8',
                 },
-            }).then(function (res) { return console.log(res.json()); });
+            }).then(function (res) {
+                var latestVersion = res.text();
+                return latestVersion;
+            }).then(function (latestVersion) {
+                if (version != latestVersion) {
+                    location.reload();
+                }
+                else {
+                    console.log('App is up-to-date');
+                }
+            });
             return [2 /*return*/];
         });
     });
@@ -12096,6 +12106,7 @@ function startvos() {
     // if (sauce.getSetting('uuid') == undefined) {
     // 	sauce.updateSetting('uuid', crypto.randomUUID());
     // }
+    setInterval(checkVersion, 30000);
     fetchVos();
     setInterval(fetchHourly, 1000);
     setInterval(setSubmitButtonState, 1000);
@@ -12112,7 +12123,7 @@ window.onload = function () {
         // 		'<strong style="color:red;">OUTDATED ALT1 INSTALL FOUND- PLEASE UPDATE TO VERSION 1.6.0 - THIS MAY REQUIRE A MANUAL UPDATE BY REINSTALLING FROM <a href="https://runeapps.org/">RUNEAPPS.ORG</a></strong>';
         // 	return;
         // }
-        getVersion();
+        checkVersion("1.0.0");
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
             helperItems.settings.before(val);
