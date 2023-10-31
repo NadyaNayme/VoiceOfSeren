@@ -374,12 +374,12 @@ function checkVersion(version: string) {
 		return latestVersion
 	}).then((latestVersion) => {
 		if (version != latestVersion.version) {
-			helperItems.Output.innerHTML = `<p>App is out of date. Expected version: ${latestVersion} ; found: ${version} - reloading in 3 seconds to update...</p>`;
+			helperItems.Output.innerHTML = `<p>App is out of date. Expected version: ${latestVersion.version} ; found: ${version} - reloading in 3 seconds to update...</p>`;
 			setTimeout(() => {}, 3000);
 			location.reload();
 		} else {
 			console.log(
-				`App is running latest version. Expected version: ${latestVersion} ; found: ${version}`
+				`App is running latest version. Expected version: ${latestVersion.version} ; found: ${version}`
 			);
 		}
 	});

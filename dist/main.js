@@ -12064,12 +12064,12 @@ function checkVersion(version) {
         return latestVersion;
     }).then(function (latestVersion) {
         if (version != latestVersion.version) {
-            helperItems.Output.innerHTML = "<p>App is out of date. Expected version: ".concat(latestVersion, " ; found: ").concat(version, " - reloading in 3 seconds to update...</p>");
+            helperItems.Output.innerHTML = "<p>App is out of date. Expected version: ".concat(latestVersion.version, " ; found: ").concat(version, " - reloading in 3 seconds to update...</p>");
             setTimeout(function () { }, 3000);
             location.reload();
         }
         else {
-            console.log("App is running latest version. Expected version: ".concat(latestVersion, " ; found: ").concat(version));
+            console.log("App is running latest version. Expected version: ".concat(latestVersion.version, " ; found: ").concat(version));
         }
     });
 }
