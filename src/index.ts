@@ -374,7 +374,7 @@ async function checkVersion(version: string) {
 		return latestVersion
 	}).then((latestVersion) => {
 		if (version != latestVersion) {
-			location.reload();
+			console.log(`App is out of date. Expected version: ${latestVersion} ; found: ${version}`);
 		} else {
 			console.log('App is up-to-date')
 		}

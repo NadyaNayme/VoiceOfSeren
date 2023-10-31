@@ -12066,7 +12066,7 @@ function checkVersion(version) {
                 return latestVersion;
             }).then(function (latestVersion) {
                 if (version != latestVersion) {
-                    location.reload();
+                    console.log("App is out of date. Expected version: ".concat(latestVersion, " ; found: ").concat(version));
                 }
                 else {
                     console.log('App is up-to-date');
