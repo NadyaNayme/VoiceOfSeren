@@ -11974,6 +11974,7 @@ function voteVos() {
 }
 function scanForClans() {
     return __awaiter(this, void 0, void 0, function () {
+        var now;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -11982,6 +11983,16 @@ function scanForClans() {
                     }
                     if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
                         console.log('Recently voted - skipping scan...');
+                        now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+                        if (now.minute <= 2) {
+                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+                            setTimeout(function () {
+                                return;
+                            }, 1000 * 20);
+                        }
+                        setTimeout(function () {
+                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+                        }, 1000 * 60 * 15);
                         return [2 /*return*/];
                     }
                     console.log('Scanning for VoS clans...');
@@ -12098,10 +12109,10 @@ window.onload = function () {
         // 	return;
         // }
         // check version then check every 30 minutes after
-        checkVersion('1.0.3');
+        checkVersion('1.0.4');
         setInterval(function () {
-            checkVersion('1.0.3');
-        }, 1000 * 60 * 30);
+            checkVersion('1.0.4');
+        }, 1000 * 60 * 10);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
             helperItems.settings.before(val);

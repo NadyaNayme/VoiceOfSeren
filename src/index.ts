@@ -289,6 +289,16 @@ async function scanForClans() {
 	}
 	if (sauce.getSetting('justVoted')) {
 		console.log('Recently voted - skipping scan...');
+		let now = DateTime.now();
+		if (now.minute <= 2) {
+			sauce.updateSetting('justVoted', false);
+			setTimeout(() => {
+				return;
+			}, 1000 * 20);
+		}
+		setTimeout(() => {
+			sauce.updateSetting('justVoted', false);
+		}, 1000 * 60 * 15);
 		return;
 	}
 	console.log('Scanning for VoS clans...');
@@ -429,10 +439,10 @@ window.onload = function () {
 		// }
 
 		// check version then check every 30 minutes after
-		checkVersion('1.0.3');
+		checkVersion('1.0.4');
 		setInterval(() => {
-			checkVersion('1.0.3');
-		}, 1000 * 60 * 30);
+			checkVersion('1.0.4');
+		}, 1000 * 60 * 10);
 
 		alt1.identifyAppUrl('./appconfig.json');
 		Object.values(settingsObject).forEach((val) => {
