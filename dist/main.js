@@ -11948,10 +11948,15 @@ function voteVos() {
         console.log('Data is valid - fetching current VoS...');
         getLastVos().then(function (res) {
             console.log('Last VoS obtained - submitting new data...');
+            var uuid = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uuid');
+            if (uuid == undefined) {
+                uuid = 0;
+            }
             fetch('https://vos-alt1.fly.dev/increase_counter', {
                 method: 'POST',
                 body: JSON.stringify({
                     clans: clanVote,
+                    uuid: uuid,
                 }),
                 headers: {
                     'Content-type': 'application/json; charset=UTF-8',
@@ -12091,9 +12096,9 @@ function startvos() {
         helperItems.Output.insertAdjacentHTML('beforeend', "<div><p>Attempted to use Overlay but app overlay permission is not enabled. Please enable \"Show Overlay\" permission in Alt1 settinsg (wrench icon in corner).</p></div>");
         return;
     }
-    // if (sauce.getSetting('uuid') == undefined) {
-    // 	sauce.updateSetting('uuid', crypto.randomUUID());
-    // }
+    if (alt1__WEBPACK_IMPORTED_MODULE_7__.hasAlt1Version('1.6.0') && _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uuid') == undefined) {
+        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('uuid', crypto.randomUUID());
+    }
     fetchVos();
     setInterval(fetchHourly, 1000);
     setInterval(scanForClans, 3000);
@@ -12110,9 +12115,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version then check every 30 minutes after
-        checkVersion('1.0.5');
+        checkVersion('1.0.6');
         setInterval(function () {
-            checkVersion('1.0.5');
+            checkVersion('1.0.6');
         }, 1000 * 60 * 10);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {

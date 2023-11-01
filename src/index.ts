@@ -255,10 +255,15 @@ function voteVos() {
 		console.log('Data is valid - fetching current VoS...');
 		getLastVos().then((res) => {
 			console.log('Last VoS obtained - submitting new data...');
+			let uuid = sauce.getSetting('uuid');
+			if (uuid == undefined) {
+				uuid = 0;
+			}
 			fetch('https://vos-alt1.fly.dev/increase_counter', {
 				method: 'POST',
 				body: JSON.stringify({
 					clans: clanVote,
+					uuid: uuid,
 				}),
 				headers: {
 					'Content-type': 'application/json; charset=UTF-8',
@@ -418,9 +423,9 @@ export function startvos() {
 		return;
 	}
 
-	// if (sauce.getSetting('uuid') == undefined) {
-	// 	sauce.updateSetting('uuid', crypto.randomUUID());
-	// }
+	if (a1lib.hasAlt1Version('1.6.0') && sauce.getSetting('uuid') == undefined) {
+		sauce.updateSetting('uuid', crypto.randomUUID());
+	}
 	fetchVos();
 	setInterval(fetchHourly, 1000);
 	setInterval(scanForClans, 3000);
@@ -440,9 +445,9 @@ window.onload = function () {
 		// }
 
 		// check version then check every 30 minutes after
-		checkVersion('1.0.5');
+		checkVersion('1.0.6');
 		setInterval(() => {
-			checkVersion('1.0.5');
+			checkVersion('1.0.6');
 		}, 1000 * 60 * 10);
 
 		alt1.identifyAppUrl('./appconfig.json');
