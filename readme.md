@@ -13,3 +13,7 @@ To install Voice of Seren copy & paste this link into your browser:
 - Automatically contributes data as long as the app is open (can be minimized) when you are in Prif (can opt-out of automatic scanning)
 - Active VoS are in Title Bar (exactly the same as D&D Notifications)
 - Coming Soon: Be alerted when a favorited voice is active!
+
+## My Other Plugins
+
+To see my other Alt1 plugins [click here](https://github.com/NadyaNayme/NyusPluginDirectory)
