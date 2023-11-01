@@ -12,6 +12,8 @@ body {
 
 #app {
   text-align: center;
+  transform-origin: top;
+  white-space: nowrap;
 }
 
 #current,

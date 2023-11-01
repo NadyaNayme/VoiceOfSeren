@@ -140,6 +140,8 @@ ___CSS_LOADER_EXPORT___.push([module.id, `body {
 
 #app {
   text-align: center;
+  transform-origin: top;
+  white-space: nowrap;
 }
 
 #current,
