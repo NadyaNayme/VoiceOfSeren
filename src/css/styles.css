@@ -10,7 +10,7 @@ body {
   font-family: 'trajan-pro-3', sans-serif;
 }
 
-#vos {
+#app {
   text-align: center;
 }
 
@@ -64,7 +64,7 @@ h3 {
 .flex {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   margin-bottom: .5rem;
 }
 

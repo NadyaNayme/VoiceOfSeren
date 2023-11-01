@@ -398,7 +398,15 @@ const settingsObject = {
 		'automaticScanning',
 		'Automatic Scanning'
 	),
+	uiScale: sauce.createRangeSetting('uiScale', 'Resize VoS app', {defaultValue: 100, min: 30, max: 200, unit: '%'}),
 };
+
+settingsObject.uiScale.addEventListener('change', (e) => {
+	sauce.updateSetting('uiScale', settingsObject.uiScale.querySelector('input').value);
+	getByID('app').style.transform = `scale(${
+		parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100
+	})`;
+});
 
 export function startvos() {
 	if (!window.alt1) {
@@ -429,6 +437,13 @@ export function startvos() {
 	fetchVos();
 	setInterval(fetchHourly, 1000);
 	setInterval(scanForClans, 3000);
+
+	if (sauce.getSetting('uiScale')) {
+		getByID('app').style.transform = `scale(${
+			parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100
+		})`;
+	}
+
 }
 
 window.onload = function () {
@@ -445,9 +460,9 @@ window.onload = function () {
 		// }
 
 		// check version then check every 30 minutes after
-		checkVersion('1.0.6');
+		checkVersion('1.0.7');
 		setInterval(() => {
-			checkVersion('1.0.6');
+			checkVersion('1.0.7');
 		}, 1000 * 60 * 10);
 
 		alt1.identifyAppUrl('./appconfig.json');

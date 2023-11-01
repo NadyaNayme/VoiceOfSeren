@@ -138,7 +138,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `body {
   font-family: 'trajan-pro-3', sans-serif;
 }
 
-#vos {
+#app {
   text-align: center;
 }
 
@@ -192,7 +192,7 @@ h3 {
 .flex {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   margin-bottom: .5rem;
 }
 
@@ -12082,7 +12082,12 @@ function initSettings() {
 var settingsObject = {
     settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),
     automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning'),
+    uiScale: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createRangeSetting('uiScale', 'Resize VoS app', { defaultValue: 100, min: 30, max: 200, unit: '%' }),
 };
+settingsObject.uiScale.addEventListener('change', function (e) {
+    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('uiScale', settingsObject.uiScale.querySelector('input').value);
+    getByID('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100, ")");
+});
 function startvos() {
     if (!window.alt1) {
         helperItems.Output.insertAdjacentHTML('beforeend', "<div>You need to run this page in alt1 to capture the screen</div>");
@@ -12102,6 +12107,9 @@ function startvos() {
     fetchVos();
     setInterval(fetchHourly, 1000);
     setInterval(scanForClans, 3000);
+    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uiScale')) {
+        getByID('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100, ")");
+    }
 }
 window.onload = function () {
     //check if we are running inside alt1 by checking if the alt1 global exists
@@ -12115,9 +12123,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version then check every 30 minutes after
-        checkVersion('1.0.6');
+        checkVersion('1.0.7');
         setInterval(function () {
-            checkVersion('1.0.6');
+            checkVersion('1.0.7');
         }, 1000 * 60 * 10);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
