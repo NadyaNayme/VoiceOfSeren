@@ -79,16 +79,13 @@ function tryFindClans() {
 let clanVote = [];
 let lastVos = [];
 
-helperItems.Vote.addEventListener('mouseenter', (e) => {
-	getClanData();
-});
-
 helperItems.Get.addEventListener('click', (e) => {
 	fetchVos();
 });
 
 helperItems.Vote.addEventListener('click', (e) => {
 	sauce.updateSetting('justVoted', false);
+	getClanData();
 	voteVos();
 	throttleVoting();
 });

@@ -4,9 +4,9 @@
 	else if(typeof define === 'function' && define.amd)
 		define(["sharp", "canvas", "electron/common"], factory);
 	else if(typeof exports === 'object')
-		exports["NyusNecroJobGauge"] = factory((function webpackLoadOptionalExternalModule() { try { return require("sharp"); } catch(e) {} }()), (function webpackLoadOptionalExternalModule() { try { return require("canvas"); } catch(e) {} }()), (function webpackLoadOptionalExternalModule() { try { return require("electron/common"); } catch(e) {} }()));
+		exports["vos"] = factory((function webpackLoadOptionalExternalModule() { try { return require("sharp"); } catch(e) {} }()), (function webpackLoadOptionalExternalModule() { try { return require("canvas"); } catch(e) {} }()), (function webpackLoadOptionalExternalModule() { try { return require("electron/common"); } catch(e) {} }()));
 	else
-		root["NyusNecroJobGauge"] = factory(root["sharp"], root["canvas"], root["electron/common"]);
+		root["vos"] = factory(root["sharp"], root["canvas"], root["electron/common"]);
 })(self, (__WEBPACK_EXTERNAL_MODULE_sharp__, __WEBPACK_EXTERNAL_MODULE_canvas__, __WEBPACK_EXTERNAL_MODULE_electron_common__) => {
 return /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
@@ -11781,14 +11781,12 @@ function tryFindClans() {
 }
 var clanVote = [];
 var lastVos = [];
-helperItems.Vote.addEventListener('mouseenter', function (e) {
-    getClanData();
-});
 helperItems.Get.addEventListener('click', function (e) {
     fetchVos();
 });
 helperItems.Vote.addEventListener('click', function (e) {
     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+    getClanData();
     voteVos();
     throttleVoting();
 });
