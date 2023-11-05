@@ -130,10 +130,23 @@ async function getClanData() {
 	}
 }
 
+const callWithRetry = async (fn, depth = 0) => {
+	try {
+		return await fn();
+	}catch(e) {
+		if (depth > 7) {
+			throw e;
+		}
+		await new Promise((resolve) => setTimeout(resolve, 2 ** depth * 100));
+
+		return callWithRetry(fn, depth + 1);
+	}
+}
+
 function fetchVos() {
 	alt1.setTitleBarText('');
-	getLastVos();
-	getCurrentVos();
+	callWithRetry(getLastVos());
+	callWithRetry(getCurrentVos());
 	throttleUpdating();
 }
 
@@ -457,9 +470,9 @@ window.onload = function () {
 		// }
 
 		// check version then check every 30 minutes after
-		checkVersion('1.0.7');
+		checkVersion('1.0.8');
 		setInterval(() => {
-			checkVersion('1.0.7');
+			checkVersion('1.0.8');
 		}, 1000 * 60 * 10);
 
 		alt1.identifyAppUrl('./appconfig.json');

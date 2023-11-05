@@ -11829,10 +11829,34 @@ function getClanData() {
         });
     });
 }
+var callWithRetry = function (fn, depth) {
+    if (depth === void 0) { depth = 0; }
+    return __awaiter(void 0, void 0, void 0, function () {
+        var e_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 4]);
+                    return [4 /*yield*/, fn()];
+                case 1: return [2 /*return*/, _a.sent()];
+                case 2:
+                    e_1 = _a.sent();
+                    if (depth > 7) {
+                        throw e_1;
+                    }
+                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, Math.pow(2, depth) * 100); })];
+                case 3:
+                    _a.sent();
+                    return [2 /*return*/, callWithRetry(fn, depth + 1)];
+                case 4: return [2 /*return*/];
+            }
+        });
+    });
+};
 function fetchVos() {
     alt1.setTitleBarText('');
-    getLastVos();
-    getCurrentVos();
+    callWithRetry(getLastVos());
+    callWithRetry(getCurrentVos());
     throttleUpdating();
 }
 function throttleUpdating() {
@@ -12123,9 +12147,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version then check every 30 minutes after
-        checkVersion('1.0.7');
+        checkVersion('1.0.8');
         setInterval(function () {
-            checkVersion('1.0.7');
+            checkVersion('1.0.8');
         }, 1000 * 60 * 10);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
