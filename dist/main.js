@@ -11844,7 +11844,7 @@ var callWithRetry = function (fn, depth) {
                     if (depth > 7) {
                         throw e_1;
                     }
-                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, Math.pow(2, depth) * 100); })];
+                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, Math.pow(2, depth) * 10); })];
                 case 3:
                     _a.sent();
                     return [2 /*return*/, callWithRetry(fn, depth + 1)];

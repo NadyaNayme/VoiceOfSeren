@@ -137,7 +137,7 @@ const callWithRetry = async (fn, depth = 0) => {
 		if (depth > 7) {
 			throw e;
 		}
-		await new Promise((resolve) => setTimeout(resolve, 2 ** depth * 100));
+		await new Promise((resolve) => setTimeout(resolve, 2 ** depth * 10));
 
 		return callWithRetry(fn, depth + 1);
 	}
