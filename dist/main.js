@@ -11855,8 +11855,8 @@ var callWithRetry = function (fn, depth) {
 };
 function fetchVos() {
     alt1.setTitleBarText('');
-    callWithRetry(getLastVos());
-    callWithRetry(getCurrentVos());
+    callWithRetry(getLastVos);
+    callWithRetry(getCurrentVos);
     throttleUpdating();
 }
 function throttleUpdating() {
@@ -12147,9 +12147,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version then check every 30 minutes after
-        checkVersion('1.0.8');
+        checkVersion('1.0.9');
         setInterval(function () {
-            checkVersion('1.0.8');
+            checkVersion('1.0.9');
         }, 1000 * 60 * 10);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
