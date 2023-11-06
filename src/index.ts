@@ -132,11 +132,13 @@ async function getClanData() {
 
 const callWithRetry = async (fn, depth = 0) => {
 	try {
+		console.log(`Attempting to connect to API again after error...`)
 		return await fn();
 	}catch(e) {
 		if (depth > 7) {
 			throw e;
 		}
+		console.log(`Attempting to connect to API again after error... Attempt #${depth}/7`);
 		await new Promise((resolve) => setTimeout(resolve, 2 ** depth * 10));
 
 		return callWithRetry(fn, depth + 1);

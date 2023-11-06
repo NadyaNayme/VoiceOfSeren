@@ -11837,6 +11837,7 @@ var callWithRetry = function (fn, depth) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 4]);
+                    console.log("Attempting to connect to API again after error...");
                     return [4 /*yield*/, fn()];
                 case 1: return [2 /*return*/, _a.sent()];
                 case 2:
@@ -11844,6 +11845,7 @@ var callWithRetry = function (fn, depth) {
                     if (depth > 7) {
                         throw e_1;
                     }
+                    console.log("Attempting to connect to API again after error... Attempt #".concat(depth, "/7"));
                     return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, Math.pow(2, depth) * 10); })];
                 case 3:
                     _a.sent();
