@@ -11859,7 +11859,6 @@ function fetchVos() {
     alt1.setTitleBarText('');
     callWithRetry(getLastVos);
     callWithRetry(getCurrentVos);
-    throttleUpdating();
 }
 function throttleUpdating() {
     helperItems.Get.setAttribute('disabled', 'true');
@@ -11898,6 +11897,9 @@ function getCurrentVos() {
                 var clan_1 = titleCase(vos['clan_1']);
                 var clan_2 = titleCase(vos['clan_2']);
                 updateTitleBar(clan_1, clan_2);
+            })
+                .then(function () {
+                throttleUpdating();
             })
                 .catch(function (err) {
                 helperItems.Current.innerHTML = "<p>API Error: Please try again in a minute</p>";
