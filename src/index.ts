@@ -145,8 +145,8 @@ const callWithRetry = async (fn, depth = 0) => {
 
 function fetchVos() {
 	alt1.setTitleBarText('');
-	callWithRetry(getLastVos());
-	callWithRetry(getCurrentVos());
+	callWithRetry(getLastVos);
+	callWithRetry(getCurrentVos);
 	throttleUpdating();
 }
 
@@ -470,9 +470,9 @@ window.onload = function () {
 		// }
 
 		// check version then check every 30 minutes after
-		checkVersion('1.0.8');
+		checkVersion('1.0.9');
 		setInterval(() => {
-			checkVersion('1.0.8');
+			checkVersion('1.0.9');
 		}, 1000 * 60 * 10);
 
 		alt1.identifyAppUrl('./appconfig.json');
