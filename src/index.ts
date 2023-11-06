@@ -132,19 +132,21 @@ async function getClanData() {
 
 const callWithRetry = async (fn, depth = 0) => {
 	try {
-		console.log(`Attempting to connect to API again after error...`)
-		return await fn();
-	}catch(e) {
+		console.log(`Attempting to connect to API again after error...`);
+		return fn();
+	} catch (e) {
 		if (depth > 7) {
 			throttleUpdating();
 			throw e;
 		}
-		console.log(`Attempting to connect to API again after error... Attempt #${depth}/7`);
+		console.log(
+			`Attempting to connect to API again after error... Attempt #${depth}/7`
+		);
 		await new Promise((resolve) => setTimeout(resolve, 2 ** depth * 10));
 
 		return callWithRetry(fn, depth + 1);
 	}
-}
+};
 
 function fetchVos() {
 	alt1.setTitleBarText('');
@@ -255,7 +257,7 @@ function voteVos() {
 		}
 		setTimeout(() => {
 			sauce.updateSetting('justVoted', false);
-		}, 1000 * 60 * 15)
+		}, 1000 * 60 * 15);
 		return;
 	}
 
@@ -410,11 +412,19 @@ const settingsObject = {
 		'automaticScanning',
 		'Automatic Scanning'
 	),
-	uiScale: sauce.createRangeSetting('uiScale', 'Resize VoS app', {defaultValue: 100, min: 30, max: 200, unit: '%'}),
+	uiScale: sauce.createRangeSetting('uiScale', 'Resize VoS app', {
+		defaultValue: 100,
+		min: 30,
+		max: 200,
+		unit: '%',
+	}),
 };
 
 settingsObject.uiScale.addEventListener('change', (e) => {
-	sauce.updateSetting('uiScale', settingsObject.uiScale.querySelector('input').value);
+	sauce.updateSetting(
+		'uiScale',
+		settingsObject.uiScale.querySelector('input').value
+	);
 	getByID('app').style.transform = `scale(${
 		parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100
 	})`;
@@ -443,7 +453,10 @@ export function startvos() {
 		return;
 	}
 
-	if (a1lib.hasAlt1Version('1.6.0') && sauce.getSetting('uuid') == undefined) {
+	if (
+		a1lib.hasAlt1Version('1.6.0') &&
+		sauce.getSetting('uuid') == undefined
+	) {
 		sauce.updateSetting('uuid', crypto.randomUUID());
 	}
 	fetchVos();
@@ -452,10 +465,10 @@ export function startvos() {
 
 	if (sauce.getSetting('uiScale')) {
 		getByID('app').style.transform = `scale(${
-			parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100
+			parseInt(settingsObject.uiScale.querySelector('input').value, 10) /
+			100
 		})`;
 	}
-
 }
 
 window.onload = function () {

@@ -11836,11 +11836,10 @@ var callWithRetry = function (fn, depth) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 4]);
+                    _a.trys.push([0, 1, , 3]);
                     console.log("Attempting to connect to API again after error...");
-                    return [4 /*yield*/, fn()];
-                case 1: return [2 /*return*/, _a.sent()];
-                case 2:
+                    return [2 /*return*/, fn()];
+                case 1:
                     e_1 = _a.sent();
                     if (depth > 7) {
                         throttleUpdating();
@@ -11848,10 +11847,10 @@ var callWithRetry = function (fn, depth) {
                     }
                     console.log("Attempting to connect to API again after error... Attempt #".concat(depth, "/7"));
                     return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, Math.pow(2, depth) * 10); })];
-                case 3:
+                case 2:
                     _a.sent();
                     return [2 /*return*/, callWithRetry(fn, depth + 1)];
-                case 4: return [2 /*return*/];
+                case 3: return [2 /*return*/];
             }
         });
     });
@@ -12108,7 +12107,12 @@ function initSettings() {
 var settingsObject = {
     settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),
     automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning'),
-    uiScale: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createRangeSetting('uiScale', 'Resize VoS app', { defaultValue: 100, min: 30, max: 200, unit: '%' }),
+    uiScale: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createRangeSetting('uiScale', 'Resize VoS app', {
+        defaultValue: 100,
+        min: 30,
+        max: 200,
+        unit: '%',
+    }),
 };
 settingsObject.uiScale.addEventListener('change', function (e) {
     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('uiScale', settingsObject.uiScale.querySelector('input').value);
@@ -12127,14 +12131,16 @@ function startvos() {
         helperItems.Output.insertAdjacentHTML('beforeend', "<div><p>Attempted to use Overlay but app overlay permission is not enabled. Please enable \"Show Overlay\" permission in Alt1 settinsg (wrench icon in corner).</p></div>");
         return;
     }
-    if (alt1__WEBPACK_IMPORTED_MODULE_7__.hasAlt1Version('1.6.0') && _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uuid') == undefined) {
+    if (alt1__WEBPACK_IMPORTED_MODULE_7__.hasAlt1Version('1.6.0') &&
+        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uuid') == undefined) {
         _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('uuid', crypto.randomUUID());
     }
     fetchVos();
     setInterval(fetchHourly, 1000);
     setInterval(scanForClans, 3000);
     if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uiScale')) {
-        getByID('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100, ")");
+        getByID('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) /
+            100, ")");
     }
 }
 window.onload = function () {
