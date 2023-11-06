@@ -11843,6 +11843,7 @@ var callWithRetry = function (fn, depth) {
                 case 2:
                     e_1 = _a.sent();
                     if (depth > 7) {
+                        throttleUpdating();
                         throw e_1;
                     }
                     console.log("Attempting to connect to API again after error... Attempt #".concat(depth, "/7"));
@@ -11897,9 +11898,6 @@ function getCurrentVos() {
                 var clan_1 = titleCase(vos['clan_1']);
                 var clan_2 = titleCase(vos['clan_2']);
                 updateTitleBar(clan_1, clan_2);
-            })
-                .then(function () {
-                throttleUpdating();
             })
                 .catch(function (err) {
                 helperItems.Current.innerHTML = "<p>API Error: Please try again in a minute</p>";

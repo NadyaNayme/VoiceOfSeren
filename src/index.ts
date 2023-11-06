@@ -136,6 +136,7 @@ const callWithRetry = async (fn, depth = 0) => {
 		return await fn();
 	}catch(e) {
 		if (depth > 7) {
+			throttleUpdating();
 			throw e;
 		}
 		console.log(`Attempting to connect to API again after error... Attempt #${depth}/7`);
@@ -188,9 +189,6 @@ async function getCurrentVos() {
 			let clan_1: string = titleCase(vos['clan_1']);
 			let clan_2: string = titleCase(vos['clan_2']);
 			updateTitleBar(clan_1, clan_2);
-		})
-		.then(() => {
-			throttleUpdating();
 		})
 		.catch((err) => {
 			helperItems.Current.innerHTML = `<p>API Error: Please try again in a minute</p>`;
