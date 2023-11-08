@@ -2,10 +2,14 @@
 
 Crowdsourced data to share the current Voice of Seren.
 
-To install Voice of Seren copy & paste this link into your browser:
+![Voice of Seren](./vos.png)
+
+## How to Install & Required Settings
+
+To install Better Buff Bar copy & paste this link into Alt1's browser app:
 `alt1://addapp/https://nadyanayme.github.io/VoiceOfSeren/dist/appconfig.json`
 
-![Voice of Seren](./vos.png)
+If you do not have Alt1 Toolkit installed already you can [download it from runeapps.org](https://runeapps.org/alt1). In order for Voice of Seren to work make sure your Runescape settings for Game and UI Scale settings are set to `100%` as this is required for Alt1 to be able to read your game screen.
 
 ## Features
 
