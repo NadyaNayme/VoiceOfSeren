@@ -11736,6 +11736,7 @@ var helperItems = {
     VoteOutput: getByID('vote_output'),
     Vote: getByID('send_vote'),
     settings: getByID('Settings'),
+    Timestamp: getByID('Timestamp'),
 };
 var clanImages = alt1__WEBPACK_IMPORTED_MODULE_7__.webpackImages({
     amlodd: __webpack_require__(/*! ./asset/data/Amlodd_Clan.data.png */ "./asset/data/Amlodd_Clan.data.png"),
@@ -11897,6 +11898,7 @@ function getCurrentVos() {
                 var clan_1 = titleCase(vos['clan_1']);
                 var clan_2 = titleCase(vos['clan_2']);
                 updateTitleBar(clan_1, clan_2);
+                updateTimestamp();
             })
                 .catch(function (err) {
                 helperItems.Current.innerHTML = "<p>API Error: Please try again in a minute</p>";
@@ -12059,6 +12061,16 @@ function updateTitleBar(clan_1, clan_2) {
             ".png'/></span>");
     }, 300);
 }
+function updateTimestamp() {
+    var timestamp = new Date(Date.now());
+    helperItems.Timestamp.innerHTML = "Last Updated: ".concat(timestamp.getUTCHours() < 10
+        ? '0' + timestamp.getUTCHours()
+        : timestamp.getUTCHours(), ":").concat(timestamp.getUTCMinutes() < 10
+        ? '0' + timestamp.getUTCMinutes()
+        : timestamp.getUTCMinutes(), ":").concat(timestamp.getUTCSeconds() < 10
+        ? '0' + timestamp.getUTCSeconds()
+        : timestamp.getUTCSeconds());
+}
 function dataMatchesLastHour() {
     return lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
 }
@@ -12155,9 +12167,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version then check every 30 minutes after
-        checkVersion('1.0.9');
+        checkVersion('1.0.10');
         setInterval(function () {
-            checkVersion('1.0.9');
+            checkVersion('1.0.10');
         }, 1000 * 60 * 10);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
