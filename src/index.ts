@@ -503,11 +503,11 @@ window.onload = function () {
 		// 	return;
 		// }
 
-		// check version then check every 30 minutes after
-		checkVersion('1.0.10');
+		// check version on startup then check again every 12 hours
+		checkVersion('1.0.11');
 		setInterval(() => {
-			checkVersion('1.0.10');
-		}, 1000 * 60 * 10);
+			checkVersion('1.0.11');
+		}, 1000 * 60 * 60 * 12);
 
 		alt1.identifyAppUrl('./appconfig.json');
 		Object.values(settingsObject).forEach((val) => {
