@@ -1,7 +1,5 @@
-// TODO: Figure out why I can't just import { default as config } from './appconfig.json';
-let config = {
-	appName: 'vos',
-};
+import config from './appconfig.json';
+const appName = (<any>config).appName;
 
 export function createHeading(size: string, content: string) {
 	let header = <HTMLElement>document.createElement(size);
@@ -25,9 +23,19 @@ export function createSeperator() {
 	return <HTMLElement>document.createElement('hr');
 }
 
-export function createButton(content: string, fn: Function) {
-	let button = <HTMLButtonElement>document.createElement('button');
+export function createButton(
+	content: string,
+	fn: Function,
+	options: { classes: Array<string> }
+) {
+	let { classes = options.classes } = options;
+	const button = <HTMLButtonElement>document.createElement('button');
 	button.innerHTML = content;
+	if (options.classes.length) {
+		for (let i = options.classes.length; i--; i >= 0) {
+			button.classList.add(options.classes[i]);
+		}
+	}
 	button.addEventListener('click', () => {
 		fn();
 	});
@@ -42,7 +50,7 @@ export function createDropdownSetting(
 ) {
 	let select = createDropdown(name, defaultValue, options);
 	let label = createLabel(name, description);
-	let container = createFlexContainer();
+	let container = createFlexContainer('reverse-setting');
 	container.appendChild(select);
 	container.appendChild(label);
 	return container;
@@ -65,13 +73,25 @@ export function createTextSetting(
 export function createCheckboxSetting(
 	name: string,
 	description: string,
-	defaultValue?: any
+	defaultValue: any
 ) {
 	let input = createCheckboxInput(name, defaultValue);
 	let label = createLabel(name, description);
-	let container = createFlexContainer();
-	container.appendChild(input);
+	let checkboxLabel = createLabel(name, '');
+	let checkbox = document.createElement('span');
+	checkbox.classList.add('checkbox');
+	let container = createFlexContainer('reverse-setting');
+	checkboxLabel.appendChild(input);
+	checkboxLabel.appendChild(checkbox);
+	container.appendChild(checkboxLabel);
 	container.appendChild(label);
+	container.addEventListener('click', (e) => {
+		if (e.target == container) {
+			input.checked = !input.checked;
+			input.dispatchEvent(new CustomEvent('change', { bubbles: true }));
+			updateSetting(name, input.checked);
+		}
+	});
 	return container;
 }
 
@@ -85,15 +105,15 @@ export function createNumberSetting(
 	} = {}
 ) {
 	let {
-		defaultValue = options.defaultValue || 10,
-		min = options.min || 1,
-		max = options.max || 20,
+		defaultValue = options.defaultValue ?? 10,
+		min = options.min ?? 1,
+		max = options.max ?? 20,
 	} = options;
 	let input = createInput('number', name, defaultValue);
 	input.setAttribute('min', min.toString());
 	input.setAttribute('max', max.toString());
 	let label = createLabel(name, description);
-	let container = createFlexContainer();
+	let container = createFlexContainer('reverse-setting');
 	container.appendChild(input);
 	container.appendChild(label);
 	return container;
@@ -103,29 +123,39 @@ export function createRangeSetting(
 	name: string,
 	description: string,
 	options: {
-		defaultValue?: number;
+		classes?: Array<string>;
+		defaultValue?: string;
 		min?: number;
 		max?: number;
 		unit?: string;
 	} = {}
 ) {
 	let {
-		defaultValue = options.defaultValue || 100,
-		min = options.min || 0,
-		max = options.max || 100,
-		unit = options.unit || '%',
+		classes = options.classes ?? '',
+		defaultValue = options.defaultValue ?? '100',
+		min = options.min ?? 0,
+		max = options.max ?? 100,
+		unit = options.unit ?? '%',
 	} = options;
 	let input = createInput('range', name, defaultValue);
 	input.setAttribute('min', min.toString());
 	input.setAttribute('max', max.toString());
 	let label = createLabel(name, description);
 	label.classList.add('full');
+	if (getSetting(name) != undefined) {
+		input.value = getSetting(name);
+	}
 	let output = createOutput();
 	output.setAttribute('id', `${name}Output`);
 	output.setAttribute('for', name);
 	output.innerHTML = input.value + unit;
 	output.after(unit);
 	let container = createFlexContainer();
+	if (classes.length) {
+		for (let i = classes.length; i--; i >= 0) {
+			container.classList.add(classes[i]);
+		}
+	}
 	container.classList.add('flex-wrap');
 	container.appendChild(label);
 	container.appendChild(input);
@@ -137,123 +167,133 @@ export function createRangeSetting(
 }
 
 export function createProfileManager() {
-
 	function saveProfile() {
-		let id = container.querySelector('select').selectedIndex;
-		if (id !== 0) {
-			let profiles = getSetting('profiles');
-			let loadOptions = container.querySelector('select');
-			if (!getSetting('profiles')) {
-				profiles = [
-					{ value: '0', name: 'Select Profile' },
-					{ value: 'Melee', name: 'Melee' },
-					{ value: 'Ranged', name: 'Ranged' },
-					{ value: 'Magic', name: 'Magic' },
-					{ value: 'Necromancy', name: 'Necromancy' },
-					{ value: 'Hybrid', name: 'Hybrid' },
-				];
-				updateSetting('profiles', profiles);
-			}
-
-
-			let name = container.querySelector('input').value;
-			profiles[id].name = name;
-
-			let data = [];
-			let trackedBuffs = localStorage['Buffs'];
-			let untrackedBuffs = localStorage['UntrackedBuffs'];
-			let settings = JSON.parse(localStorage[config.appName]);
-			let profile_data = {trackedBuffs, untrackedBuffs, settings };
-			data.push(profile_data);
-			profiles[id].value = data;
-			updateSetting('profiles', profiles);
-			let profileOptions = [
-				{ value: '0', name: 'Select Profile' },
-				{ value: 'Melee', name: 'Melee' },
-				{ value: 'Ranged', name: 'Ranged' },
-				{ value: 'Magic', name: 'Magic' },
-				{ value: 'Necromancy', name: 'Necromancy' },
-				{ value: 'Hybrid', name: 'Hybrid' },
-			];
-			let savedProfiles = getSetting('profiles');
-			savedProfiles?.forEach((profile, index) => {
-				profileOptions[index].value = profile.name;
-				profileOptions[index].name = profile.name;
-			});
-			loadOptions.parentElement.replaceWith(
-				createDropdownSetting(
-					'Profile',
-					'',
-					'CreateNew',
-					profileOptions
-				)
-			);
-			document.querySelector('#Profile').addEventListener(
-				'change',
-				() => {
-					let name: HTMLInputElement =
-						document.querySelector('.profile-name');
-					let dropdown: HTMLSelectElement =
-						document.querySelector('#Profile');
-					name.value = dropdown.value;
-				}
-			);
+		let profileNameInput: HTMLInputElement =
+			container.querySelector('#ProfileName');
+		let profileName = profileNameInput.value;
+		if (profileName.indexOf('|') > -1) {
+			console.log('Pipe character is not allowed in profile names.');
+			return;
 		}
-	}
+		let profiles = localStorage.getItem('bbb_profiles');
+		let profilesArray = localStorage
+			.getItem('bbb_profiles')
+			.split('|')
+			.filter((str) => str !== '');
 
-	function loadProfile() {
-		let id = container.querySelector('select').selectedIndex;
-		if (id !== 0) {
-			let data = getSetting('profiles');
-			data[id].value.forEach((key) => {
-				localStorage['Buffs'] = key.trackedBuffs;
-				localStorage['UntrackedBuffs'] = key.untrackedBuffs;
-				Object.keys(key.settings).forEach((setting) => {
-					if (setting.toString() !== "profiles") {
-						updateSetting(setting, key.settings[setting]);
-					}
-				});
-			});
+		// If we do not have profiles set it to be empty
+		if (profiles == undefined) {
+			profiles = '';
 		}
+
+		// If the profile name doesn't exist in our profiles - add it
+		if (!profilesArray.includes(profileName)) {
+			profiles = profiles + '|' + profileName + '|';
+			localStorage.setItem('bbb_profiles', profiles);
+		}
+
+		// Create and update or store any data
+		let data = {};
+		data['Buffs'] = localStorage['Buffs'];
+		data['Buffs2'] = localStorage['Buffs2'];
+		data['Buffs3'] = localStorage['Buffs3'];
+		data['UntrackedBuffs'] = localStorage['UntrackedBuffs'];
+		data['Settings'] = JSON.parse(localStorage[appName]);
+		localStorage.setItem(
+			`bbb_profile_${profileName}`,
+			JSON.stringify(data)
+		);
+		console.log(
+			`${profileName} added to profiles. Existing profiles: \n ${profiles}`
+		);
+		location.reload();
 	}
 
 	function deleteProfile() {
-		let id = container.querySelector('select').selectedIndex;
-		let profiles = getSetting('profiles');
-		if (id !== 0) {
-			profiles.splice(id, 1)
-			updateSetting('profiles', profiles);
-		}
-		loadOptions.parentElement.replaceWith(
-			createDropdownSetting('Profile', '', 'CreateNew', profiles)
-		);
+		let index = container.querySelector('select').selectedIndex;
+		let profileName = container.querySelector('select').options[index].text;
+		console.log(`Deleting: ${profileName} profile`);
+		let profiles = localStorage
+			.getItem('bbb_profiles')
+			.split('|')
+			.filter((str) => str !== '');
+		profiles = profiles.filter((item) => item !== profileName);
+		localStorage.setItem('bbb_profiles', profiles.join('|') + '|');
+		localStorage.removeItem(`bbb_profile_${profileName}`);
+		location.reload();
 	}
 
-	let profileOptions = [
-		{ value: '0', name: 'Select Profile' },
-		{ value: 'Melee', name: 'Melee' },
-		{ value: 'Ranged', name: 'Ranged' },
-		{ value: 'Magic', name: 'Magic' },
-		{ value: 'Necromancy', name: 'Necromancy' },
-		{ value: 'Hybrid', name: 'Hybrid' },
-	];
-	let savedProfiles = getSetting('profiles');
-	savedProfiles?.forEach((profile, index) => {
-		profileOptions[index].value = profile.name;
-		profileOptions[index].name = profile.name;
-	});
+	function loadProfile() {
+		let index = container.querySelector('select').selectedIndex;
+		if (index !== 0) {
+			let profiles = localStorage
+				.getItem('bbb_profiles')
+				.split('|')
+				.filter((str) => str !== '');
+			let storageName = profiles[index - 1];
+			let data = JSON.parse(
+				localStorage.getItem(`bbb_profile_${storageName}`)
+			);
+			if (data['Buffs'] !== undefined && data['Buffs'] !== '') {
+				localStorage.setItem('Buffs', data['Buffs']);
+			}
+			if (data['Buffs2'] !== undefined && data['Buffs2'] !== '') {
+				localStorage.setItem('Buffs2', data['Buffs2']);
+			}
+			if (data['Buffs3'] !== undefined && data['Buffs3'] !== '') {
+				localStorage.setItem('Buffs3', data['Buffs3']);
+			}
+			if (
+				data['UntrackedBuffs'] !== undefined &&
+				data['UntrackedBuffs'] !== ''
+			) {
+				localStorage.setItem('UntrackedBuffs', data['UntrackedBuffs']);
+			}
+			Object.entries(data['Settings']).forEach((setting) => {
+				updateSetting(setting[0], setting[1]);
+			});
+		}
+		location.reload();
+	}
 
-	var profileHeader = createHeading('h3', 'Profiles [Beta]');
-	var profileText = createText('Select a profile and save settings. You can rename the profile using the text field after selecting. To load a profile select the profile and click load.');
-	var saveButton = createButton('Save', saveProfile);
-	var profileName = createInput('input', 'ProfileName', '');
+	let profileOptions = [{ value: '0', name: 'Select Profile' }];
+	let profiles;
+	if (localStorage.getItem('bbb_profiles')) {
+		profiles = localStorage
+			.getItem('bbb_profiles')
+			.split('|')
+			.filter((str) => str !== '');
+		profiles.forEach((profile, index) => {
+			profileOptions.push({ value: index.toString(), name: profile });
+		});
+	} else {
+		profiles = '|';
+	}
+
+	var profileHeader = createHeading('h3', 'Profiles');
+	var profileText = createText(
+		'Select a profile to load or delete. To save a new profile, give it a name in the field below and then click Save. To update an existing profile save a profile using the same name.'
+	);
+	var saveButton = createButton('Save', saveProfile, {
+		classes: ['nisbutton'],
+	});
+	var profileName = createInput('text', 'ProfileName', '');
 	profileName.classList.add('profile-name');
-	var loadOptions = createDropdownSetting( 'Profile', '', 'Add', profileOptions );
+	var loadOptions = createDropdownSetting(
+		'Profile',
+		'',
+		'Add',
+		profileOptions
+	);
 	loadOptions.classList.add('profile-list');
 	loadOptions.querySelector('select').selectedIndex = 0;
-	var loadButton = createButton('Load', loadProfile);
+	var loadButton = createButton('Load', loadProfile, {
+		classes: ['nisbutton'],
+	});
 	loadButton.classList.add('load-btn');
-	var deleteButton = createButton('Delete Profile', deleteProfile);
+	var deleteButton = createButton('Delete', deleteProfile, {
+		classes: ['nisbutton', 'delete'],
+	});
 	var container = createFlexContainer();
 	container.classList.remove('flex');
 	var endSeperator = createSeperator();
@@ -265,6 +305,7 @@ export function createProfileManager() {
 	container.appendChild(saveButton);
 	container.appendChild(profileName);
 	container.appendChild(loadButton);
+	container.appendChild(deleteButton);
 	//container.appendChild(deleteButton);
 	container.appendChild(endSeperator);
 	return container;
@@ -285,7 +326,7 @@ function createInput(type: string, name: string, defaultValue: any) {
 	input.dataset.defaultValue = defaultValue;
 	input.value = input.dataset.defaultValue;
 	if (getSetting(name)) {
-		input.value = getSetting(name) || input.dataset.defaultValue;
+		input.value = getSetting(name) ?? input.dataset.defaultValue;
 	} else {
 		updateSetting(name, input.dataset.defaultValue);
 	}
@@ -299,15 +340,13 @@ function createInput(type: string, name: string, defaultValue: any) {
 	return input;
 }
 
-function createCheckboxInput(name: string, defaultValue?: any) {
+function createCheckboxInput(name: string, defaultValue: any) {
 	let input = <HTMLInputElement>document.createElement('input');
 	input.id = name;
 	input.type = 'checkbox';
 	input.dataset.setting = name;
-	if (defaultValue) {
-		input.dataset.defaultValue = defaultValue;
-		input.checked = defaultValue;
-	}
+	input.dataset.defaultValue = defaultValue;
+	input.checked = defaultValue;
 	if (getSetting(name)) {
 		input.checked = getSetting(name);
 	} else {
@@ -359,10 +398,13 @@ function createOutput() {
 	return output;
 }
 
-function createFlexContainer() {
+function createFlexContainer(classes?) {
 	let container = <HTMLElement>document.createElement('div');
 	container.classList.add('flex');
 	container.classList.add('setting');
+	if (classes) {
+		container.classList.add(classes);
+	}
 	return container;
 }
 
@@ -378,8 +420,8 @@ export function setDefaultSettings() {
 				);
 				break;
 			case 'checkbox':
-				if (setting.dataset.defaultValue == "false") {
-					updateSetting( setting.dataset.setting, false );
+				if (setting.dataset.defaultValue == 'false') {
+					updateSetting(setting.dataset.setting, false);
 				} else {
 					updateSetting(setting.dataset.setting, true);
 				}
@@ -399,7 +441,9 @@ export function loadSettings() {
 		switch (setting.type) {
 			case 'number':
 			case 'range':
-				setting.value = getSetting(setting.dataset.setting) || setting.dataset.defaultValue;
+				setting.value =
+					getSetting(setting.dataset.setting) ??
+					setting.dataset.defaultValue;
 				break;
 			case 'checkbox':
 				setting.checked =
@@ -415,7 +459,7 @@ export function loadSettings() {
 }
 
 export function settingsExist() {
-	if (!localStorage[config.appName]) {
+	if (!localStorage[appName]) {
 		setDefaultSettings();
 	} else {
 		loadSettings();
@@ -423,18 +467,24 @@ export function settingsExist() {
 }
 
 export function getSetting(setting) {
-	if (!localStorage[config.appName]) {
-		localStorage.setItem(config.appName, JSON.stringify({}));
+	if (!localStorage[appName]) {
+		localStorage.setItem(appName, JSON.stringify({}));
 		setDefaultSettings();
 	}
-	return JSON.parse(localStorage[config.appName])[setting];
+	return JSON.parse(localStorage[appName])[setting];
 }
 
 export function updateSetting(setting, value) {
-	if (!localStorage.getItem(config.appName)) {
-		localStorage.setItem(config.appName, JSON.stringify({}));
+	if (!localStorage.getItem(appName)) {
+		localStorage.setItem(appName, JSON.stringify({}));
 	}
-	var save_data = JSON.parse(localStorage[config.appName]);
+	var save_data = JSON.parse(localStorage[appName]);
 	save_data[setting] = value;
-	localStorage.setItem(config.appName, JSON.stringify(save_data));
+	localStorage.setItem(appName, JSON.stringify(save_data));
+}
+
+export async function timeout(millis: number) {
+	return new Promise(function (resolve) {
+		setTimeout(resolve, millis);
+	});
 }

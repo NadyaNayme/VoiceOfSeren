@@ -429,10 +429,11 @@ const settingsObject = {
 	settingsHeader: sauce.createHeading('h2', 'Settings'),
 	automaticScanning: sauce.createCheckboxSetting(
 		'automaticScanning',
-		'Automatic Scanning'
+		'Automatic Scanning',
+		{ defaultValue: true}
 	),
 	uiScale: sauce.createRangeSetting('uiScale', 'Resize VoS app', {
-		defaultValue: 100,
+		defaultValue: '100',
 		min: 30,
 		max: 200,
 		unit: '%',

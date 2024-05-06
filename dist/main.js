@@ -839,12 +839,48 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   loadSettings: () => (/* binding */ loadSettings),
 /* harmony export */   setDefaultSettings: () => (/* binding */ setDefaultSettings),
 /* harmony export */   settingsExist: () => (/* binding */ settingsExist),
+/* harmony export */   timeout: () => (/* binding */ timeout),
 /* harmony export */   updateSetting: () => (/* binding */ updateSetting)
 /* harmony export */ });
-// TODO: Figure out why I can't just import { default as config } from './appconfig.json';
-var config = {
-    appName: 'vos',
+/* harmony import */ var _appconfig_json__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./appconfig.json */ "./appconfig.json");
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+
+var appName = _appconfig_json__WEBPACK_IMPORTED_MODULE_0__.appName;
 function createHeading(size, content) {
     var header = document.createElement(size);
     header.innerHTML = content;
@@ -863,9 +899,15 @@ function createSmallText(content) {
 function createSeperator() {
     return document.createElement('hr');
 }
-function createButton(content, fn) {
+function createButton(content, fn, options) {
+    var _a = options.classes, classes = _a === void 0 ? options.classes : _a;
     var button = document.createElement('button');
     button.innerHTML = content;
+    if (options.classes.length) {
+        for (var i = options.classes.length; i--; i >= 0) {
+            button.classList.add(options.classes[i]);
+        }
+    }
     button.addEventListener('click', function () {
         fn();
     });
@@ -874,7 +916,7 @@ function createButton(content, fn) {
 function createDropdownSetting(name, description, defaultValue, options) {
     var select = createDropdown(name, defaultValue, options);
     var label = createLabel(name, description);
-    var container = createFlexContainer();
+    var container = createFlexContainer('reverse-setting');
     container.appendChild(select);
     container.appendChild(label);
     return container;
@@ -891,37 +933,59 @@ function createTextSetting(name, description, defaultValue) {
 function createCheckboxSetting(name, description, defaultValue) {
     var input = createCheckboxInput(name, defaultValue);
     var label = createLabel(name, description);
-    var container = createFlexContainer();
-    container.appendChild(input);
+    var checkboxLabel = createLabel(name, '');
+    var checkbox = document.createElement('span');
+    checkbox.classList.add('checkbox');
+    var container = createFlexContainer('reverse-setting');
+    checkboxLabel.appendChild(input);
+    checkboxLabel.appendChild(checkbox);
+    container.appendChild(checkboxLabel);
     container.appendChild(label);
+    container.addEventListener('click', function (e) {
+        if (e.target == container) {
+            input.checked = !input.checked;
+            input.dispatchEvent(new CustomEvent('change', { bubbles: true }));
+            updateSetting(name, input.checked);
+        }
+    });
     return container;
 }
 function createNumberSetting(name, description, options) {
+    var _a, _b, _c;
     if (options === void 0) { options = {}; }
-    var _a = options.defaultValue, defaultValue = _a === void 0 ? options.defaultValue || 10 : _a, _b = options.min, min = _b === void 0 ? options.min || 1 : _b, _c = options.max, max = _c === void 0 ? options.max || 20 : _c;
+    var _d = options.defaultValue, defaultValue = _d === void 0 ? (_a = options.defaultValue) !== null && _a !== void 0 ? _a : 10 : _d, _e = options.min, min = _e === void 0 ? (_b = options.min) !== null && _b !== void 0 ? _b : 1 : _e, _f = options.max, max = _f === void 0 ? (_c = options.max) !== null && _c !== void 0 ? _c : 20 : _f;
     var input = createInput('number', name, defaultValue);
     input.setAttribute('min', min.toString());
     input.setAttribute('max', max.toString());
     var label = createLabel(name, description);
-    var container = createFlexContainer();
+    var container = createFlexContainer('reverse-setting');
     container.appendChild(input);
     container.appendChild(label);
     return container;
 }
 function createRangeSetting(name, description, options) {
+    var _a, _b, _c, _d, _e;
     if (options === void 0) { options = {}; }
-    var _a = options.defaultValue, defaultValue = _a === void 0 ? options.defaultValue || 100 : _a, _b = options.min, min = _b === void 0 ? options.min || 0 : _b, _c = options.max, max = _c === void 0 ? options.max || 100 : _c, _d = options.unit, unit = _d === void 0 ? options.unit || '%' : _d;
+    var _f = options.classes, classes = _f === void 0 ? (_a = options.classes) !== null && _a !== void 0 ? _a : '' : _f, _g = options.defaultValue, defaultValue = _g === void 0 ? (_b = options.defaultValue) !== null && _b !== void 0 ? _b : '100' : _g, _h = options.min, min = _h === void 0 ? (_c = options.min) !== null && _c !== void 0 ? _c : 0 : _h, _j = options.max, max = _j === void 0 ? (_d = options.max) !== null && _d !== void 0 ? _d : 100 : _j, _k = options.unit, unit = _k === void 0 ? (_e = options.unit) !== null && _e !== void 0 ? _e : '%' : _k;
     var input = createInput('range', name, defaultValue);
     input.setAttribute('min', min.toString());
     input.setAttribute('max', max.toString());
     var label = createLabel(name, description);
     label.classList.add('full');
+    if (getSetting(name) != undefined) {
+        input.value = getSetting(name);
+    }
     var output = createOutput();
     output.setAttribute('id', "".concat(name, "Output"));
     output.setAttribute('for', name);
     output.innerHTML = input.value + unit;
     output.after(unit);
     var container = createFlexContainer();
+    if (classes.length) {
+        for (var i = classes.length; i--; i >= 0) {
+            container.classList.add(classes[i]);
+        }
+    }
     container.classList.add('flex-wrap');
     container.appendChild(label);
     container.appendChild(input);
@@ -933,100 +997,109 @@ function createRangeSetting(name, description, options) {
 }
 function createProfileManager() {
     function saveProfile() {
-        var id = container.querySelector('select').selectedIndex;
-        if (id !== 0) {
-            var profiles = getSetting('profiles');
-            var loadOptions_1 = container.querySelector('select');
-            if (!getSetting('profiles')) {
-                profiles = [
-                    { value: '0', name: 'Select Profile' },
-                    { value: 'Melee', name: 'Melee' },
-                    { value: 'Ranged', name: 'Ranged' },
-                    { value: 'Magic', name: 'Magic' },
-                    { value: 'Necromancy', name: 'Necromancy' },
-                    { value: 'Hybrid', name: 'Hybrid' },
-                ];
-                updateSetting('profiles', profiles);
-            }
-            var name_1 = container.querySelector('input').value;
-            profiles[id].name = name_1;
-            var data = [];
-            var trackedBuffs = localStorage['Buffs'];
-            var untrackedBuffs = localStorage['UntrackedBuffs'];
-            var settings = JSON.parse(localStorage[config.appName]);
-            var profile_data = { trackedBuffs: trackedBuffs, untrackedBuffs: untrackedBuffs, settings: settings };
-            data.push(profile_data);
-            profiles[id].value = data;
-            updateSetting('profiles', profiles);
-            var profileOptions_1 = [
-                { value: '0', name: 'Select Profile' },
-                { value: 'Melee', name: 'Melee' },
-                { value: 'Ranged', name: 'Ranged' },
-                { value: 'Magic', name: 'Magic' },
-                { value: 'Necromancy', name: 'Necromancy' },
-                { value: 'Hybrid', name: 'Hybrid' },
-            ];
-            var savedProfiles_1 = getSetting('profiles');
-            savedProfiles_1 === null || savedProfiles_1 === void 0 ? void 0 : savedProfiles_1.forEach(function (profile, index) {
-                profileOptions_1[index].value = profile.name;
-                profileOptions_1[index].name = profile.name;
-            });
-            loadOptions_1.parentElement.replaceWith(createDropdownSetting('Profile', '', 'CreateNew', profileOptions_1));
-            document.querySelector('#Profile').addEventListener('change', function () {
-                var name = document.querySelector('.profile-name');
-                var dropdown = document.querySelector('#Profile');
-                name.value = dropdown.value;
-            });
+        var profileNameInput = container.querySelector('#ProfileName');
+        var profileName = profileNameInput.value;
+        if (profileName.indexOf('|') > -1) {
+            console.log('Pipe character is not allowed in profile names.');
+            return;
         }
-    }
-    function loadProfile() {
-        var id = container.querySelector('select').selectedIndex;
-        if (id !== 0) {
-            var data = getSetting('profiles');
-            data[id].value.forEach(function (key) {
-                localStorage['Buffs'] = key.trackedBuffs;
-                localStorage['UntrackedBuffs'] = key.untrackedBuffs;
-                Object.keys(key.settings).forEach(function (setting) {
-                    if (setting.toString() !== "profiles") {
-                        updateSetting(setting, key.settings[setting]);
-                    }
-                });
-            });
+        var profiles = localStorage.getItem('bbb_profiles');
+        var profilesArray = localStorage
+            .getItem('bbb_profiles')
+            .split('|')
+            .filter(function (str) { return str !== ''; });
+        // If we do not have profiles set it to be empty
+        if (profiles == undefined) {
+            profiles = '';
         }
+        // If the profile name doesn't exist in our profiles - add it
+        if (!profilesArray.includes(profileName)) {
+            profiles = profiles + '|' + profileName + '|';
+            localStorage.setItem('bbb_profiles', profiles);
+        }
+        // Create and update or store any data
+        var data = {};
+        data['Buffs'] = localStorage['Buffs'];
+        data['Buffs2'] = localStorage['Buffs2'];
+        data['Buffs3'] = localStorage['Buffs3'];
+        data['UntrackedBuffs'] = localStorage['UntrackedBuffs'];
+        data['Settings'] = JSON.parse(localStorage[appName]);
+        localStorage.setItem("bbb_profile_".concat(profileName), JSON.stringify(data));
+        console.log("".concat(profileName, " added to profiles. Existing profiles: \n ").concat(profiles));
+        location.reload();
     }
     function deleteProfile() {
-        var id = container.querySelector('select').selectedIndex;
-        var profiles = getSetting('profiles');
-        if (id !== 0) {
-            profiles.splice(id, 1);
-            updateSetting('profiles', profiles);
-        }
-        loadOptions.parentElement.replaceWith(createDropdownSetting('Profile', '', 'CreateNew', profiles));
+        var index = container.querySelector('select').selectedIndex;
+        var profileName = container.querySelector('select').options[index].text;
+        console.log("Deleting: ".concat(profileName, " profile"));
+        var profiles = localStorage
+            .getItem('bbb_profiles')
+            .split('|')
+            .filter(function (str) { return str !== ''; });
+        profiles = profiles.filter(function (item) { return item !== profileName; });
+        localStorage.setItem('bbb_profiles', profiles.join('|') + '|');
+        localStorage.removeItem("bbb_profile_".concat(profileName));
+        location.reload();
     }
-    var profileOptions = [
-        { value: '0', name: 'Select Profile' },
-        { value: 'Melee', name: 'Melee' },
-        { value: 'Ranged', name: 'Ranged' },
-        { value: 'Magic', name: 'Magic' },
-        { value: 'Necromancy', name: 'Necromancy' },
-        { value: 'Hybrid', name: 'Hybrid' },
-    ];
-    var savedProfiles = getSetting('profiles');
-    savedProfiles === null || savedProfiles === void 0 ? void 0 : savedProfiles.forEach(function (profile, index) {
-        profileOptions[index].value = profile.name;
-        profileOptions[index].name = profile.name;
+    function loadProfile() {
+        var index = container.querySelector('select').selectedIndex;
+        if (index !== 0) {
+            var profiles_1 = localStorage
+                .getItem('bbb_profiles')
+                .split('|')
+                .filter(function (str) { return str !== ''; });
+            var storageName = profiles_1[index - 1];
+            var data = JSON.parse(localStorage.getItem("bbb_profile_".concat(storageName)));
+            if (data['Buffs'] !== undefined && data['Buffs'] !== '') {
+                localStorage.setItem('Buffs', data['Buffs']);
+            }
+            if (data['Buffs2'] !== undefined && data['Buffs2'] !== '') {
+                localStorage.setItem('Buffs2', data['Buffs2']);
+            }
+            if (data['Buffs3'] !== undefined && data['Buffs3'] !== '') {
+                localStorage.setItem('Buffs3', data['Buffs3']);
+            }
+            if (data['UntrackedBuffs'] !== undefined &&
+                data['UntrackedBuffs'] !== '') {
+                localStorage.setItem('UntrackedBuffs', data['UntrackedBuffs']);
+            }
+            Object.entries(data['Settings']).forEach(function (setting) {
+                updateSetting(setting[0], setting[1]);
+            });
+        }
+        location.reload();
+    }
+    var profileOptions = [{ value: '0', name: 'Select Profile' }];
+    var profiles;
+    if (localStorage.getItem('bbb_profiles')) {
+        profiles = localStorage
+            .getItem('bbb_profiles')
+            .split('|')
+            .filter(function (str) { return str !== ''; });
+        profiles.forEach(function (profile, index) {
+            profileOptions.push({ value: index.toString(), name: profile });
+        });
+    }
+    else {
+        profiles = '|';
+    }
+    var profileHeader = createHeading('h3', 'Profiles');
+    var profileText = createText('Select a profile to load or delete. To save a new profile, give it a name in the field below and then click Save. To update an existing profile save a profile using the same name.');
+    var saveButton = createButton('Save', saveProfile, {
+        classes: ['nisbutton'],
     });
-    var profileHeader = createHeading('h3', 'Profiles [Beta]');
-    var profileText = createText('Select a profile and save settings. You can rename the profile using the text field after selecting. To load a profile select the profile and click load.');
-    var saveButton = createButton('Save', saveProfile);
-    var profileName = createInput('input', 'ProfileName', '');
+    var profileName = createInput('text', 'ProfileName', '');
     profileName.classList.add('profile-name');
     var loadOptions = createDropdownSetting('Profile', '', 'Add', profileOptions);
     loadOptions.classList.add('profile-list');
     loadOptions.querySelector('select').selectedIndex = 0;
-    var loadButton = createButton('Load', loadProfile);
+    var loadButton = createButton('Load', loadProfile, {
+        classes: ['nisbutton'],
+    });
     loadButton.classList.add('load-btn');
-    var deleteButton = createButton('Delete Profile', deleteProfile);
+    var deleteButton = createButton('Delete', deleteProfile, {
+        classes: ['nisbutton', 'delete'],
+    });
     var container = createFlexContainer();
     container.classList.remove('flex');
     var endSeperator = createSeperator();
@@ -1038,6 +1111,7 @@ function createProfileManager() {
     container.appendChild(saveButton);
     container.appendChild(profileName);
     container.appendChild(loadButton);
+    container.appendChild(deleteButton);
     //container.appendChild(deleteButton);
     container.appendChild(endSeperator);
     return container;
@@ -1049,6 +1123,7 @@ function createLabel(name, description) {
     return label;
 }
 function createInput(type, name, defaultValue) {
+    var _a;
     var input = document.createElement('input');
     input.id = name;
     input.type = type;
@@ -1056,7 +1131,7 @@ function createInput(type, name, defaultValue) {
     input.dataset.defaultValue = defaultValue;
     input.value = input.dataset.defaultValue;
     if (getSetting(name)) {
-        input.value = getSetting(name) || input.dataset.defaultValue;
+        input.value = (_a = getSetting(name)) !== null && _a !== void 0 ? _a : input.dataset.defaultValue;
     }
     else {
         updateSetting(name, input.dataset.defaultValue);
@@ -1076,10 +1151,8 @@ function createCheckboxInput(name, defaultValue) {
     input.id = name;
     input.type = 'checkbox';
     input.dataset.setting = name;
-    if (defaultValue) {
-        input.dataset.defaultValue = defaultValue;
-        input.checked = defaultValue;
-    }
+    input.dataset.defaultValue = defaultValue;
+    input.checked = defaultValue;
     if (getSetting(name)) {
         input.checked = getSetting(name);
     }
@@ -1121,10 +1194,13 @@ function createOutput() {
     var output = document.createElement('output');
     return output;
 }
-function createFlexContainer() {
+function createFlexContainer(classes) {
     var container = document.createElement('div');
     container.classList.add('flex');
     container.classList.add('setting');
+    if (classes) {
+        container.classList.add(classes);
+    }
     return container;
 }
 function setDefaultSettings() {
@@ -1136,7 +1212,7 @@ function setDefaultSettings() {
                 updateSetting(setting.dataset.setting, parseInt(setting.dataset.defaultValue, 10));
                 break;
             case 'checkbox':
-                if (setting.dataset.defaultValue == "false") {
+                if (setting.dataset.defaultValue == 'false') {
                     updateSetting(setting.dataset.setting, false);
                 }
                 else {
@@ -1151,10 +1227,12 @@ function setDefaultSettings() {
 function loadSettings() {
     var settings = document.querySelectorAll('[data-setting]');
     settings.forEach(function (setting) {
+        var _a;
         switch (setting.type) {
             case 'number':
             case 'range':
-                setting.value = getSetting(setting.dataset.setting) || setting.dataset.defaultValue;
+                setting.value =
+                    (_a = getSetting(setting.dataset.setting)) !== null && _a !== void 0 ? _a : setting.dataset.defaultValue;
                 break;
             case 'checkbox':
                 setting.checked =
@@ -1169,7 +1247,7 @@ function loadSettings() {
     });
 }
 function settingsExist() {
-    if (!localStorage[config.appName]) {
+    if (!localStorage[appName]) {
         setDefaultSettings();
     }
     else {
@@ -1177,19 +1255,28 @@ function settingsExist() {
     }
 }
 function getSetting(setting) {
-    if (!localStorage[config.appName]) {
-        localStorage.setItem(config.appName, JSON.stringify({}));
+    if (!localStorage[appName]) {
+        localStorage.setItem(appName, JSON.stringify({}));
         setDefaultSettings();
     }
-    return JSON.parse(localStorage[config.appName])[setting];
+    return JSON.parse(localStorage[appName])[setting];
 }
 function updateSetting(setting, value) {
-    if (!localStorage.getItem(config.appName)) {
-        localStorage.setItem(config.appName, JSON.stringify({}));
+    if (!localStorage.getItem(appName)) {
+        localStorage.setItem(appName, JSON.stringify({}));
     }
-    var save_data = JSON.parse(localStorage[config.appName]);
+    var save_data = JSON.parse(localStorage[appName]);
     save_data[setting] = value;
-    localStorage.setItem(config.appName, JSON.stringify(save_data));
+    localStorage.setItem(appName, JSON.stringify(save_data));
+}
+function timeout(millis) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/, new Promise(function (resolve) {
+                    setTimeout(resolve, millis);
+                })];
+        });
+    });
 }
 
 
@@ -12118,9 +12205,9 @@ function initSettings() {
 }
 var settingsObject = {
     settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),
-    automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning'),
+    automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning', { defaultValue: true }),
     uiScale: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createRangeSetting('uiScale', 'Resize VoS app', {
-        defaultValue: 100,
+        defaultValue: '100',
         min: 30,
         max: 200,
         unit: '%',
