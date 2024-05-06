@@ -241,6 +241,7 @@ function voteVos() {
 	// Check to see if we have already voted and that our data is valid
 	if (!hasValidData()) {
 		console.log('Invalid data - not allowing vote.');
+		setTimeout(() => {}, 1000 * 20);
 		return;
 	}
 

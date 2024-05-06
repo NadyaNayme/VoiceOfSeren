@@ -12043,6 +12043,7 @@ function voteVos() {
     // Check to see if we have already voted and that our data is valid
     if (!hasValidData()) {
         console.log('Invalid data - not allowing vote.');
+        setTimeout(function () { }, 1000 * 20);
         return;
     }
     // If our vote data matches data in last vos our data is outdated and we are not allowed to vote
