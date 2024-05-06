@@ -103,7 +103,7 @@ async function getClanData() {
 	// If we captured 0 instead of 2 clans we are not in Prif so return early
 	if (Object.keys(foundClans).length == 0) {
 		clanVote = [];
-		return;
+		return false;
 	}
 
 	let firstClan = foundClans[0][0];
@@ -416,7 +416,7 @@ function checkVersion(version: string) {
 function initSettings() {
 	if (!localStorage.vos) {
 		localStorage.setItem(
-			'vos',
+			'VoiceOfSeren',
 			JSON.stringify({
 				automaticScanning: true,
 				votedCount: 0,
@@ -430,7 +430,7 @@ const settingsObject = {
 	automaticScanning: sauce.createCheckboxSetting(
 		'automaticScanning',
 		'Automatic Scanning',
-		{ defaultValue: true}
+		sauce.getSetting('automaticScanning') ?? true
 	),
 	uiScale: sauce.createRangeSetting('uiScale', 'Resize VoS app', {
 		defaultValue: '100',

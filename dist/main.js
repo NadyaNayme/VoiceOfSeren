@@ -11798,6 +11798,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var _a;
 // alt1 base libs, provides all the commonly used methods for image matching and capture
 // also gives your editor info about the window.alt1 api
 
@@ -11890,7 +11891,7 @@ function getClanData() {
             // If we captured 0 instead of 2 clans we are not in Prif so return early
             if (Object.keys(foundClans).length == 0) {
                 clanVote = [];
-                return [2 /*return*/];
+                return [2 /*return*/, false];
             }
             firstClan = foundClans[0][0];
             firstClanPos = foundClans[0][1].x;
@@ -12197,7 +12198,7 @@ function checkVersion(version) {
 }
 function initSettings() {
     if (!localStorage.vos) {
-        localStorage.setItem('vos', JSON.stringify({
+        localStorage.setItem('VoiceOfSeren', JSON.stringify({
             automaticScanning: true,
             votedCount: 0,
         }));
@@ -12205,7 +12206,7 @@ function initSettings() {
 }
 var settingsObject = {
     settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),
-    automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning', { defaultValue: true }),
+    automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning', (_a = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) !== null && _a !== void 0 ? _a : true),
     uiScale: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createRangeSetting('uiScale', 'Resize VoS app', {
         defaultValue: '100',
         min: 30,
