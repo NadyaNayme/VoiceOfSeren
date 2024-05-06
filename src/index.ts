@@ -247,6 +247,10 @@ async function getLastVos() {
 }
 
 function voteVos() {
+	if (helperItems.Get.getAttribute('disabled') == 'true') {
+		console.log('Currently throttled - skipping vote!');
+		return;
+	}
 	if (helperItems.Vote.getAttribute('disabled') == 'true') {
 		console.log('Skipping data validation - data is not valid');
 		return;
