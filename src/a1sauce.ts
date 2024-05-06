@@ -1,5 +1,5 @@
-import config from './appconfig.json';
-const appName = (<any>config).appName;
+var config = require('./appconfig.json');
+var appName = config.appName;
 
 export function createHeading(size: string, content: string) {
 	let header = <HTMLElement>document.createElement(size);

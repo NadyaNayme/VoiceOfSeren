@@ -842,7 +842,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   timeout: () => (/* binding */ timeout),
 /* harmony export */   updateSetting: () => (/* binding */ updateSetting)
 /* harmony export */ });
-/* harmony import */ var _appconfig_json__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./appconfig.json */ "./appconfig.json");
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -879,8 +878,8 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-
-var appName = _appconfig_json__WEBPACK_IMPORTED_MODULE_0__.appName;
+var config = __webpack_require__(/*! ./appconfig.json */ "./appconfig.json");
+var appName = config.appName;
 function createHeading(size, content) {
     var header = document.createElement(size);
     header.innerHTML = content;
