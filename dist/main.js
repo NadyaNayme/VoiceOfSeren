@@ -11884,15 +11884,22 @@ function getClanData() {
     return __awaiter(this, void 0, void 0, function () {
         var foundClans, firstClan, firstClanPos, secondClan, secondClanPos;
         return __generator(this, function (_a) {
-            // If we have already voted - skip trying to capture data
-            if (helperItems.Vote.getAttribute('disabled') == 'true') {
+            // We are currently throttled - skip trying to scan
+            if (helperItems.Get.getAttribute('disabled') == 'true') {
+                console.log('Currently throttled - skipping scan!');
                 return [2 /*return*/];
             }
+            // If we have already voted - skip trying to capture data
+            if (helperItems.Vote.getAttribute('disabled') == 'true') {
+                console.log('Already voted - skipping scan!');
+                return [2 /*return*/];
+            }
+            console.log('Scanning for VoS clans...');
             foundClans = Object.entries(tryFindClans());
             // If we captured 0 instead of 2 clans we are not in Prif so return early after a 20s delay
             if (Object.keys(foundClans).length == 0) {
                 clanVote = [];
-                console.log('Throttling voting - we are outside of Prifddinas');
+                console.log('We are outside of Prifddinas - throttling updates for 30s');
                 throttleUpdating();
                 return [2 /*return*/];
             }
@@ -12043,8 +12050,7 @@ function voteVos() {
     console.log('Checking data for submission...');
     // Check to see if we have already voted and that our data is valid
     if (!hasValidData()) {
-        console.log('Invalid data - not allowing vote.');
-        throttleUpdating();
+        console.log('Data is invald - not allowing vote.');
         return;
     }
     // If our vote data matches data in last vos our data is outdated and we are not allowed to vote
@@ -12109,10 +12115,6 @@ function scanForClans() {
                     if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) {
                         return [2 /*return*/];
                     }
-                    if (helperItems.Vote.getAttribute('disabled') == 'true') {
-                        console.log('Skipping scan... currently throttled');
-                        return [2 /*return*/];
-                    }
                     if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) return [3 /*break*/, 1];
                     console.log('Recently voted - skipping scan...');
                     now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
@@ -12126,9 +12128,7 @@ function scanForClans() {
                         _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
                     }, 1000 * 60 * 15);
                     return [2 /*return*/];
-                case 1:
-                    console.log('Scanning for VoS clans...');
-                    return [4 /*yield*/, getClanData()];
+                case 1: return [4 /*yield*/, getClanData()];
                 case 2:
                     _a.sent();
                     new Promise(function (resolve) { return setTimeout(resolve, 50); });
