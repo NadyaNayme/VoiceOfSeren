@@ -1,5 +1,7 @@
 var config = require('./appconfig.json');
-var appName = config.appName;
+var appName2 = config.appName;
+var appName = "VoiceOfSeren";
+console.log(appName2);
 
 export function createHeading(size: string, content: string) {
 	let header = <HTMLElement>document.createElement(size);

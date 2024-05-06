@@ -879,7 +879,9 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
     }
 };
 var config = __webpack_require__(/*! ./appconfig.json */ "./appconfig.json");
-var appName = config.appName;
+var appName2 = config.appName;
+var appName = "VoiceOfSeren";
+console.log(appName2);
 function createHeading(size, content) {
     var header = document.createElement(size);
     header.innerHTML = content;
