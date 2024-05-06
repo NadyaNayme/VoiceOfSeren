@@ -12219,9 +12219,10 @@ function initSettings() {
         localStorage.setItem('VoiceOfSeren', JSON.stringify({
             automaticScanning: true,
             votedCount: 0,
+            uiScale: '100',
         }));
     }
-    getByID('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100, ")");
+    getByID('app').style.transform = "scale(".concat(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uiScale'), ")");
 }
 var settingsObject = {
     settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),

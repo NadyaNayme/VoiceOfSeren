@@ -440,12 +440,11 @@ function initSettings() {
 			JSON.stringify({
 				automaticScanning: true,
 				votedCount: 0,
+				uiScale: '100',
 			})
 		);
 	}
-	getByID('app').style.transform = `scale(${
-		parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100
-	})`;
+	getByID('app').style.transform = `scale(${sauce.getSetting('uiScale')})`;
 }
 
 const settingsObject = {
