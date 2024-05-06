@@ -12061,11 +12061,13 @@ function voteVos() {
     if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
         var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
         if (now.minute <= 2) {
+            console.log('Already voted - skipping next vote for 30s');
             setTimeout(function () {
-                return;
-            }, 1000 * 20);
-            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+            }, 1000 * 30);
+            return;
         }
+        console.log('Already voted after prime time - skipping vote for 15 minutes');
         setTimeout(function () {
             _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
         }, 1000 * 60 * 15);
@@ -12215,6 +12217,7 @@ function initSettings() {
             votedCount: 0,
         }));
     }
+    getByID('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100, ")");
 }
 var settingsObject = {
     settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),

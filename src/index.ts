@@ -267,11 +267,13 @@ function voteVos() {
 	if (sauce.getSetting('justVoted')) {
 		let now = DateTime.now();
 		if (now.minute <= 2) {
+			console.log('Already voted - skipping next vote for 30s');
 			setTimeout(() => {
-				return;
-			}, 1000 * 20);
-			sauce.updateSetting('justVoted', false);
+				sauce.updateSetting('justVoted', false);
+			}, 1000 * 30);
+			return;
 		}
+		console.log('Already voted after prime time - skipping vote for 15 minutes');
 		setTimeout(() => {
 			sauce.updateSetting('justVoted', false);
 		}, 1000 * 60 * 15);
@@ -437,6 +439,9 @@ function initSettings() {
 			})
 		);
 	}
+	getByID('app').style.transform = `scale(${
+		parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100
+	})`;
 }
 
 const settingsObject = {
