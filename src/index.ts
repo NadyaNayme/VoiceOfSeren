@@ -100,9 +100,10 @@ async function getClanData() {
 	// Turn the {clan_1: {x,y}, clan_2: {x,y}} into an array
 	let foundClans = Object.entries(tryFindClans());
 
-	// If we captured 0 instead of 2 clans we are not in Prif so return early
+	// If we captured 0 instead of 2 clans we are not in Prif so return early after a 20s delay
 	if (Object.keys(foundClans).length == 0) {
 		clanVote = [];
+		await new Promise((resolve) => setTimeout(resolve, 1000 * 20));
 		return false;
 	}
 

@@ -11883,38 +11883,43 @@ function getClanData() {
     return __awaiter(this, void 0, void 0, function () {
         var foundClans, firstClan, firstClanPos, secondClan, secondClanPos;
         return __generator(this, function (_a) {
-            // If we have already voted - skip trying to capture data
-            if (helperItems.Vote.getAttribute('disabled') == 'true') {
-                return [2 /*return*/];
+            switch (_a.label) {
+                case 0:
+                    // If we have already voted - skip trying to capture data
+                    if (helperItems.Vote.getAttribute('disabled') == 'true') {
+                        return [2 /*return*/];
+                    }
+                    foundClans = Object.entries(tryFindClans());
+                    if (!(Object.keys(foundClans).length == 0)) return [3 /*break*/, 2];
+                    clanVote = [];
+                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, 1000 * 20); })];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/, false];
+                case 2:
+                    firstClan = foundClans[0][0];
+                    firstClanPos = foundClans[0][1].x;
+                    secondClan = foundClans[1][0];
+                    secondClanPos = foundClans[1][1].x;
+                    // Compare the clan positions and set priority appropriately
+                    if (firstClanPos < secondClanPos) {
+                        clanVote[0] = firstClan;
+                        clanVote[1] = secondClan;
+                    }
+                    else {
+                        clanVote[1] = firstClan;
+                        clanVote[0] = secondClan;
+                    }
+                    console.log(clanVote);
+                    if (!clanVote[0] || !clanVote[1]) {
+                        helperItems.VoteOutput.innerHTML =
+                            '<p>You must be in Prifddinas to submit data.</p>';
+                    }
+                    else {
+                        helperItems.VoteOutput.innerHTML = '';
+                    }
+                    return [2 /*return*/];
             }
-            foundClans = Object.entries(tryFindClans());
-            // If we captured 0 instead of 2 clans we are not in Prif so return early
-            if (Object.keys(foundClans).length == 0) {
-                clanVote = [];
-                return [2 /*return*/, false];
-            }
-            firstClan = foundClans[0][0];
-            firstClanPos = foundClans[0][1].x;
-            secondClan = foundClans[1][0];
-            secondClanPos = foundClans[1][1].x;
-            // Compare the clan positions and set priority appropriately
-            if (firstClanPos < secondClanPos) {
-                clanVote[0] = firstClan;
-                clanVote[1] = secondClan;
-            }
-            else {
-                clanVote[1] = firstClan;
-                clanVote[0] = secondClan;
-            }
-            console.log(clanVote);
-            if (!clanVote[0] || !clanVote[1]) {
-                helperItems.VoteOutput.innerHTML =
-                    '<p>You must be in Prifddinas to submit data.</p>';
-            }
-            else {
-                helperItems.VoteOutput.innerHTML = '';
-            }
-            return [2 /*return*/];
         });
     });
 }
