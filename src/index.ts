@@ -103,8 +103,9 @@ async function getClanData() {
 	// If we captured 0 instead of 2 clans we are not in Prif so return early after a 20s delay
 	if (Object.keys(foundClans).length == 0) {
 		clanVote = [];
-		await new Promise((resolve) => setTimeout(resolve, 1000 * 20));
-		return false;
+		console.log('Throttling voting - we are outside of Prifddinas');
+		throttleUpdating();
+		return;
 	}
 
 	let firstClan = foundClans[0][0];
@@ -237,11 +238,15 @@ async function getLastVos() {
 }
 
 function voteVos() {
+	if (helperItems.Vote.getAttribute('disabled') == 'true') {
+		console.log('Skipping data validation - data is not valid');
+		return;
+	}
 	console.log('Checking data for submission...');
 	// Check to see if we have already voted and that our data is valid
 	if (!hasValidData()) {
 		console.log('Invalid data - not allowing vote.');
-		setTimeout(() => {}, 1000 * 20);
+		throttleUpdating();
 		return;
 	}
 
@@ -308,6 +313,10 @@ function voteVos() {
 
 async function scanForClans() {
 	if (!sauce.getSetting('automaticScanning')) {
+		return;
+	}
+	if (helperItems.Vote.getAttribute('disabled') == 'true') {
+		console.log('Skipping scan... currently throttled');
 		return;
 	}
 	if (sauce.getSetting('justVoted')) {
