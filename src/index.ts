@@ -447,7 +447,7 @@ const settingsObject = {
 		sauce.getSetting('automaticScanning') ?? true
 	),
 	uiScale: sauce.createRangeSetting('uiScale', 'Resize VoS app', {
-		defaultValue: '100',
+		defaultValue: sauce.getSetting('uiScale') ?? '100',
 		min: 30,
 		max: 200,
 		unit: '%',

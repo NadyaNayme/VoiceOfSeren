@@ -11799,7 +11799,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _a;
+var _a, _b;
 // alt1 base libs, provides all the commonly used methods for image matching and capture
 // also gives your editor info about the window.alt1 api
 
@@ -12220,7 +12220,7 @@ var settingsObject = {
     settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),
     automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning', (_a = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) !== null && _a !== void 0 ? _a : true),
     uiScale: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createRangeSetting('uiScale', 'Resize VoS app', {
-        defaultValue: '100',
+        defaultValue: (_b = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uiScale')) !== null && _b !== void 0 ? _b : '100',
         min: 30,
         max: 200,
         unit: '%',
