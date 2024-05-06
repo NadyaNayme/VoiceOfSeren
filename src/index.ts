@@ -434,7 +434,7 @@ function checkVersion(version: string) {
 }
 
 function initSettings() {
-	if (!localStorage.vos) {
+	if (!localStorage.VoiceOfSeren) {
 		localStorage.setItem(
 			'VoiceOfSeren',
 			JSON.stringify({

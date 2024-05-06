@@ -12215,7 +12215,7 @@ function checkVersion(version) {
     });
 }
 function initSettings() {
-    if (!localStorage.vos) {
+    if (!localStorage.VoiceOfSeren) {
         localStorage.setItem('VoiceOfSeren', JSON.stringify({
             automaticScanning: true,
             votedCount: 0,
