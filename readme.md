@@ -13,6 +13,10 @@ To install Voice of Seren copy & paste this link into Alt1's browser app:
 
 If you do not have Alt1 Toolkit installed already you can [download it from runeapps.org](https://runeapps.org/alt1). In order for Voice of Seren to work make sure your Runescape settings for Game and UI Scale settings are set to `100%` as this is required for Alt1 to be able to read your game screen.
 
+## Get notified on Discord / Twitter
+
+You can join my [development server](https://discord.gg/KJ2SgWyJFF) to pick up roles to be notified when a certain clan becomes part of the Voice of Seren. Optionally you can follow [@VoiceOfSeren](https://twitter.com/VoiceOfSeren) on Twitter.
+
 ## Features
 
 - See the current Voice of Seren & vote in a consensus for the current voices
