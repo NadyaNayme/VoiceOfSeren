@@ -12134,7 +12134,9 @@ function scanForClans() {
                         _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
                     }, 1000 * 60 * 15);
                     return [2 /*return*/];
-                case 1: return [4 /*yield*/, getClanData()];
+                case 1:
+                    clanVote = [];
+                    return [4 /*yield*/, getClanData()];
                 case 2:
                     _a.sent();
                     new Promise(function (resolve) { return setTimeout(resolve, 50); });
@@ -12275,9 +12277,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version on startup then check again every 12 hours
-        checkVersion('1.0.11');
+        checkVersion('1.0.12');
         setInterval(function () {
-            checkVersion('1.0.11');
+            checkVersion('1.0.12');
         }, 1000 * 60 * 60 * 12);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {

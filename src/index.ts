@@ -343,6 +343,7 @@ async function scanForClans() {
 		}, 1000 * 60 * 15);
 		return;
 	} else {
+		clanVote = [];
 		await getClanData();
 		new Promise((resolve) => setTimeout(resolve, 50));
 		await voteVos();
@@ -527,9 +528,9 @@ window.onload = function () {
 		// }
 
 		// check version on startup then check again every 12 hours
-		checkVersion('1.0.11');
+		checkVersion('1.0.12');
 		setInterval(() => {
-			checkVersion('1.0.11');
+			checkVersion('1.0.12');
 		}, 1000 * 60 * 60 * 12);
 
 		alt1.identifyAppUrl('./appconfig.json');
