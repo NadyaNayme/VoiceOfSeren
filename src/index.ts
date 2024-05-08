@@ -334,13 +334,9 @@ async function scanForClans() {
 		let now = DateTime.now();
 		if (now.minute <= 2) {
 			setTimeout(() => {
-				return;
+				sauce.updateSetting('justVoted', false);
 			}, 1000 * 20);
-			sauce.updateSetting('justVoted', false);
 		}
-		setTimeout(() => {
-			sauce.updateSetting('justVoted', false);
-		}, 1000 * 60 * 15);
 		return;
 	} else {
 		clanVote = [];
@@ -528,9 +524,9 @@ window.onload = function () {
 		// }
 
 		// check version on startup then check again every 12 hours
-		checkVersion('1.0.12');
+		checkVersion('1.0.13');
 		setInterval(() => {
-			checkVersion('1.0.12');
+			checkVersion('1.0.13');
 		}, 1000 * 60 * 60 * 12);
 
 		alt1.identifyAppUrl('./appconfig.json');

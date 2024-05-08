@@ -12126,13 +12126,9 @@ function scanForClans() {
                     now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
                     if (now.minute <= 2) {
                         setTimeout(function () {
-                            return;
+                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
                         }, 1000 * 20);
-                        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
                     }
-                    setTimeout(function () {
-                        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
-                    }, 1000 * 60 * 15);
                     return [2 /*return*/];
                 case 1:
                     clanVote = [];
@@ -12277,9 +12273,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version on startup then check again every 12 hours
-        checkVersion('1.0.12');
+        checkVersion('1.0.13');
         setInterval(function () {
-            checkVersion('1.0.12');
+            checkVersion('1.0.13');
         }, 1000 * 60 * 60 * 12);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
