@@ -12008,7 +12008,9 @@ function getCurrentVos() {
                     alt1.setTitleBarText('');
                     helperItems.Current.innerHTML =
                         '<p>No data found. You can help by visiting Prifddinas and submitting data!</p>';
-                    setButtonText('Get VoS', 'get');
+                    if (!automaticScanning) {
+                        setButtonText('Get VoS', 'get');
+                    }
                     return;
                 }
                 var clan_1 = titleCase(vos['clan_1']);

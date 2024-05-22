@@ -221,7 +221,9 @@ async function getCurrentVos() {
 				alt1.setTitleBarText('');
 				helperItems.Current.innerHTML =
 					'<p>No data found. You can help by visiting Prifddinas and submitting data!</p>';
-				setButtonText('Get VoS', 'get');
+				if (!automaticScanning) {
+					setButtonText('Get VoS', 'get');
+				}
 				return;
 			}
 			let clan_1: string = titleCase(vos['clan_1']);
