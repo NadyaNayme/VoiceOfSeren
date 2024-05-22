@@ -12241,9 +12241,7 @@ function fetchHourly() {
         date.minute == 20 ||
         date.minute == 25 ||
         date.minute == 30)
-        && automaticScanning)
-        ;
-    {
+        && automaticScanning) {
         var delay = Math.random() * 3000;
         setTimeout(function () {
             fetchVos();

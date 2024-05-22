@@ -470,7 +470,7 @@ function fetchHourly() {
 		date.minute == 25 ||
 		date.minute == 30 )
 		&& automaticScanning)
-	) {
+	{
 		let delay = Math.random() * 3000;
 		setTimeout(() => {
 			fetchVos();
