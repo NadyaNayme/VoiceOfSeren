@@ -11989,8 +11989,8 @@ var callWithRetry = function (fn, depth) {
     });
 };
 function fetchVos() {
-    callWithRetry(getCurrentVos);
     callWithRetry(getLastVos);
+    callWithRetry(getCurrentVos);
 }
 function getCurrentVos() {
     return __awaiter(this, void 0, void 0, function () {
@@ -12015,7 +12015,9 @@ function getCurrentVos() {
                 }
                 var clan_1 = titleCase(vos['clan_1']);
                 var clan_2 = titleCase(vos['clan_2']);
-                updateTitleBar(clan_1, clan_2);
+                if (clan_1 !== lastClanVote[0] && clan_2 !== lastClanVote[1]) {
+                    updateTitleBar(clan_1, clan_2);
+                }
                 updateTimestamp();
                 if (!automaticScanning &&
                     helperItems.Button.dataset.state == 'fetching') {
@@ -12232,7 +12234,16 @@ function hasValidData() {
 }
 function fetchHourly() {
     var date = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-    if (date.minute == 3 && !helperItems.Button.getAttribute('disabled')) {
+    if ((date.minute == 2 ||
+        date.minute == 5 ||
+        date.minute == 10 ||
+        date.minute == 15 ||
+        date.minute == 20 ||
+        date.minute == 25 ||
+        date.minute == 30)
+        && automaticScanning)
+        ;
+    {
         var delay = Math.random() * 3000;
         setTimeout(function () {
             fetchVos();

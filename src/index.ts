@@ -203,8 +203,8 @@ const callWithRetry = async (fn, depth = 0) => {
 };
 
 function fetchVos() {
-	callWithRetry(getCurrentVos);
 	callWithRetry(getLastVos);
+	callWithRetry(getCurrentVos);
 }
 
 async function getCurrentVos() {
@@ -228,7 +228,9 @@ async function getCurrentVos() {
 			}
 			let clan_1: string = titleCase(vos['clan_1']);
 			let clan_2: string = titleCase(vos['clan_2']);
-			updateTitleBar(clan_1, clan_2);
+			if (clan_1 !== lastClanVote[0] && clan_2 !== lastClanVote[1]) {
+				updateTitleBar(clan_1, clan_2);
+			}
 			updateTimestamp();
 			if (
 				!automaticScanning &&
@@ -459,7 +461,16 @@ function hasValidData() {
 
 function fetchHourly() {
 	let date = DateTime.now();
-	if (date.minute == 3 && !helperItems.Button.getAttribute('disabled')) {
+	if (
+		(date.minute == 2 ||
+		date.minute == 5 ||
+		date.minute == 10 ||
+		date.minute == 15 ||
+		date.minute == 20 ||
+		date.minute == 25 ||
+		date.minute == 30 )
+		&& automaticScanning)
+	) {
 		let delay = Math.random() * 3000;
 		setTimeout(() => {
 			fetchVos();
