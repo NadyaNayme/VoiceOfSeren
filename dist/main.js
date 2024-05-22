@@ -11820,9 +11820,10 @@ function getByID(id) {
 var helperItems = {
     Output: getByID('output'),
     Current: getByID('current'),
-    Get: getByID('get'),
+    Button: getByID('button'),
     Last: getByID('last'),
     VoteOutput: getByID('vote_output'),
+    VoteInput: getByID('vote_input'),
     Vote: getByID('send_vote'),
     settings: getByID('Settings'),
     Timestamp: getByID('Timestamp'),
@@ -11837,6 +11838,44 @@ var clanImages = alt1__WEBPACK_IMPORTED_MODULE_7__.webpackImages({
     meilyr: __webpack_require__(/*! ./asset/data/Meilyr_Clan.data.png */ "./asset/data/Meilyr_Clan.data.png"),
     trahaearn: __webpack_require__(/*! ./asset/data/Trahaearn_Clan.data.png */ "./asset/data/Trahaearn_Clan.data.png"),
 });
+helperItems.Button.addEventListener('click', function (e) {
+    if (helperItems.Button.dataset.state == 'get') {
+        setButtonText('Fetching data...', 'scanning');
+        setTimeout(function () {
+            scanForClanData();
+        }, 50);
+    }
+    if (helperItems.Button.dataset.state == 'scanready') {
+        setButtonText('Scanning for clans', 'scanning');
+        scanForClanData();
+    }
+    if (helperItems.Button.dataset.state == 'voteready') {
+        submitClanData();
+    }
+});
+var clanVote = [];
+var lastClanVote = [];
+var lastVos = [];
+var automaticScanning = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning');
+function setButtonText(text, state) {
+    helperItems.Button.innerText = text;
+    helperItems.Button.dataset.state = state;
+}
+function getButtonDataState() {
+    return helperItems.Button.dataset.state;
+}
+function setButtonDisabledState(disabled) {
+    helperItems.Button.setAttribute('disabled', disabled);
+}
+function getButtonDisabledState() {
+    var state = helperItems.Button.getAttribute('disabled');
+    if (state === 'true') {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 function tryFindClans() {
     // Capture RS Window
     var client_screen = alt1__WEBPACK_IMPORTED_MODULE_7__.captureHoldFullRs();
@@ -11869,38 +11908,24 @@ function tryFindClans() {
     // Returns the 2 captured clans as {clan: {x,y}, clan: {x, y}}
     return foundClans;
 }
-var clanVote = [];
-var lastVos = [];
-helperItems.Get.addEventListener('click', function (e) {
-    fetchVos();
-});
-helperItems.Vote.addEventListener('click', function (e) {
-    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
-    getClanData();
-    voteVos();
-    throttleVoting();
-});
-function getClanData() {
+function scanForClanData() {
     return __awaiter(this, void 0, void 0, function () {
         var foundClans, firstClan, firstClanPos, secondClan, secondClanPos;
         return __generator(this, function (_a) {
-            // We are currently throttled - skip trying to scan
-            if (helperItems.Get.getAttribute('disabled') == 'true') {
-                console.log('Currently throttled - skipping scan!');
+            // Skip scanning for clan data - we have already voted so already have data for the hour
+            if (getButtonDataState() == 'voted') {
+                console.log('Skipping scan. Reason: already voted');
                 return [2 /*return*/];
             }
-            // If we have already voted - skip trying to capture data
-            if (helperItems.Vote.getAttribute('disabled') == 'true') {
-                console.log('Already voted - skipping scan!');
-                return [2 /*return*/];
-            }
-            console.log('Scanning for VoS clans...');
+            console.log('Scanning for clan data');
             foundClans = Object.entries(tryFindClans());
             // If we captured 0 instead of 2 clans we are not in Prif so return early after a 20s delay
-            if (Object.keys(foundClans).length == 0) {
+            // If we only found 1 clan it is possible the other clan was obscured. Disallow votes due to potentially bad data
+            if (Object.keys(foundClans).length == 0 ||
+                Object.keys(foundClans).length == 1) {
+                // Bad data so empty the voting data
                 clanVote = [];
-                console.log('We are outside of Prifddinas - throttling updates for 30s');
-                throttleUpdating();
+                console.log('Skpping scan. Reason: Outside of Prifddinas');
                 return [2 /*return*/];
             }
             firstClan = foundClans[0][0];
@@ -11918,11 +11943,21 @@ function getClanData() {
             }
             console.log(clanVote);
             if (!clanVote[0] || !clanVote[1]) {
+                if (!automaticScanning &&
+                    helperItems.Button.dataset.state == 'scanning') {
+                    setButtonText('No data - scan again?', 'scanready');
+                }
                 helperItems.VoteOutput.innerHTML =
-                    '<p>You must be in Prifddinas to submit data.</p>';
+                    '<p>You must be in Prifddinas to scan for data!</p>';
             }
             else {
+                helperItems.VoteInput.innerHTML =
+                    "<p style=\"white-space:normal!important;\">Detected clans!</br>".concat(clanVote[0], " and ").concat(clanVote[1], "</br><small>Incorrect? Contact Nyu.</small></p>");
                 helperItems.VoteOutput.innerHTML = '';
+                if (!automaticScanning &&
+                    helperItems.Button.dataset.state == 'scanning') {
+                    setButtonText('Submit vote!', 'voteready');
+                }
             }
             return [2 /*return*/];
         });
@@ -11941,7 +11976,6 @@ var callWithRetry = function (fn, depth) {
                 case 1:
                     e_1 = _a.sent();
                     if (depth > 7) {
-                        throttleUpdating();
                         throw e_1;
                     }
                     console.log("Attempting to connect to API again after error... Attempt #".concat(depth, "/7"));
@@ -11955,26 +11989,8 @@ var callWithRetry = function (fn, depth) {
     });
 };
 function fetchVos() {
-    alt1.setTitleBarText('');
-    callWithRetry(getLastVos);
     callWithRetry(getCurrentVos);
-}
-function throttleUpdating() {
-    helperItems.Get.setAttribute('disabled', 'true');
-    helperItems.Get.innerText = 'Updated!';
-    setTimeout(function () {
-        helperItems.Get.removeAttribute('disabled');
-        helperItems.Get.innerText = 'Update';
-    }, 30000);
-}
-function throttleVoting() {
-    helperItems.Vote.setAttribute('disabled', 'true');
-    helperItems.Vote.innerText = 'Submitted!';
-    setTimeout(function () {
-        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
-        helperItems.Vote.removeAttribute('disabled');
-        helperItems.Vote.innerText = 'Submit Data';
-    }, 5000);
+    callWithRetry(getLastVos);
 }
 function getCurrentVos() {
     return __awaiter(this, void 0, void 0, function () {
@@ -11989,14 +12005,23 @@ function getCurrentVos() {
                 .then(function (data) {
                 var vos = JSON.parse(data);
                 if (vos['clan_1'] == undefined || vos['clan_2'] == undefined) {
+                    alt1.setTitleBarText('');
                     helperItems.Current.innerHTML =
                         '<p>No data found. You can help by visiting Prifddinas and submitting data!</p>';
+                    setButtonText('Get VoS', 'get');
                     return;
                 }
                 var clan_1 = titleCase(vos['clan_1']);
                 var clan_2 = titleCase(vos['clan_2']);
                 updateTitleBar(clan_1, clan_2);
                 updateTimestamp();
+                if (!automaticScanning &&
+                    helperItems.Button.dataset.state == 'fetching') {
+                    setButtonText('Data received!', 'received');
+                    setTimeout(function () {
+                        setButtonText('Scan for clans', 'scanready');
+                    }, 1500);
+                }
             })
                 .catch(function (err) {
                 helperItems.Current.innerHTML = "<p>API Error: Please try again in a minute</p>";
@@ -12042,47 +12067,59 @@ function getLastVos() {
         });
     });
 }
-function voteVos() {
-    if (helperItems.Get.getAttribute('disabled') == 'true') {
-        console.log('Currently throttled - skipping vote!');
+function submitClanData() {
+    if (getButtonDataState() == 'voted') {
+        console.log('Skipping vote. Reason: already voted');
         return;
     }
-    if (helperItems.Vote.getAttribute('disabled') == 'true') {
-        console.log('Skipping data validation - data is not valid');
-        return;
-    }
-    console.log('Checking data for submission...');
+    console.log('Validation: Checking if clan data is two different clans');
     // Check to see if we have already voted and that our data is valid
     if (!hasValidData()) {
-        console.log('Data is invald - not allowing vote.');
+        helperItems.VoteInput.innerHTML = "<p style=\"white-space:normal!important;\">Not in Prifddinas</p>";
+        console.log("Skipping vote. Reason: invalid data - ".concat(clanVote[0], " & ").concat(clanVote[1]));
         return;
     }
     // If our vote data matches data in last vos our data is outdated and we are not allowed to vote
     if (dataMatchesLastHour()) {
-        console.log('Data matches that of last hour - not allowing vote.');
+        console.log('Skipping vote. Reason: vote matches last VoS');
         return;
     }
     if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
         var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
         if (now.minute <= 2) {
-            console.log('Already voted - skipping next vote for 30s');
+            console.log('Skipping vote. Reason: recently voted (during primetime)');
+            if (!automaticScanning) {
+                setButtonText('Voted!', 'voted');
+                setButtonDisabledState('true');
+            }
             setTimeout(function () {
                 _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+                if (!automaticScanning) {
+                    setButtonText('Voted!', 'voted');
+                    setButtonDisabledState('true');
+                }
             }, 1000 * 30);
             return;
         }
-        console.log('Already voted after prime time - skipping vote for 15 minutes');
+        console.log('Skipping vote. Reason: recently voted (after primetime)');
+        if (!automaticScanning) {
+            setButtonText('Voted!', 'voted');
+            setButtonDisabledState('true');
+        }
         setTimeout(function () {
             _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+            if (!automaticScanning) {
+                setButtonText('Get VoS', 'get');
+                setButtonDisabledState('false');
+            }
         }, 1000 * 60 * 15);
         return;
     }
     if (hasValidData() &&
         !dataMatchesLastHour() &&
         !_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
-        console.log('Data is valid - fetching current VoS...');
         getLastVos().then(function (res) {
-            console.log('Last VoS obtained - submitting new data...');
+            console.log('Validation: Checking data does not match last VoS');
             var uuid = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uuid');
             if (uuid == undefined) {
                 uuid = 0;
@@ -12099,12 +12136,17 @@ function voteVos() {
             })
                 .then(function (res) {
                 _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
-                console.log('Data submitted - refreshing VoS...');
+                console.log("Voted for ".concat(clanVote[0], " & ").concat(clanVote[1], ". Fetching live data from server."));
                 fetchVos();
-                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', true);
-            })
-                .then(function (res) {
+            }).then(function (res) {
+                lastClanVote = clanVote;
+                console.log(lastClanVote);
                 clanVote = [];
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', true);
+                if (!automaticScanning && helperItems.Button.dataset.role == 'voteready') {
+                    setButtonText('Voted!', 'voted');
+                    setButtonDisabledState('true');
+                }
             })
                 .catch(function (err) {
                 helperItems.VoteOutput.innerHTML = "<p>API Error: Please try again</p>";
@@ -12112,7 +12154,7 @@ function voteVos() {
         });
     }
 }
-function scanForClans() {
+function automaticScan() {
     return __awaiter(this, void 0, void 0, function () {
         var now;
         return __generator(this, function (_a) {
@@ -12121,22 +12163,25 @@ function scanForClans() {
                     if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) {
                         return [2 /*return*/];
                     }
-                    if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) return [3 /*break*/, 1];
-                    console.log('Recently voted - skipping scan...');
-                    now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-                    if (now.minute <= 2) {
-                        setTimeout(function () {
-                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
-                        }, 1000 * 20);
+                    if (clanVote.length) {
+                        console.log("Skipping scan. Reason: already scanned! Current vote: ".concat(clanVote[0], " & ").concat(clanVote[1]));
+                        clanVote = [];
+                        return [2 /*return*/];
                     }
+                    now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+                    if (!(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted') && now.minute <= 2)) return [3 /*break*/, 1];
+                    console.log("Skipping scan. Reason: voted recently (voted for ".concat(lastClanVote[0], " and ").concat(lastClanVote[1], ")"));
+                    setTimeout(function () {
+                        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+                    }, 1000 * 20);
                     return [2 /*return*/];
                 case 1:
                     clanVote = [];
-                    return [4 /*yield*/, getClanData()];
+                    return [4 /*yield*/, scanForClanData()];
                 case 2:
                     _a.sent();
                     new Promise(function (resolve) { return setTimeout(resolve, 50); });
-                    return [4 /*yield*/, voteVos()];
+                    return [4 /*yield*/, submitClanData()];
                 case 3:
                     _a.sent();
                     _a.label = 4;
@@ -12167,7 +12212,7 @@ function updateTitleBar(clan_1, clan_2) {
 }
 function updateTimestamp() {
     var timestamp = new Date(Date.now());
-    helperItems.Timestamp.innerHTML = "Last Updated: ".concat(timestamp.getUTCHours() < 10
+    helperItems.Timestamp.innerHTML = "Data Last Updated: ".concat(timestamp.getUTCHours() < 10
         ? '0' + timestamp.getUTCHours()
         : timestamp.getUTCHours(), ":").concat(timestamp.getUTCMinutes() < 10
         ? '0' + timestamp.getUTCMinutes()
@@ -12176,14 +12221,16 @@ function updateTimestamp() {
         : timestamp.getUTCSeconds());
 }
 function dataMatchesLastHour() {
-    return lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
+    var lastServerData = lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
+    var lastLocalData = lastClanVote.includes(clanVote[0]) || lastClanVote.includes(clanVote[1]);
+    return (lastServerData || lastLocalData);
 }
 function hasValidData() {
     return clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1];
 }
 function fetchHourly() {
     var date = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-    if (date.minute == 3 && !helperItems.Get.getAttribute('disabled')) {
+    if (date.minute == 3 && !helperItems.Button.getAttribute('disabled')) {
         var delay = Math.random() * 3000;
         setTimeout(function () {
             fetchVos();
@@ -12221,10 +12268,14 @@ function initSettings() {
         }));
     }
     getByID('app').style.transform = "scale(".concat(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uiScale'), ")");
+    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) {
+        setButtonText('Automatic Mode Enabled', 'automatic');
+        setButtonDisabledState('true');
+    }
 }
 var settingsObject = {
     settingsHeader: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createHeading('h2', 'Settings'),
-    automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Scanning', (_a = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) !== null && _a !== void 0 ? _a : true),
+    automaticScanning: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('automaticScanning', 'Automatic Mode', (_a = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) !== null && _a !== void 0 ? _a : true),
     uiScale: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createRangeSetting('uiScale', 'Resize VoS app', {
         defaultValue: (_b = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uiScale')) !== null && _b !== void 0 ? _b : '100',
         min: 30,
@@ -12232,6 +12283,9 @@ var settingsObject = {
         unit: '%',
     }),
 };
+settingsObject.automaticScanning.addEventListener('change', function (e) {
+    location.reload();
+});
 settingsObject.uiScale.addEventListener('change', function (e) {
     _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('uiScale', settingsObject.uiScale.querySelector('input').value);
     getByID('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100, ")");
@@ -12255,7 +12309,7 @@ function startvos() {
     }
     fetchVos();
     setInterval(fetchHourly, 1000);
-    setInterval(scanForClans, 3000);
+    setInterval(automaticScan, 3000);
     if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uiScale')) {
         getByID('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) /
             100, ")");
@@ -12273,9 +12327,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version on startup then check again every 12 hours
-        checkVersion('1.0.13');
+        checkVersion('1.1.0');
         setInterval(function () {
-            checkVersion('1.0.13');
+            checkVersion('1.1.0');
         }, 1000 * 60 * 60 * 12);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
