@@ -384,7 +384,6 @@ function submitClanData() {
 }
 
 async function automaticScan() {
-	clanVote = [];
 	if (!sauce.getSetting('automaticScanning')) {
 		return;
 	}
@@ -392,10 +391,12 @@ async function automaticScan() {
 		console.log(
 			`Skipping scan. Reason: RuneScape is not active`
 		);
+		clanVote = [];
 		return;
 	}
 	if (clanVote.length) {
 		console.log(`Skipping scan. Reason: already scanned! Current vote: ${clanVote[0]} & ${clanVote[1]}`);
+		clanVote = [];
 		return;
 	}
 	let now = DateTime.now();
@@ -408,6 +409,7 @@ async function automaticScan() {
 		}, 1000 * 20);
 	return;
 	} else {
+		clanVote = [];
 		await scanForClanData();
 		new Promise((resolve) => setTimeout(resolve, 50));
 		await submitClanData();

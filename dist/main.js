@@ -12166,16 +12166,17 @@ function automaticScan() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    clanVote = [];
                     if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) {
                         return [2 /*return*/];
                     }
                     if (!alt1.rsActive) {
                         console.log("Skipping scan. Reason: RuneScape is not active");
+                        clanVote = [];
                         return [2 /*return*/];
                     }
                     if (clanVote.length) {
                         console.log("Skipping scan. Reason: already scanned! Current vote: ".concat(clanVote[0], " & ").concat(clanVote[1]));
+                        clanVote = [];
                         return [2 /*return*/];
                     }
                     now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
@@ -12185,7 +12186,9 @@ function automaticScan() {
                         _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
                     }, 1000 * 20);
                     return [2 /*return*/];
-                case 1: return [4 /*yield*/, scanForClanData()];
+                case 1:
+                    clanVote = [];
+                    return [4 /*yield*/, scanForClanData()];
                 case 2:
                     _a.sent();
                     new Promise(function (resolve) { return setTimeout(resolve, 50); });
