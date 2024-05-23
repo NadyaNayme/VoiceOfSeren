@@ -11949,6 +11949,8 @@ function scanForClanData() {
                 }
                 helperItems.VoteOutput.innerHTML =
                     '<p>You must be in Prifddinas to scan for data!</p>';
+                clanVote = [];
+                console.log("Skipping scan. Reason: user not in Prifddinas. Resetting vote data: ".concat(clanVote[0], " & ").concat(clanVote[1]));
             }
             else {
                 helperItems.VoteInput.innerHTML =
@@ -12165,6 +12167,11 @@ function automaticScan() {
             switch (_a.label) {
                 case 0:
                     if (!_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('automaticScanning')) {
+                        return [2 /*return*/];
+                    }
+                    if (!alt1.rsActive) {
+                        console.log("Skipping scan. Reason: RuneScape is not active");
+                        clanVote = [];
                         return [2 /*return*/];
                     }
                     if (clanVote.length) {

@@ -172,6 +172,10 @@ async function scanForClanData() {
 		}
 		helperItems.VoteOutput.innerHTML =
 			'<p>You must be in Prifddinas to scan for data!</p>';
+		clanVote = [];
+		console.log(
+			`Skipping scan. Reason: user not in Prifddinas. Resetting vote data: ${clanVote[0]} & ${clanVote[1]}`
+		);
 	} else {
 		helperItems.VoteInput.innerHTML =
 			`<p style="white-space:normal!important;">Detected clans!</br>${clanVote[0]} and ${clanVote[1]}</br><small>Incorrect? Contact Nyu.</small></p>`;
@@ -381,6 +385,13 @@ function submitClanData() {
 
 async function automaticScan() {
 	if (!sauce.getSetting('automaticScanning')) {
+		return;
+	}
+	if (!alt1.rsActive) {
+		console.log(
+			`Skipping scan. Reason: RuneScape is not active`
+		);
+		clanVote = [];
 		return;
 	}
 	if (clanVote.length) {
