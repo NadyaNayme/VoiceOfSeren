@@ -12239,6 +12239,7 @@ function dataMatchesLastHour() {
 function hasValidData() {
     return clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1];
 }
+var recentlyFetched = false;
 function fetchHourly() {
     var date = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
     if ((date.minute == 2 ||
@@ -12248,11 +12249,16 @@ function fetchHourly() {
         date.minute == 20 ||
         date.minute == 25 ||
         date.minute == 30)
-        && automaticScanning) {
+        && automaticScanning
+        && !recentlyFetched) {
+        recentlyFetched = true;
         var delay = Math.random() * 3000;
         setTimeout(function () {
             fetchVos();
         }, delay);
+        setTimeout(function () {
+            recentlyFetched = false;
+        }, delay * 10);
     }
 }
 function checkVersion(version) {
@@ -12326,7 +12332,7 @@ function startvos() {
         _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('uuid', crypto.randomUUID());
     }
     fetchVos();
-    setInterval(fetchHourly, 1000);
+    setInterval(fetchHourly, 15000);
     setInterval(automaticScan, 3000);
     if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('uiScale')) {
         getByID('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) /

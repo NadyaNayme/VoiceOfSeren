@@ -470,6 +470,7 @@ function hasValidData() {
 	return clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1];
 }
 
+let recentlyFetched = false;
 function fetchHourly() {
 	let date = DateTime.now();
 	if (
@@ -480,12 +481,17 @@ function fetchHourly() {
 		date.minute == 20 ||
 		date.minute == 25 ||
 		date.minute == 30 )
-		&& automaticScanning)
+		&& automaticScanning
+		&& !recentlyFetched)
 	{
+		recentlyFetched = true;
 		let delay = Math.random() * 3000;
 		setTimeout(() => {
 			fetchVos();
 		}, delay);
+		setTimeout(() => {
+			recentlyFetched = false;
+		}, delay * 10);
 	}
 }
 
@@ -590,7 +596,7 @@ export function startvos() {
 		sauce.updateSetting('uuid', crypto.randomUUID());
 	}
 	fetchVos();
-	setInterval(fetchHourly, 1000);
+	setInterval(fetchHourly, 15000);
 	setInterval(automaticScan, 3000);
 
 	if (sauce.getSetting('uiScale')) {
