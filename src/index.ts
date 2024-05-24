@@ -193,6 +193,7 @@ async function scanForClanData() {
 const callWithRetry = async (fn, depth = 0) => {
 	try {
 		console.log(`Attempting to connect to API again after error...`);
+		sauce.timeout(1000);
 		return fn();
 	} catch (e) {
 		if (depth > 7) {

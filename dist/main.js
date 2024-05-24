@@ -11975,6 +11975,7 @@ var callWithRetry = function (fn, depth) {
                 case 0:
                     _a.trys.push([0, 1, , 3]);
                     console.log("Attempting to connect to API again after error...");
+                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(1000);
                     return [2 /*return*/, fn()];
                 case 1:
                     e_1 = _a.sent();
