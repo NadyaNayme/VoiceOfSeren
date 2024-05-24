@@ -143,6 +143,7 @@ async function scanForClanData() {
 		console.log(
 			'Skpping scan. Reason: Outside of Prifddinas'
 		);
+		sauce.timeout(1000 * 20);
 		return;
 	}
 

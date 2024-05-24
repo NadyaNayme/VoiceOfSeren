@@ -11926,6 +11926,7 @@ function scanForClanData() {
                 // Bad data so empty the voting data
                 clanVote = [];
                 console.log('Skpping scan. Reason: Outside of Prifddinas');
+                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(1000 * 20);
                 return [2 /*return*/];
             }
             firstClan = foundClans[0][0];
