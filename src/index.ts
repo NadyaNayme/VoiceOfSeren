@@ -234,7 +234,7 @@ async function getCurrentVos() {
 			}
 			let clan_1: string = titleCase(vos['clan_1']);
 			let clan_2: string = titleCase(vos['clan_2']);
-			if (clan_1 !== lastClanVote[0] && clan_2 !== lastClanVote[1]) {
+			if (clan_1 !== lastClanVote[0] || clan_2 !== lastClanVote[1]) {
 				updateTitleBar(clan_1, clan_2);
 			}
 			updateTimestamp();
