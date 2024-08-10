@@ -84,6 +84,20 @@ function getButtonDisabledState() {
 	}
 }
 
+function getFavoriteClans(): Set<string> {
+	const settingValue = sauce.getSetting('favoriteClans')
+	if (!settingValue || Object.keys(settingValue).length === 0) {
+		return new Set<string>()
+	}
+
+	return new Set<string>(settingValue)
+}
+
+function updateFavoriteClans(favoriteClans: Set<string>) {
+	// We need to convert the Set to an Array since Sets cannot be stringified to json.
+	sauce.updateSetting('favoriteClans', Array.from(favoriteClans))
+}
+
 function tryFindClans() {
 	// Capture RS Window
 	let client_screen = a1lib.captureHoldFullRs();
@@ -236,6 +250,7 @@ async function getCurrentVos() {
 			let clan_2: string = titleCase(vos['clan_2']);
 			if (clan_1 !== lastClanVote[0] || clan_2 !== lastClanVote[1]) {
 				updateTitleBar(clan_1, clan_2);
+				alertFavorite(clan_1, clan_2);
 			}
 			updateTimestamp();
 			if (
@@ -422,7 +437,7 @@ function titleCase(string) {
 	return string[0].toUpperCase() + string.slice(1).toLowerCase();
 }
 
-function updateTitleBar(clan_1, clan_2) {
+function updateTitleBar(clan_1: string, clan_2: string) {
 	helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
 	setTimeout(() => {
 		let title =
@@ -458,6 +473,34 @@ function updateTimestamp() {
 			? '0' + timestamp.getUTCSeconds()
 			: timestamp.getUTCSeconds()
 	}`;
+}
+
+function showTooltip(tooltip: string = '') {
+	if (tooltip == '') {
+		alt1.clearTooltip()
+		return
+	}
+
+	if (!alt1.setTooltip(tooltip)) {
+		console.log('Error: No tooltip permission')
+	}
+}
+
+function alertFavorite(clan_1: string, clan_2: string) {
+	let alertClans = []
+	if (getFavoriteClans().has(clan_1)) {
+		alertClans.push(clan_1)
+	}
+	if (getFavoriteClans().has(clan_2)) {
+		alertClans.push(clan_2)
+	}
+	if (alertClans.length == 0) {
+		return
+	}
+
+	// Note: for some reason the '&' does not work for tooltips.
+	showTooltip(`The Voice of Seren is currently active in: ${alertClans.join(" and ")}`)
+	setTimeout(alt1.clearTooltip, 5000)
 }
 
 function dataMatchesLastHour() {
@@ -529,6 +572,7 @@ function initSettings() {
 				automaticScanning: true,
 				votedCount: 0,
 				uiScale: '100',
+				favoriteClans: new Set<string>(),
 			})
 		);
 	}
@@ -552,7 +596,39 @@ const settingsObject = {
 		max: 200,
 		unit: '%',
 	}),
+	favoriteHeader: sauce.createHeading('h3', 'Alert for clans:'),
+	favoriteClans: sauce.createGroup(
+		[
+			createClanCheckbox('Amlodd'),
+			createClanCheckbox('Cadarn'),
+			createClanCheckbox('Crwys'),
+			createClanCheckbox('Hefin'),
+			createClanCheckbox('Iorwerth'),
+			createClanCheckbox('Ithell'),
+			createClanCheckbox('Meilyr'),
+			createClanCheckbox('Trahaearn'),
+		]
+	)
 };
+
+function createClanCheckbox(clanName: string): HTMLElement {
+	// Checkbox automatically updates the default value based on localStorage.
+	let clanCheckbox = sauce.createCheckboxSetting(`favorite${clanName}`, clanName, false)
+
+	clanCheckbox.addEventListener('change', (e) => {
+		const isFavorite = clanCheckbox.querySelector('input').checked
+		let newFavoriteClans: Set<string> = getFavoriteClans()
+		if (isFavorite) {
+			newFavoriteClans.add(clanName)
+		} else {
+			newFavoriteClans.delete(clanName)
+		}
+
+		updateFavoriteClans(newFavoriteClans)
+	})
+
+	return clanCheckbox
+}
 
 settingsObject.automaticScanning.addEventListener('change', (e) => {
 	location.reload();
