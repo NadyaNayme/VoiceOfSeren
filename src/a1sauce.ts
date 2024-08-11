@@ -97,6 +97,17 @@ export function createCheckboxSetting(
 	return container;
 }
 
+export function createGroup(
+	elements: HTMLElement[]
+): HTMLElement {
+	let container = createFlexContainer()
+	container.style.flexDirection = 'column'
+	for (const element of elements) {
+		container.appendChild(element)
+	}
+	return container
+}
+
 export function createNumberSetting(
 	name: string,
 	description: string,
