@@ -12122,6 +12122,9 @@ function submitClanData() {
         helperItems.VoteInput.innerHTML = "<p style=\"white-space:normal!important;\">Not in Prifddinas</p>";
         if (debugMode)
             console.log("Skipping vote. Reason: invalid data - ".concat(clanVote[0], " & ").concat(clanVote[1]));
+        if (debugMode)
+            console.log("Rescanning for data...");
+        scanForClanData();
         return;
     }
     // If our vote data matches data in last vos our data is outdated and we are not allowed to vote
@@ -12198,12 +12201,7 @@ function automaticScan() {
                         voteHistory.set('Voted', false);
                     }, 1000 * 20);
                     return [2 /*return*/];
-                case 1:
-                    /**
-                     * If we are scanning - we can safely empty our current vote before obtaining fresh data
-                     */
-                    clanVote = [];
-                    return [4 /*yield*/, scanForClanData()];
+                case 1: return [4 /*yield*/, scanForClanData()];
                 case 2:
                     _a.sent();
                     new Promise(function (resolve) { return setTimeout(resolve, 50); });

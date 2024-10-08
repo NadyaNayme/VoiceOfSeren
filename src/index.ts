@@ -314,6 +314,11 @@ function submitClanData() {
 	if (!hasValidData()) {
 		helperItems.VoteInput.innerHTML = `<p style="white-space:normal!important;">Not in Prifddinas</p>`;
 		if (debugMode) console.log(`Skipping vote. Reason: invalid data - ${clanVote[0]} & ${clanVote[1]}`);
+		if (debugMode)
+			console.log(
+				`Rescanning for data...`
+			);
+		scanForClanData();
 		return;
 	}
 
@@ -398,10 +403,6 @@ async function automaticScan() {
 		}, 1000 * 20);
 		return;
 	} else {
-		/**
-		 * If we are scanning - we can safely empty our current vote before obtaining fresh data
-		 */
-		clanVote = [];
 		await scanForClanData();
 		new Promise((resolve) => setTimeout(resolve, 50));
 		await submitClanData();
