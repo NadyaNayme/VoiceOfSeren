@@ -13112,9 +13112,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version on startup then check again every 12 hours
-        checkVersion('1.1.0');
+        checkVersion('1.1.1');
         setInterval(function () {
-            checkVersion('1.1.0');
+            checkVersion('1.1.1');
         }, 1000 * 60 * 60 * 12);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
