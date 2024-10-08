@@ -13,7 +13,6 @@ import './appconfig.json';
 import './version.json';
 import './icon.png';
 import './css/styles.css';
-import { debug } from 'console';
 
 function getByID(id: string) {
 	return document.getElementById(id);
