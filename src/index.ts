@@ -48,9 +48,9 @@ let clanVote = [];
 let lastClanVote = [];
 let lastVos = [];
 
-// Contains two keys: "Last" and "Current"
-// Is not persisted between runs because there is no point
-// Prevents voting if a "Current" vote exists
+// Contains three keys: "Last", "Current", and "Voted"
+// Is not persisted between runs
+// Prevents voting if "Voted" or "Current" exist
 // Moves "Current" to "Last" and deletes "Current" at the start of each hour when running
 const voteHistory = new Map();
 
@@ -156,7 +156,7 @@ async function scanForClanData() {
 			voteHistory.delete('Current');
 
 			/* We are also eligible to vote again */
-			sauce.updateSetting('justVoted', false);
+			voteHistory.set('Voted', false);
 		} else {
 			if (debugMode) console.log(`Skipping scan. Reason: Already voted this hour`);
 			return;
@@ -309,8 +309,6 @@ async function getLastVos() {
 }
 
 function submitClanData() {
-	/* Before submitting do a fresh scan for data */
-	scanForClanData();
 
 	// Check to see if we have already voted and that our data is valid
 	if (debugMode) console.log('Validation: Checking if clan data is two different clans');
@@ -326,7 +324,7 @@ function submitClanData() {
 		return;
 	}
 
-	if (sauce.getSetting('justVoted')) {
+	if (voteHistory.get('Voted')) {
 		let now = DateTime.now();
 		if (now.minute <= 2) {
 			if (debugMode) console.log('Skipping vote. Reason: recently voted (during primetime)');
@@ -334,18 +332,17 @@ function submitClanData() {
 		}
 		if (debugMode) console.log('Skipping vote. Reason: recently voted (after primetime)');
 		setTimeout(() => {
-			sauce.updateSetting('justVoted', false);
+			voteHistory.set('Voted', false);
 		}, 1000 * 60 * 15);
 		return;
 	}
 
-	if (
-		hasValidData() &&
-		!dataMatchesLastHour() &&
-		!sauce.getSetting('justVoted')
-	) {
+	if (hasValidData() && !dataMatchesLastHour() && !voteHistory.get('Voted')) {
 		getLastVos().then((res) => {
-			if (debugMode) console.log('Validation: Checking data does not match last VoS');
+			if (debugMode)
+				console.log(
+					'Validation: Checking data does not match last VoS'
+				);
 			fetch('https://vos-alt1.fly.dev/increase_counter', {
 				method: 'POST',
 				body: JSON.stringify({
@@ -361,12 +358,16 @@ function submitClanData() {
 						'votedCount',
 						sauce.getSetting('votedCount') + 1
 					);
-					if (debugMode) console.log(`Voted for ${clanVote[0]} & ${clanVote[1]}. Fetching live data from server.`);
+					if (debugMode)
+						console.log(
+							`Voted for ${clanVote[0]} & ${clanVote[1]}. Fetching live data from server.`
+						);
 					fetchVos();
-				}).then((res) => {
+				})
+				.then((res) => {
 					lastClanVote = clanVote;
 					if (debugMode) console.log(lastClanVote);
-					sauce.updateSetting('justVoted', true);
+					voteHistory.set('Voted', true);
 					startVoteCountdown();
 				})
 				.catch((err) => {
@@ -383,21 +384,21 @@ async function automaticScan() {
 		);
 		return;
 	}
-	if (clanVote.length) {
-		if (debugMode) console.log(`Skipping scan. Reason: already scanned! Current vote: ${clanVote[0]} & ${clanVote[1]}`);
-		return;
-	}
 	let now = DateTime.now();
-	if (sauce.getSetting('justVoted') && now.minute <= 2 && voteHistory.get("Current")) {
-		if (debugMode) console.log(
-			`Skipping scan. Reason: voted recently (voted for ${lastClanVote[0]} and ${lastClanVote[1]})`
-		);
+	if (
+		voteHistory.get('Voted') &&
+		now.minute <= 2 &&
+		voteHistory.get('Current')
+	) {
+		if (debugMode)
+			console.log(
+				`Skipping scan. Reason: voted recently (voted for ${lastClanVote[0]} and ${lastClanVote[1]})`
+			);
 		setTimeout(() => {
-			sauce.updateSetting('justVoted', false);
+			voteHistory.set('Voted', false);
 		}, 1000 * 20);
-	return;
+		return;
 	} else {
-
 		/**
 		 * If we are scanning - we can safely empty our current vote before obtaining fresh data
 		 */
@@ -448,7 +449,7 @@ function updateTimestamp() {
 			? '0' + timestamp.getUTCSeconds()
 			: timestamp.getUTCSeconds()
 	}`;
-	if (voteHistory.get('Current') || sauce.getSetting('justVoted') == true) {
+	if (voteHistory.get('Current') || voteHistory.get('Voted')) {
 		startVoteCountdown();
 	}
 }
@@ -702,9 +703,9 @@ window.onload = function () {
 		// }
 
 		// check version on startup then check again every 12 hours
-		checkVersion('1.1.1');
+		checkVersion('1.1.2');
 		setInterval(() => {
-			checkVersion('1.1.1');
+			checkVersion('1.1.2');
 		}, 1000 * 60 * 60 * 12);
 
 		alt1.identifyAppUrl('./appconfig.json');

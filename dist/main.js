@@ -11853,9 +11853,9 @@ var debugMode = (_b = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('debugMod
 var clanVote = [];
 var lastClanVote = [];
 var lastVos = [];
-// Contains two keys: "Last" and "Current"
-// Is not persisted between runs because there is no point
-// Prevents voting if a "Current" vote exists
+// Contains three keys: "Last", "Current", and "Voted"
+// Is not persisted between runs
+// Prevents voting if "Voted" or "Current" exist
 // Moves "Current" to "Last" and deletes "Current" at the start of each hour when running
 var voteHistory = new Map();
 function getCurrentEpoch() {
@@ -11947,7 +11947,7 @@ function scanForClanData() {
                             voteHistory.set('Last', mostRecentVote);
                             voteHistory.delete('Current');
                             /* We are also eligible to vote again */
-                            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+                            voteHistory.set('Voted', false);
                         }
                         else {
                             if (debugMode)
@@ -12115,8 +12115,6 @@ function getLastVos() {
     });
 }
 function submitClanData() {
-    /* Before submitting do a fresh scan for data */
-    scanForClanData();
     // Check to see if we have already voted and that our data is valid
     if (debugMode)
         console.log('Validation: Checking if clan data is two different clans');
@@ -12132,7 +12130,7 @@ function submitClanData() {
             console.log('Skipping vote. Reason: vote matches last VoS');
         return;
     }
-    if (_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
+    if (voteHistory.get('Voted')) {
         var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
         if (now.minute <= 2) {
             if (debugMode)
@@ -12142,13 +12140,11 @@ function submitClanData() {
         if (debugMode)
             console.log('Skipping vote. Reason: recently voted (after primetime)');
         setTimeout(function () {
-            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+            voteHistory.set('Voted', false);
         }, 1000 * 60 * 15);
         return;
     }
-    if (hasValidData() &&
-        !dataMatchesLastHour() &&
-        !_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted')) {
+    if (hasValidData() && !dataMatchesLastHour() && !voteHistory.get('Voted')) {
         getLastVos().then(function (res) {
             if (debugMode)
                 console.log('Validation: Checking data does not match last VoS');
@@ -12167,11 +12163,12 @@ function submitClanData() {
                 if (debugMode)
                     console.log("Voted for ".concat(clanVote[0], " & ").concat(clanVote[1], ". Fetching live data from server."));
                 fetchVos();
-            }).then(function (res) {
+            })
+                .then(function (res) {
                 lastClanVote = clanVote;
                 if (debugMode)
                     console.log(lastClanVote);
-                _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', true);
+                voteHistory.set('Voted', true);
                 startVoteCountdown();
             })
                 .catch(function (err) {
@@ -12191,17 +12188,14 @@ function automaticScan() {
                             console.log("Skipping scan. Reason: RuneScape is not active");
                         return [2 /*return*/];
                     }
-                    if (clanVote.length) {
-                        if (debugMode)
-                            console.log("Skipping scan. Reason: already scanned! Current vote: ".concat(clanVote[0], " & ").concat(clanVote[1]));
-                        return [2 /*return*/];
-                    }
                     now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-                    if (!(_a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted') && now.minute <= 2 && voteHistory.get("Current"))) return [3 /*break*/, 1];
+                    if (!(voteHistory.get('Voted') &&
+                        now.minute <= 2 &&
+                        voteHistory.get('Current'))) return [3 /*break*/, 1];
                     if (debugMode)
                         console.log("Skipping scan. Reason: voted recently (voted for ".concat(lastClanVote[0], " and ").concat(lastClanVote[1], ")"));
                     setTimeout(function () {
-                        _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('justVoted', false);
+                        voteHistory.set('Voted', false);
                     }, 1000 * 20);
                     return [2 /*return*/];
                 case 1:
@@ -12251,7 +12245,7 @@ function updateTimestamp() {
         : timestamp.getUTCMinutes(), ":").concat(timestamp.getUTCSeconds() < 10
         ? '0' + timestamp.getUTCSeconds()
         : timestamp.getUTCSeconds());
-    if (voteHistory.get('Current') || _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('justVoted') == true) {
+    if (voteHistory.get('Current') || voteHistory.get('Voted')) {
         startVoteCountdown();
     }
 }
@@ -12457,9 +12451,9 @@ window.onload = function () {
         // 	return;
         // }
         // check version on startup then check again every 12 hours
-        checkVersion('1.1.1');
+        checkVersion('1.1.2');
         setInterval(function () {
-            checkVersion('1.1.1');
+            checkVersion('1.1.2');
         }, 1000 * 60 * 60 * 12);
         alt1.identifyAppUrl('./appconfig.json');
         Object.values(settingsObject).forEach(function (val) {
