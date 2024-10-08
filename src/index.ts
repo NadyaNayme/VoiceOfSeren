@@ -308,36 +308,43 @@ async function getLastVos() {
 }
 
 function submitClanData() {
-
 	// Check to see if we have already voted and that our data is valid
-	if (debugMode) console.log('Validation: Checking if clan data is two different clans');
-	if (!hasValidData()) {
-		helperItems.VoteInput.innerHTML = `<p style="white-space:normal!important;">Not in Prifddinas</p>`;
-		if (debugMode) console.log(`Skipping vote. Reason: invalid data - ${clanVote[0]} & ${clanVote[1]}`);
-		if (debugMode)
-			console.log(
-				`Rescanning for data...`
-			);
-		scanForClanData();
-		return;
-	}
 
 	// If our vote data matches data in last vos our data is outdated and we are not allowed to vote
 	if (dataMatchesLastHour()) {
-		if (debugMode) console.log('Skipping vote. Reason: vote matches last VoS');
+		if (debugMode)
+			console.log('Skipping vote. Reason: vote matches last VoS');
 		return;
 	}
 
 	if (voteHistory.get('Voted')) {
 		let now = DateTime.now();
 		if (now.minute <= 2) {
-			if (debugMode) console.log('Skipping vote. Reason: recently voted (during primetime)');
+			if (debugMode)
+				console.log(
+					'Skipping vote. Reason: recently voted (during primetime)'
+				);
 			return;
 		}
-		if (debugMode) console.log('Skipping vote. Reason: recently voted (after primetime)');
+		if (debugMode)
+			console.log(
+				'Skipping vote. Reason: recently voted (after primetime)'
+			);
 		setTimeout(() => {
 			voteHistory.set('Voted', false);
 		}, 1000 * 60 * 15);
+		return;
+	}
+
+	if (debugMode)
+		console.log('Validation: Checking if clan data is two different clans');
+	if (!hasValidData()) {
+		if (debugMode)
+			console.log(
+				`Skipping vote. Reason: invalid data - ${clanVote[0]} & ${clanVote[1]}`
+			);
+		if (debugMode) console.log(`Rescanning for data...`);
+		scanForClanData();
 		return;
 	}
 
