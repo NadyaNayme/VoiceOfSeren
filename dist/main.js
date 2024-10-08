@@ -11853,6 +11853,7 @@ var debugMode = (_b = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('debugMod
 var clanVote = [];
 var lastClanVote = [];
 var lastVos = [];
+var currentVos = [];
 // Contains three keys: "Last", "Current", and "Voted"
 // Is not persisted between runs
 // Prevents voting if "Voted" or "Current" exist
@@ -11876,7 +11877,7 @@ function startVoteCountdown() {
         var timeRemaining = getNextHourEpoch() - currentTime;
         if (timeRemaining <= 0) {
             clearInterval(interval);
-            countdownElement.textContent = "The next vote is now available!";
+            countdownElement.textContent = 'The next vote is now available!';
         }
         else {
             var hours = Math.floor(timeRemaining / 3600);
@@ -11943,7 +11944,6 @@ function scanForClanData() {
                          * set "Current" to "Last". Otherwise we can safely skip the scan.
                          */
                         if (getCurrentEpoch() > nextVotingHour) {
-                            voteHistory.delete('Last');
                             voteHistory.set('Last', mostRecentVote);
                             voteHistory.delete('Current');
                             /* We are also eligible to vote again */
@@ -11951,7 +11951,7 @@ function scanForClanData() {
                         }
                         else {
                             if (debugMode)
-                                console.log("Skipping scan. Reason: Already voted this hour");
+                                console.log("Skipping scan. Reason: Already voted this hour: ".concat(mostRecentVote.clans.clan_1, " & ").concat(mostRecentVote.clans.clan_2));
                             return [2 /*return*/];
                         }
                         if (debugMode)
@@ -12067,6 +12067,13 @@ function getCurrentVos() {
                 if (clan_1 !== lastClanVote[0] || clan_2 !== lastClanVote[1]) {
                     updateTitleBar(clan_1, clan_2);
                     alertFavorite(clan_1, clan_2);
+                }
+                var currentVote = voteHistory.get('Current');
+                if (currentVote && titleCase(currentVote.clans.clan_1) !== clan_1) {
+                    if (debugMode)
+                        console.log('Invalid Data: Vote does not match server data. Deleting Current vote and attempting to scan again.');
+                    voteHistory.delete('Current');
+                    scanForClanData();
                 }
                 updateTimestamp();
             })
@@ -12269,7 +12276,7 @@ function alertFavorite(clan_1, clan_2) {
         return;
     }
     // Note: for some reason the '&' does not work for tooltips.
-    showTooltip("The Voice of Seren is currently active in: ".concat(alertClans.join(" and ")));
+    showTooltip("The Voice of Seren is currently active in: ".concat(alertClans.join(' and ')));
     setTimeout(alt1.clearTooltip, 5000);
 }
 /**
@@ -12278,8 +12285,9 @@ function alertFavorite(clan_1, clan_2) {
  */
 function dataMatchesLastHour() {
     var lastServerData = lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
-    var lastLocalData = lastClanVote.includes(clanVote[0]) || lastClanVote.includes(clanVote[1]);
-    return (lastServerData || lastLocalData);
+    var lastLocalData = lastClanVote.includes(clanVote[0]) ||
+        lastClanVote.includes(clanVote[1]);
+    return lastServerData || lastLocalData;
 }
 /**
  * Our data is valid if:
@@ -12295,7 +12303,8 @@ function hasValidData() {
     if (lastVote) {
         var lastClan_1 = lastVote.clans.clan_1;
         var lastClan_2 = lastVote.clans.clan_2;
-        lastVoteCheck = clanVote[0] !== lastClan_1 && clanVote[1] !== lastClan_2;
+        lastVoteCheck =
+            clanVote[0] !== lastClan_1 && clanVote[1] !== lastClan_2;
         if (debugMode)
             console.log('Invalid Data. Current vote matches last vote.');
     }
@@ -12303,7 +12312,10 @@ function hasValidData() {
         // If we do not have a last vote we cannot match against it
         lastVoteCheck = true;
     }
-    return clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1] && lastVoteCheck;
+    return (clanVote[0] &&
+        clanVote[1] &&
+        clanVote[0] != clanVote[1] &&
+        lastVoteCheck);
 }
 var recentlyFetched = false;
 function fetchHourly() {
@@ -12389,7 +12401,7 @@ var settingsObject = {
         createClanCheckbox('Trahaearn'),
     ]),
     sep: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createSeperator(),
-    debugLogging: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('debugMode', 'Enable Console Debug Logging', false)
+    debugLogging: _a1sauce__WEBPACK_IMPORTED_MODULE_1__.createCheckboxSetting('debugMode', 'Enable Console Debug Logging', false),
 };
 function createClanCheckbox(clanName) {
     // Checkbox automatically updates the default value based on localStorage.

@@ -46,6 +46,7 @@ let debugMode = sauce.getSetting('debugMode') ?? false;
 let clanVote = [];
 let lastClanVote = [];
 let lastVos = [];
+let currentVos = [];
 
 // Contains three keys: "Last", "Current", and "Voted"
 // Is not persisted between runs
@@ -54,17 +55,17 @@ let lastVos = [];
 const voteHistory = new Map();
 
 function getCurrentEpoch() {
-    return Math.floor(Date.now() / 1000);
+	return Math.floor(Date.now() / 1000);
 }
 
 function getNextHourEpoch() {
 	const currentEpoch = getCurrentEpoch();
-    const currentMinute = Math.floor(currentEpoch / 60) % 60;
+	const currentMinute = Math.floor(currentEpoch / 60) % 60;
 
-    // If we're exactly at the hour mark move to the next hour
-    if (currentMinute === 0) return currentEpoch + 3600;
+	// If we're exactly at the hour mark move to the next hour
+	if (currentMinute === 0) return currentEpoch + 3600;
 
-    return (Math.floor(currentEpoch / 3600) + 1) * 3600;
+	return (Math.floor(currentEpoch / 3600) + 1) * 3600;
 }
 
 function startVoteCountdown() {
@@ -76,7 +77,7 @@ function startVoteCountdown() {
 
 		if (timeRemaining <= 0) {
 			clearInterval(interval);
-			countdownElement.textContent = "The next vote is now available!";
+			countdownElement.textContent = 'The next vote is now available!';
 		} else {
 			const hours = Math.floor(timeRemaining / 3600);
 			const minutes = Math.floor((timeRemaining % 3600) / 60);
@@ -88,21 +89,20 @@ function startVoteCountdown() {
 }
 
 function getFavoriteClans(): Set<string> {
-	const settingValue = sauce.getSetting('favoriteClans')
+	const settingValue = sauce.getSetting('favoriteClans');
 	if (!settingValue || Object.keys(settingValue).length === 0) {
-		return new Set<string>()
+		return new Set<string>();
 	}
 
-	return new Set<string>(settingValue)
+	return new Set<string>(settingValue);
 }
 
 function updateFavoriteClans(favoriteClans: Set<string>) {
 	// We need to convert the Set to an Array since Sets cannot be stringified to json.
-	sauce.updateSetting('favoriteClans', Array.from(favoriteClans))
+	sauce.updateSetting('favoriteClans', Array.from(favoriteClans));
 }
 
 function tryFindClans() {
-
 	// Capture RS Window
 	let client_screen = a1lib.captureHoldFullRs();
 
@@ -150,14 +150,16 @@ async function scanForClanData() {
 		 * set "Current" to "Last". Otherwise we can safely skip the scan.
 		 */
 		if (getCurrentEpoch() > nextVotingHour) {
-			voteHistory.delete('Last');
 			voteHistory.set('Last', mostRecentVote);
 			voteHistory.delete('Current');
 
 			/* We are also eligible to vote again */
 			voteHistory.set('Voted', false);
 		} else {
-			if (debugMode) console.log(`Skipping scan. Reason: Already voted this hour`);
+			if (debugMode)
+				console.log(
+					`Skipping scan. Reason: Already voted this hour: ${mostRecentVote.clans.clan_1} & ${mostRecentVote.clans.clan_2}`
+				);
 			return;
 		}
 		if (debugMode) console.log(voteHistory);
@@ -175,7 +177,10 @@ async function scanForClanData() {
 		// If our data is bad - we should clear our vote.
 		// Most likely this is because we are outside of Prifddinas
 		clanVote = [];
-		if (debugMode) console.log('Skipping scan. Reason: Outside of Prifddinas (likely)');
+		if (debugMode)
+			console.log(
+				'Skipping scan. Reason: Outside of Prifddinas (likely)'
+			);
 		await sauce.timeout(1000 * 20);
 		return;
 	}
@@ -200,9 +205,10 @@ async function scanForClanData() {
 	if (!clanVote[0] || !clanVote[1]) {
 		helperItems.VoteOutput.innerHTML =
 			'<p>You must be in Prifddinas to scan for data!</p>';
-		if (debugMode) console.log(
-			`Skipping scan. Reason: user not in Prifddinas. Resetting vote data: ${clanVote[0]} & ${clanVote[1]}`
-		);
+		if (debugMode)
+			console.log(
+				`Skipping scan. Reason: user not in Prifddinas. Resetting vote data: ${clanVote[0]} & ${clanVote[1]}`
+			);
 	} else {
 		helperItems.VoteInput.innerHTML = `<p style="white-space:normal!important;">Found clans!</br>${clanVote[0]} and ${clanVote[1]}</p>`;
 		helperItems.VoteOutput.innerHTML = '';
@@ -221,16 +227,18 @@ async function scanForClanData() {
 
 const callWithRetry = async (fn, depth = 0) => {
 	try {
-		if (debugMode) console.log(`Attempting to connect to API again after error...`);
+		if (debugMode)
+			console.log(`Attempting to connect to API again after error...`);
 		await sauce.timeout(1000);
 		return fn();
 	} catch (e) {
 		if (depth > 7) {
 			throw e;
 		}
-		if (debugMode) console.log(
-			`Attempting to connect to API again after error... Attempt #${depth}/7`
-		);
+		if (debugMode)
+			console.log(
+				`Attempting to connect to API again after error... Attempt #${depth}/7`
+			);
 		await new Promise((resolve) => setTimeout(resolve, 2 ** depth * 10));
 
 		return callWithRetry(fn, depth + 1);
@@ -263,6 +271,16 @@ async function getCurrentVos() {
 			if (clan_1 !== lastClanVote[0] || clan_2 !== lastClanVote[1]) {
 				updateTitleBar(clan_1, clan_2);
 				alertFavorite(clan_1, clan_2);
+			}
+
+			let currentVote = voteHistory.get('Current');
+			if (currentVote && titleCase(currentVote.clans.clan_1) !== clan_1) {
+				if (debugMode)
+					console.log(
+						'Invalid Data: Vote does not match server data. Deleting Current vote and attempting to scan again.'
+					);
+				voteHistory.delete('Current');
+				scanForClanData();
 			}
 			updateTimestamp();
 		})
@@ -390,9 +408,8 @@ function submitClanData() {
 
 async function automaticScan() {
 	if (!alt1.rsActive) {
-		if (debugMode) console.log(
-			`Skipping scan. Reason: RuneScape is not active`
-		);
+		if (debugMode)
+			console.log(`Skipping scan. Reason: RuneScape is not active`);
 		return;
 	}
 	let now = DateTime.now();
@@ -463,30 +480,32 @@ function updateTimestamp() {
 
 function showTooltip(tooltip: string = '') {
 	if (tooltip == '') {
-		alt1.clearTooltip()
-		return
+		alt1.clearTooltip();
+		return;
 	}
 
 	if (!alt1.setTooltip(tooltip)) {
-		if (debugMode) console.log('Error: No tooltip permission')
+		if (debugMode) console.log('Error: No tooltip permission');
 	}
 }
 
 function alertFavorite(clan_1: string, clan_2: string) {
-	let alertClans = []
+	let alertClans = [];
 	if (getFavoriteClans().has(clan_1)) {
-		alertClans.push(clan_1)
+		alertClans.push(clan_1);
 	}
 	if (getFavoriteClans().has(clan_2)) {
-		alertClans.push(clan_2)
+		alertClans.push(clan_2);
 	}
 	if (alertClans.length == 0) {
-		return
+		return;
 	}
 
 	// Note: for some reason the '&' does not work for tooltips.
-	showTooltip(`The Voice of Seren is currently active in: ${alertClans.join(" and ")}`)
-	setTimeout(alt1.clearTooltip, 5000)
+	showTooltip(
+		`The Voice of Seren is currently active in: ${alertClans.join(' and ')}`
+	);
+	setTimeout(alt1.clearTooltip, 5000);
 }
 
 /**
@@ -497,8 +516,9 @@ function dataMatchesLastHour() {
 	let lastServerData =
 		lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
 	let lastLocalData =
-		lastClanVote.includes(clanVote[0]) || lastClanVote.includes(clanVote[1]);
-	return (lastServerData || lastLocalData)
+		lastClanVote.includes(clanVote[0]) ||
+		lastClanVote.includes(clanVote[1]);
+	return lastServerData || lastLocalData;
 }
 
 /**
@@ -510,20 +530,27 @@ function dataMatchesLastHour() {
  */
 function hasValidData() {
 	const lastVote = voteHistory.get('Last');
-	let lastVoteCheck
+	let lastVoteCheck;
 
 	// If we have a "Last" vote check that it is not equal to our "Current" vote
 	if (lastVote) {
 		const lastClan_1 = lastVote.clans.clan_1;
 		const lastClan_2 = lastVote.clans.clan_2;
-		lastVoteCheck = clanVote[0] !== lastClan_1 && clanVote[1] !== lastClan_2;
-		if (debugMode) console.log('Invalid Data. Current vote matches last vote.');
+		lastVoteCheck =
+			clanVote[0] !== lastClan_1 && clanVote[1] !== lastClan_2;
+		if (debugMode)
+			console.log('Invalid Data. Current vote matches last vote.');
 	} else {
 		// If we do not have a last vote we cannot match against it
 		lastVoteCheck = true;
 	}
 
-	return clanVote[0] && clanVote[1] && clanVote[0] != clanVote[1] && lastVoteCheck;
+	return (
+		clanVote[0] &&
+		clanVote[1] &&
+		clanVote[0] != clanVote[1] &&
+		lastVoteCheck
+	);
 }
 
 let recentlyFetched = false;
@@ -576,9 +603,10 @@ function checkVersion(version: string) {
 				setTimeout(() => {}, 3000);
 				location.reload();
 			} else {
-				if (debugMode) console.log(
-					`App is running latest version. Expected version: ${latestVersion.version} ; found: ${version}`
-				);
+				if (debugMode)
+					console.log(
+						`App is running latest version. Expected version: ${latestVersion.version} ; found: ${version}`
+					);
 			}
 		});
 }
@@ -596,7 +624,7 @@ function initSettings() {
 	}
 	getByID('app').style.transform = `scale(${sauce.getSetting('uiScale')})`;
 	getByID('debugMode').addEventListener('click', (e) => {
-		let el = <HTMLInputElement>getByID('debugMode')
+		let el = <HTMLInputElement>getByID('debugMode');
 		debugMode = el.checked;
 	});
 }
@@ -610,39 +638,45 @@ const settingsObject = {
 		unit: '%',
 	}),
 	favoriteHeader: sauce.createHeading('h3', 'Alert for clans:'),
-	favoriteClans: sauce.createGroup(
-		[
-			createClanCheckbox('Amlodd'),
-			createClanCheckbox('Cadarn'),
-			createClanCheckbox('Crwys'),
-			createClanCheckbox('Hefin'),
-			createClanCheckbox('Iorwerth'),
-			createClanCheckbox('Ithell'),
-			createClanCheckbox('Meilyr'),
-			createClanCheckbox('Trahaearn'),
-		]
-	),
+	favoriteClans: sauce.createGroup([
+		createClanCheckbox('Amlodd'),
+		createClanCheckbox('Cadarn'),
+		createClanCheckbox('Crwys'),
+		createClanCheckbox('Hefin'),
+		createClanCheckbox('Iorwerth'),
+		createClanCheckbox('Ithell'),
+		createClanCheckbox('Meilyr'),
+		createClanCheckbox('Trahaearn'),
+	]),
 	sep: sauce.createSeperator(),
-	debugLogging: sauce.createCheckboxSetting('debugMode', 'Enable Console Debug Logging', false)
+	debugLogging: sauce.createCheckboxSetting(
+		'debugMode',
+		'Enable Console Debug Logging',
+		false
+	),
 };
 
 function createClanCheckbox(clanName: string): HTMLElement {
 	// Checkbox automatically updates the default value based on localStorage.
-	let clanCheckbox = sauce.createCheckboxSetting(`favorite${clanName}`, clanName, false)
+	let clanCheckbox = sauce.createCheckboxSetting(
+		`favorite${clanName}`,
+		clanName,
+		false
+	);
 
 	clanCheckbox.addEventListener('change', (e) => {
-		const isFavorite = clanCheckbox.querySelector('input').checked
-		let newFavoriteClans: Set<string> = getFavoriteClans()
+		const isFavorite = clanCheckbox.querySelector('input').checked;
+		let newFavoriteClans: Set<string> = getFavoriteClans();
 		if (isFavorite) {
-			newFavoriteClans.add(clanName)
+			newFavoriteClans.add(clanName);
 		} else {
-			newFavoriteClans.delete(clanName)
+			newFavoriteClans.delete(clanName);
 		}
 
-		updateFavoriteClans(newFavoriteClans)
-	})
+		updateFavoriteClans(newFavoriteClans);
+	});
 
-	return clanCheckbox
+	return clanCheckbox;
 }
 
 settingsObject.uiScale.addEventListener('change', (e) => {
