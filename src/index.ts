@@ -499,8 +499,6 @@ async function automaticScan() {
 		return;
 	} else {
 		await scanForClanData();
-		await sauce.timeout(50);
-		submitClanData();
 	}
 
 	// If we have not voted and have recent data - try and vote

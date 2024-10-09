@@ -12266,12 +12266,8 @@ function automaticScan() {
                 case 1: return [4 /*yield*/, scanForClanData()];
                 case 2:
                     _a.sent();
-                    return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(50)];
+                    _a.label = 3;
                 case 3:
-                    _a.sent();
-                    submitClanData();
-                    _a.label = 4;
-                case 4:
                     // If we have not voted and have recent data - try and vote
                     if (!voteHistory.get('Voted') &&
                         voteHistory.get('Current') &&
