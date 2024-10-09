@@ -460,12 +460,12 @@ function submitClanData() {
 					console.log(
 						`Voted for ${titleCase(clanVote[0])} & ${titleCase(clanVote[1])}. Fetching live data from server.`
 					);
+				voteHistory.set('Voted', true);
 				fetchVos();
 			})
 			.then((res) => {
 				lastClanVote = clanVote;
 				if (debugMode) console.log(lastClanVote);
-				voteHistory.set('Voted', true);
 				startVoteCountdown();
 			})
 			.catch((err) => {
@@ -497,6 +497,15 @@ async function automaticScan() {
 	} else {
 		await scanForClanData();
 		await sauce.timeout(50);
+		submitClanData();
+	}
+
+	// If we have not voted and have recent data - try and vote
+	if (
+		!voteHistory.get('Voted') &&
+		voteHistory.get('Current') &&
+		isRecentVote(voteHistory.get('Current').timestamp)
+	) {
 		submitClanData();
 	}
 }

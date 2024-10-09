@@ -12225,13 +12225,13 @@ function submitClanData() {
             _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
             if (debugMode)
                 console.log("Voted for ".concat(titleCase(clanVote[0]), " & ").concat(titleCase(clanVote[1]), ". Fetching live data from server."));
+            voteHistory.set('Voted', true);
             fetchVos();
         })
             .then(function (res) {
             lastClanVote = clanVote;
             if (debugMode)
                 console.log(lastClanVote);
-            voteHistory.set('Voted', true);
             startVoteCountdown();
         })
             .catch(function (err) {
@@ -12268,7 +12268,14 @@ function automaticScan() {
                     _a.sent();
                     submitClanData();
                     _a.label = 4;
-                case 4: return [2 /*return*/];
+                case 4:
+                    // If we have not voted and have recent data - try and vote
+                    if (!voteHistory.get('Voted') &&
+                        voteHistory.get('Current') &&
+                        isRecentVote(voteHistory.get('Current').timestamp)) {
+                        submitClanData();
+                    }
+                    return [2 /*return*/];
             }
         });
     });
