@@ -11810,15 +11810,9 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
     }
 };
 var _a, _b, _c;
-// alt1 base libs, provides all the commonly used methods for image matching and capture
-// also gives your editor info about the window.alt1 api
 
 
 
-// tell webpack that this file relies index.html, appconfig.json and icon.png, this makes webpack
-// add these files to the output directory
-// this works because in /webpack.config.js we told webpack to treat all html, json and imageimports
-// as assets
 
 
 
@@ -11826,6 +11820,11 @@ var _a, _b, _c;
 
 function getByID(id) {
     return document.getElementById(id);
+}
+function debugLog(msg) {
+    if (!debugMode)
+        return;
+    console.log(msg);
 }
 var helperItems = {
     Output: getByID('output'),
@@ -11967,16 +11966,13 @@ function scanForClanData() {
                             updateVoteHistory();
                         }
                         else if (voted || !isRecentVote(mostRecentVote.timestamp)) {
-                            if (debugMode) {
-                                console.log("Skipping scan. Reason: Already voted this hour: ".concat(titleCase(mostRecentVote.clans.clan_1), " & ").concat(titleCase(mostRecentVote.clans.clan_2)));
-                            }
+                            debugLog("Skipping scan. Reason: Already voted this hour: ".concat(titleCase(mostRecentVote.clans.clan_1), " & ").concat(titleCase(mostRecentVote.clans.clan_2)));
                             displayCurrentClanVote(mostRecentVote);
                             return [2 /*return*/];
                         }
-                        if (mostRecentVote.clans.clan_1 === clanVote[0] || mostRecentVote.clans.clan_2 === clanVote[1]) {
-                            if (debugMode) {
-                                console.log("Skipping scan. Reason: Already have valid data: ".concat(titleCase(mostRecentVote.clans.clan_1), " & ").concat(titleCase(mostRecentVote.clans.clan_2)));
-                            }
+                        if (mostRecentVote.clans.clan_1 === clanVote[0] ||
+                            mostRecentVote.clans.clan_2 === clanVote[1]) {
+                            debugLog("Skipping scan. Reason: Already have valid data: ".concat(titleCase(mostRecentVote.clans.clan_1), " & ").concat(titleCase(mostRecentVote.clans.clan_2)));
                             return [2 /*return*/];
                         }
                     }
@@ -11986,8 +11982,7 @@ function scanForClanData() {
                     // If our data is bad - we should clear our vote.
                     // Most likely this is because we are outside of Prifddinas
                     clanVote = [];
-                    if (debugMode)
-                        console.log('Invalid Data. Reason: Outside of Prifddinas (likely)');
+                    debugLog('Invalid Data. Reason: Outside of Prifddinas (likely)');
                     return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(1000 * 20)];
                 case 1:
                     _a.sent();
@@ -12009,8 +12004,7 @@ function scanForClanData() {
                     if (!clanVote[0] || !clanVote[1]) {
                         helperItems.VoteOutput.innerHTML =
                             '<p>You must be in Prifddinas to scan for data!</p>';
-                        if (debugMode)
-                            console.log("Invalid Data. Reason: user not in Prifddinas. Resetting vote data: ".concat(clanVote[0], " & ").concat(clanVote[1]));
+                        debugLog("Invalid Data. Reason: user not in Prifddinas. Resetting vote data: ".concat(clanVote[0], " & ").concat(clanVote[1]));
                     }
                     else {
                         helperItems.VoteInput.innerHTML = "<p style=\"white-space:normal!important;\">Found clans!</br>".concat(clanVote[0], " and ").concat(clanVote[1], "</p>");
@@ -12023,13 +12017,9 @@ function scanForClanData() {
                             },
                         };
                         voteHistory.set('Current', vote);
-                        if (debugMode)
-                            console.log(voteHistory);
                     }
                     // If we have not voted and have recent data - try and vote
-                    if (!voted &&
-                        mostRecentVote &&
-                        isRecentVote(mostRecentVote.timestamp)) {
+                    if (!voted && mostRecentVote && isRecentVote(mostRecentVote.timestamp)) {
                         submitClanData();
                     }
                     return [2 /*return*/];
@@ -12054,8 +12044,7 @@ var callWithRetry = function (fn, depth) {
                     if (depth > 7) {
                         throw e_1;
                     }
-                    if (debugMode)
-                        console.log("Attempting to connect to API again after error... Attempt #".concat(depth, "/7"));
+                    debugLog("Attempting to connect to API again after error... Attempt #".concat(depth, "/7"));
                     return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, Math.pow(2, depth) * 10); })];
                 case 3:
                     _a.sent();
@@ -12113,8 +12102,7 @@ function getCurrentVos() {
                     alertFavorite(clan_1, clan_2);
                 }
                 if (currentVote && titleCase(currentVote.clans.clan_1) !== clan_1) {
-                    if (debugMode)
-                        console.log('Invalid Data: Vote does not match server data. Deleting Current vote and attempting to scan again.');
+                    debugLog('Invalid Data: Vote does not match server data. Deleting Current vote and attempting to scan again.');
                     voteHistory.delete('Current');
                     scanForClanData();
                 }
@@ -12184,38 +12172,31 @@ function submitClanData() {
         // We already voted which is logged elsewhere - so avoid a redundant log
         if (currentVote)
             return;
-        if (debugMode)
-            console.log('Skipping vote. Reason: Vote matches last Voice of Seren');
+        debugLog('Skipping vote. Reason: Vote matches last Voice of Seren');
         return;
     }
     if (voteHistory.get('Voted')) {
         var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
         if (now.minute <= 2) {
-            if (debugMode)
-                console.log('Skipping vote. Reason: recently voted (during primetime)');
+            debugLog('Skipping vote. Reason: recently voted (during primetime)');
             return;
         }
-        if (debugMode)
-            console.log('Skipping vote. Reason: recently voted (after primetime)');
+        debugLog('Skipping vote. Reason: recently voted (after primetime)');
         setTimeout(function () {
             voteHistory.set('Voted', false);
         }, 1000 * 60 * 15);
         return;
     }
-    if (debugMode)
-        console.log('Validation: Checking if clan data is two different clans');
+    debugLog('Validation: Checking if clan data is two different clans');
     if (!hasValidData()) {
-        if (debugMode)
-            console.log("Skipping vote. Reason: invalid data - ".concat(clanVote[0], " & ").concat(clanVote[1]));
-        if (debugMode)
-            console.log("Rescanning for data...");
+        debugLog("Skipping vote. Reason: invalid data - ".concat(clanVote[0], " & ").concat(clanVote[1]));
+        debugLog("Rescanning for data...");
         scanForClanData();
         return;
     }
     // Our data is recent and valid and we haven't voted - we can vote!
     getLastVos().then(function (res) {
-        if (debugMode)
-            console.log('Validation: Checking data does not match last VoS');
+        debugLog('Validation: Checking data does not match last Voice of Seren');
         fetch('https://vos-alt1.fly.dev/increase_counter', {
             method: 'POST',
             body: JSON.stringify({
@@ -12228,8 +12209,7 @@ function submitClanData() {
         })
             .then(function (res) {
             _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
-            if (debugMode)
-                console.log("Voted for ".concat(titleCase(clanVote[0]), " & ").concat(titleCase(clanVote[1]), ". Fetching live data from server."));
+            debugLog("Voted for ".concat(titleCase(clanVote[0]), " & ").concat(titleCase(clanVote[1]), ". Fetching live data from server."));
             voteHistory.set('Voted', true);
             fetchVos();
         })
@@ -12251,16 +12231,14 @@ function automaticScan() {
             switch (_a.label) {
                 case 0:
                     if (!alt1.rsActive) {
-                        if (debugMode)
-                            console.log("Skipping scan. Reason: RuneScape is not active");
+                        debugLog("Skipping scan. Reason: RuneScape is not active");
                         return [2 /*return*/];
                     }
                     now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
                     if (!(voteHistory.get('Voted') &&
                         now.minute <= 2 &&
                         voteHistory.get('Current'))) return [3 /*break*/, 1];
-                    if (debugMode)
-                        console.log("Skipping scan. Reason: voted recently (voted for ".concat(lastClanVote[0], " and ").concat(lastClanVote[1], ")"));
+                    debugLog("Skipping scan. Reason: voted recently (voted for ".concat(lastClanVote[0], " and ").concat(lastClanVote[1], ")"));
                     setTimeout(function () {
                         voteHistory.set('Voted', false);
                     }, 1000 * 20);
@@ -12325,8 +12303,7 @@ function showTooltip(tooltip) {
         return;
     }
     if (!alt1.setTooltip(tooltip)) {
-        if (debugMode)
-            console.log('Error: No tooltip permission');
+        debugLog('Error: No tooltip permission');
     }
 }
 function alertFavorite(clan_1, clan_2) {
@@ -12379,15 +12356,13 @@ function hasValidData() {
         voteHistory.delete('Last');
         lastVote = undefined;
     }
-    ;
     // If we have a "Last" vote check that it is not equal to our "Current" vote
     if (lastVote && lastVote.timestamp) {
         var lastClan_1 = lastVote.clans.clan_1;
         var lastClan_2 = lastVote.clans.clan_2;
         lastVoteCheck =
             clanVote[0] !== lastClan_1 && clanVote[1] !== lastClan_2;
-        if (debugMode)
-            console.log('Invalid Data. Current vote matches last vote.');
+        debugLog('Invalid Data. Current vote matches last vote.');
     }
     else {
         // If we do not have a last vote we cannot match against it
@@ -12443,8 +12418,7 @@ function checkVersion(version) {
             location.reload();
         }
         else {
-            if (debugMode)
-                console.log("App is running latest version. Expected version: ".concat(latestVersion.version, " ; found: ").concat(version));
+            debugLog("App is running latest version. Expected version: ".concat(latestVersion.version, " ; found: ").concat(version));
         }
     });
 }
