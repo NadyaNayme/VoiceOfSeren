@@ -350,8 +350,11 @@ function submitClanData() {
 
 	// If our vote data matches data in last vos our data is outdated and we are not allowed to vote
 	if (dataMatchesLastHour()) {
+		// We already voted which is logged elsewhere - so avoid a redundant log
+		if (voteHistory.get('Current')) return;
+
 		if (debugMode)
-			console.log('Skipping vote. Reason: vote matches last VoS');
+			console.log('Skipping vote. Reason: Vote matches last Voice of Seren');
 		return;
 	}
 
@@ -535,9 +538,21 @@ function alertFavorite(clan_1: string, clan_2: string) {
 function dataMatchesLastHour() {
 	let lastServerData =
 		lastVos.includes(clanVote[0]) || lastVos.includes(clanVote[1]);
+
+	// If the server is missing data - always return false
+	if (lastVos.includes(undefined)) {
+		lastServerData = false
+	}
+
 	let lastLocalData =
 		lastClanVote.includes(clanVote[0]) ||
 		lastClanVote.includes(clanVote[1]);
+
+	// If we do not have a local vote - always return false
+	if (lastClanVote.includes(undefined)) {
+		lastLocalData = false;
+	}
+
 	return lastServerData || lastLocalData;
 }
 
