@@ -12176,9 +12176,6 @@ function displayCurrentClanVote(mostRecentVote) {
 }
 function submitClanData() {
     var currentVote = voteHistory.get('Current');
-    // If our Vote data is older than 4 minutes don't bother voting
-    if (currentVote && !isRecentVote(currentVote))
-        return;
     // Checks to see if we have already voted and that our data is valid
     // If our vote data matches data in last vos our data is outdated and we are not allowed to vote
     if (dataMatchesLastHour()) {
