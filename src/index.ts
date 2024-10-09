@@ -475,7 +475,7 @@ async function automaticScan() {
 	} else {
 		await scanForClanData();
 		await sauce.timeout(50);
-		await submitClanData();
+		submitClanData();
 	}
 }
 

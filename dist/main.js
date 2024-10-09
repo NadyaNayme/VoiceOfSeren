@@ -12250,11 +12250,9 @@ function automaticScan() {
                     return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(50)];
                 case 3:
                     _a.sent();
-                    return [4 /*yield*/, submitClanData()];
-                case 4:
-                    _a.sent();
-                    _a.label = 5;
-                case 5: return [2 /*return*/];
+                    submitClanData();
+                    _a.label = 4;
+                case 4: return [2 /*return*/];
             }
         });
     });
