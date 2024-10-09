@@ -412,7 +412,7 @@ function submitClanData() {
 		return;
 	}
 
-	if (hasValidData() && !dataMatchesLastHour()) {
+	if (hasValidData()) {
 		getLastVos().then((res) => {
 			if (debugMode)
 				console.log(

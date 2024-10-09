@@ -12190,7 +12190,7 @@ function submitClanData() {
         scanForClanData();
         return;
     }
-    if (hasValidData() && !dataMatchesLastHour()) {
+    if (hasValidData()) {
         getLastVos().then(function (res) {
             if (debugMode)
                 console.log('Validation: Checking data does not match last VoS');
