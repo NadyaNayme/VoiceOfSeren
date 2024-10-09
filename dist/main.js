@@ -12346,7 +12346,7 @@ function hasValidData() {
     // If our 'Last' vote is older than 2 hours it is invalid
     // Since it is an invalid vote we can delete it - but since we already hold a reference
     // to the value we need to set the held value to be undefined to ensure the next condition always returns true
-    if (isLastVoteInvalid(lastVote.timestamp)) {
+    if (lastVote && isLastVoteInvalid(lastVote.timestamp)) {
         voteHistory.delete('Last');
         lastVote = undefined;
     }
