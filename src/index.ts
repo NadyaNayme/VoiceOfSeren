@@ -46,7 +46,6 @@ let debugMode = sauce.getSetting('debugMode') ?? false;
 let clanVote = [];
 let lastClanVote = [];
 let lastVos = [];
-let currentVos = [];
 
 // Contains three keys: "Last", "Current", and "Voted"
 // Is not persisted between runs
@@ -156,10 +155,12 @@ async function scanForClanData() {
 			/* We are also eligible to vote again */
 			voteHistory.set('Voted', false);
 		} else {
-			if (debugMode)
+			if (debugMode) {
 				console.log(
 					`Skipping scan. Reason: Already voted this hour: ${mostRecentVote.clans.clan_1} & ${mostRecentVote.clans.clan_2}`
 				);
+			}
+			displayCurrentClanVote(mostRecentVote);
 			return;
 		}
 		if (debugMode) console.log(voteHistory);
@@ -260,6 +261,7 @@ async function getCurrentVos() {
 		.then((res) => res.text())
 		.then((data) => {
 			let vos = JSON.parse(data);
+			let currentVote = voteHistory.get('Current');
 			if (vos['clan_1'] == undefined || vos['clan_2'] == undefined) {
 				alt1.setTitleBarText('');
 				helperItems.Current.innerHTML =
@@ -273,7 +275,6 @@ async function getCurrentVos() {
 				alertFavorite(clan_1, clan_2);
 			}
 
-			let currentVote = voteHistory.get('Current');
 			if (currentVote && titleCase(currentVote.clans.clan_1) !== clan_1) {
 				if (debugMode)
 					console.log(
@@ -323,6 +324,25 @@ async function getLastVos() {
 		.catch((err) => {
 			helperItems.Last.innerHTML = `<p>API Error: Please try again in a minute</p>`;
 		});
+}
+
+function displayCurrentClanVote(mostRecentVote) {
+	/* If we don't have a vote - return */
+	if (!mostRecentVote) return;
+
+	/* If we're already showing the current clans - do nothing */
+	if (helperItems.Current.innerHTML.includes('asset/resource')) return;
+
+	/* Otherwise update the display to show the player's most recent vote */
+	helperItems.Current.innerHTML = `<div><p>${titleCase(
+		mostRecentVote.clans.clan_1
+	)}</p><img src="./asset/resource/${mostRecentVote.clans.clan_1}.png" alt="${
+		mostRecentVote.clans.clan_1
+	}"></div><div><p>${titleCase(
+		mostRecentVote.clans.clan_2
+	)}</p><img src="./asset/resource/${mostRecentVote.clans.clan_2}.png" alt="${
+		mostRecentVote.clans.clan_2
+	}"></div>`;
 }
 
 function submitClanData() {

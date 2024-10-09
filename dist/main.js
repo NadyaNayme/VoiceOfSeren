@@ -11853,7 +11853,6 @@ var debugMode = (_b = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('debugMod
 var clanVote = [];
 var lastClanVote = [];
 var lastVos = [];
-var currentVos = [];
 // Contains three keys: "Last", "Current", and "Voted"
 // Is not persisted between runs
 // Prevents voting if "Voted" or "Current" exist
@@ -11950,8 +11949,10 @@ function scanForClanData() {
                             voteHistory.set('Voted', false);
                         }
                         else {
-                            if (debugMode)
+                            if (debugMode) {
                                 console.log("Skipping scan. Reason: Already voted this hour: ".concat(mostRecentVote.clans.clan_1, " & ").concat(mostRecentVote.clans.clan_2));
+                            }
+                            displayCurrentClanVote(mostRecentVote);
                             return [2 /*return*/];
                         }
                         if (debugMode)
@@ -12056,6 +12057,7 @@ function getCurrentVos() {
                 .then(function (res) { return res.text(); })
                 .then(function (data) {
                 var vos = JSON.parse(data);
+                var currentVote = voteHistory.get('Current');
                 if (vos['clan_1'] == undefined || vos['clan_2'] == undefined) {
                     alt1.setTitleBarText('');
                     helperItems.Current.innerHTML =
@@ -12068,7 +12070,6 @@ function getCurrentVos() {
                     updateTitleBar(clan_1, clan_2);
                     alertFavorite(clan_1, clan_2);
                 }
-                var currentVote = voteHistory.get('Current');
                 if (currentVote && titleCase(currentVote.clans.clan_1) !== clan_1) {
                     if (debugMode)
                         console.log('Invalid Data: Vote does not match server data. Deleting Current vote and attempting to scan again.');
@@ -12120,6 +12121,16 @@ function getLastVos() {
             return [2 /*return*/];
         });
     });
+}
+function displayCurrentClanVote(mostRecentVote) {
+    /* If we don't have a vote - return */
+    if (!mostRecentVote)
+        return;
+    /* If we're already showing the current clans - do nothing */
+    if (helperItems.Current.innerHTML.includes('asset/resource'))
+        return;
+    /* Otherwise update the display to show the player's most recent vote */
+    helperItems.Current.innerHTML = "<div><p>".concat(titleCase(mostRecentVote.clans.clan_1), "</p><img src=\"./asset/resource/").concat(mostRecentVote.clans.clan_1, ".png\" alt=\"").concat(mostRecentVote.clans.clan_1, "\"></div><div><p>").concat(titleCase(mostRecentVote.clans.clan_2), "</p><img src=\"./asset/resource/").concat(mostRecentVote.clans.clan_2, ".png\" alt=\"").concat(mostRecentVote.clans.clan_2, "\"></div>");
 }
 function submitClanData() {
     // Check to see if we have already voted and that our data is valid
