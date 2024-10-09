@@ -389,7 +389,7 @@ function submitClanData() {
 		return;
 	}
 
-	if (hasValidData() && !dataMatchesLastHour() && !voteHistory.get('Voted')) {
+	if (hasValidData() && !dataMatchesLastHour()) {
 		getLastVos().then((res) => {
 			if (debugMode)
 				console.log(
