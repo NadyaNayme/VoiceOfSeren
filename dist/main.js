@@ -12237,11 +12237,12 @@ function automaticScan() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!alt1.rsActive) {
+                    now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+                    // The "now" check is to allow alts to scan and vote for first few minutes of the hour
+                    if (!alt1.rsActive && now.minute >= 3) {
                         debugLog("Skipping scan. Reason: RuneScape is not active");
                         return [2 /*return*/];
                     }
-                    now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
                     if (!(voteHistory.get('Voted') &&
                         now.minute <= 2 &&
                         voteHistory.get('Current'))) return [3 /*break*/, 1];

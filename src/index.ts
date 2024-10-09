@@ -468,11 +468,14 @@ async function submitClanData() {
 }
 
 async function automaticScan() {
-    if (!alt1.rsActive) {
+	let now = DateTime.now();
+
+	// The "now" check is to allow alts to scan and vote for first few minutes of the hour
+    if (!alt1.rsActive && now.minute >= 3) {
         debugLog(`Skipping scan. Reason: RuneScape is not active`);
         return;
     }
-    let now = DateTime.now();
+
     if (
         voteHistory.get('Voted') &&
         now.minute <= 2 &&
