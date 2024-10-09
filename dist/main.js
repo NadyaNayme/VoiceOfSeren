@@ -12024,6 +12024,12 @@ function scanForClanData() {
                         if (debugMode)
                             console.log(voteHistory);
                     }
+                    // If we have not voted and have recent data - try and vote
+                    if (!voted &&
+                        mostRecentVote &&
+                        isRecentVote(mostRecentVote.timestamp)) {
+                        submitClanData();
+                    }
                     return [2 /*return*/];
             }
         });

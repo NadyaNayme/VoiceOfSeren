@@ -206,9 +206,7 @@ async function scanForClanData() {
 		// Most likely this is because we are outside of Prifddinas
 		clanVote = [];
 		if (debugMode)
-			console.log(
-				'Invalid Data. Reason: Outside of Prifddinas (likely)'
-			);
+			console.log('Invalid Data. Reason: Outside of Prifddinas (likely)');
 		await sauce.timeout(1000 * 20);
 		return;
 	}
@@ -250,6 +248,15 @@ async function scanForClanData() {
 
 		voteHistory.set('Current', vote);
 		if (debugMode) console.log(voteHistory);
+	}
+
+	// If we have not voted and have recent data - try and vote
+	if (
+		!voted &&
+		mostRecentVote &&
+		isRecentVote(mostRecentVote.timestamp)
+	) {
+		submitClanData();
 	}
 }
 
