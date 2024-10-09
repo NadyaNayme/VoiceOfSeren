@@ -333,16 +333,11 @@ function displayCurrentClanVote(mostRecentVote) {
 	/* If we're already showing the current clans - do nothing */
 	if (helperItems.Current.innerHTML.includes('asset/resource')) return;
 
+	let clan_1 = titleCase(mostRecentVote.clans.clan_1)
+	let clan_2 = titleCase(mostRecentVote.clans.clan_2);
+
 	/* Otherwise update the display to show the player's most recent vote */
-	helperItems.Current.innerHTML = `<div><p>${titleCase(
-		mostRecentVote.clans.clan_1
-	)}</p><img src="./asset/resource/${mostRecentVote.clans.clan_1}.png" alt="${
-		mostRecentVote.clans.clan_1
-	}"></div><div><p>${titleCase(
-		mostRecentVote.clans.clan_2
-	)}</p><img src="./asset/resource/${mostRecentVote.clans.clan_2}.png" alt="${
-		mostRecentVote.clans.clan_2
-	}"></div>`;
+	helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
 }
 
 function submitClanData() {

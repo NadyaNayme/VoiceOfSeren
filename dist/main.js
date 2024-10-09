@@ -12129,8 +12129,10 @@ function displayCurrentClanVote(mostRecentVote) {
     /* If we're already showing the current clans - do nothing */
     if (helperItems.Current.innerHTML.includes('asset/resource'))
         return;
+    var clan_1 = titleCase(mostRecentVote.clans.clan_1);
+    var clan_2 = titleCase(mostRecentVote.clans.clan_2);
     /* Otherwise update the display to show the player's most recent vote */
-    helperItems.Current.innerHTML = "<div><p>".concat(titleCase(mostRecentVote.clans.clan_1), "</p><img src=\"./asset/resource/").concat(mostRecentVote.clans.clan_1, ".png\" alt=\"").concat(mostRecentVote.clans.clan_1, "\"></div><div><p>").concat(titleCase(mostRecentVote.clans.clan_2), "</p><img src=\"./asset/resource/").concat(mostRecentVote.clans.clan_2, ".png\" alt=\"").concat(mostRecentVote.clans.clan_2, "\"></div>");
+    helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
 }
 function submitClanData() {
     // Check to see if we have already voted and that our data is valid
