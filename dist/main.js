@@ -11973,8 +11973,12 @@ function scanForClanData() {
                             displayCurrentClanVote(mostRecentVote);
                             return [2 /*return*/];
                         }
-                        if (debugMode)
-                            console.log(voteHistory);
+                        if (mostRecentVote.clans.clan_1 === clanVote[0] || mostRecentVote.clans.clan_2 === clanVote[1]) {
+                            if (debugMode) {
+                                console.log("Skipping scan. Reason: Already have valid data: ".concat(titleCase(mostRecentVote.clans.clan_1), " & ").concat(titleCase(mostRecentVote.clans.clan_2)));
+                            }
+                            return [2 /*return*/];
+                        }
                     }
                     foundClans = Object.entries(tryFindClans());
                     if (!(Object.keys(foundClans).length == 0 ||
@@ -12002,8 +12006,6 @@ function scanForClanData() {
                         clanVote[1] = firstClan;
                         clanVote[0] = secondClan;
                     }
-                    if (debugMode)
-                        console.log(clanVote);
                     if (!clanVote[0] || !clanVote[1]) {
                         helperItems.VoteOutput.innerHTML =
                             '<p>You must be in Prifddinas to scan for data!</p>';
@@ -12266,8 +12268,12 @@ function automaticScan() {
                 case 1: return [4 /*yield*/, scanForClanData()];
                 case 2:
                     _a.sent();
-                    _a.label = 3;
+                    return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(50)];
                 case 3:
+                    _a.sent();
+                    submitClanData();
+                    _a.label = 4;
+                case 4:
                     // If we have not voted and have recent data - try and vote
                     if (!voteHistory.get('Voted') &&
                         voteHistory.get('Current') &&

@@ -190,7 +190,15 @@ async function scanForClanData() {
 			displayCurrentClanVote(mostRecentVote);
 			return;
 		}
-		if (debugMode) console.log(voteHistory);
+
+		if (mostRecentVote.clans.clan_1 === clanVote[0] || mostRecentVote.clans.clan_2 === clanVote[1]) {
+			if (debugMode) {
+				console.log(`Skipping scan. Reason: Already have valid data: ${titleCase(
+						mostRecentVote.clans.clan_1
+					)} & ${titleCase(mostRecentVote.clans.clan_2)}`)
+			}
+			return;
+		}
 	}
 
 	// Turn the {clan_1: {x,y}, clan_2: {x,y}} into an array
@@ -225,8 +233,6 @@ async function scanForClanData() {
 		clanVote[1] = firstClan;
 		clanVote[0] = secondClan;
 	}
-
-	if (debugMode) console.log(clanVote);
 
 	if (!clanVote[0] || !clanVote[1]) {
 		helperItems.VoteOutput.innerHTML =
@@ -499,6 +505,8 @@ async function automaticScan() {
 		return;
 	} else {
 		await scanForClanData();
+		await sauce.timeout(50);
+		submitClanData();
 	}
 
 	// If we have not voted and have recent data - try and vote
