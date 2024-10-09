@@ -12040,8 +12040,6 @@ var callWithRetry = function (fn, depth) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 4]);
-                    if (debugMode)
-                        console.log("Attempting to connect to API again after error...");
                     return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(1000)];
                 case 1:
                     _a.sent();
