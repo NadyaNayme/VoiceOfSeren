@@ -80,6 +80,19 @@ function isLastVoteInvalid(lastVoteTimestamp) {
 	return lastVoteTimestamp >= twoHoursAgo;
 }
 
+function isRecentVote(votedTimestamp) {
+	const currentEpoch = getCurrentEpoch();
+
+	// Get the most recent hour mark of the current epoch
+	const currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
+
+	// Calculate the timestamp for 4 minutes ago from the most recent hour mark
+	const fourMinutesAgo = currentHourMark - 240;
+
+	// 'Current' votes older than 4 minutes ago are recent
+	return votedTimestamp >= fourMinutesAgo;
+}
+
 function startVoteCountdown() {
 	const countdownElement = document.getElementById('Countdown');
 
@@ -87,9 +100,11 @@ function startVoteCountdown() {
 		const currentTime = getCurrentEpoch();
 		const timeRemaining = getNextHourEpoch() - currentTime;
 
-		if (timeRemaining <= 0) {
+		if (timeRemaining <= 2) {
+			updateVoteHistory();
+			clanVote = [];
 			clearInterval(interval);
-			countdownElement.textContent = 'The next vote is now available!';
+			countdownElement.textContent = 'The next vote is available!';
 		} else {
 			const hours = Math.floor(timeRemaining / 3600);
 			const minutes = Math.floor((timeRemaining % 3600) / 60);
@@ -163,24 +178,8 @@ async function scanForClanData() {
 		 * set "Current" to "Last". Otherwise we can safely skip the scan.
 		 */
 		if (getCurrentEpoch() > nextVotingHour) {
-
-			/*
-			 * If the 'Current' vote is still valid for a 'Last' vote - set it to 'Last'
-		     * and if we have a 'Last' vote and our 'Current' is invalid - delete the 'Last'
-			 * for also being invalid
-			 * */
-			if (!isLastVoteInvalid(mostRecentVote.timestamp)) {
-				voteHistory.set('Last', mostRecentVote);
-			} else {
-				voteHistory.delete('Last');
-			}
-
-			// Either we moved it to 'Last' or it is invalid. Either way it should be deleted
-			voteHistory.delete('Current');
-
-			/* We are also eligible to vote again */
-			voteHistory.set('Voted', false);
-		} else if (voted) {
+			updateVoteHistory();
+		} else if (voted || !isRecentVote(mostRecentVote.timestamp)) {
 			if (debugMode) {
 				console.log(
 					`Skipping scan. Reason: Already voted this hour: ${titleCase(
@@ -208,7 +207,7 @@ async function scanForClanData() {
 		clanVote = [];
 		if (debugMode)
 			console.log(
-				'Skipping scan. Reason: Outside of Prifddinas (likely)'
+				'Invalid Data. Reason: Outside of Prifddinas (likely)'
 			);
 		await sauce.timeout(1000 * 20);
 		return;
@@ -236,7 +235,7 @@ async function scanForClanData() {
 			'<p>You must be in Prifddinas to scan for data!</p>';
 		if (debugMode)
 			console.log(
-				`Skipping scan. Reason: user not in Prifddinas. Resetting vote data: ${clanVote[0]} & ${clanVote[1]}`
+				`Invalid Data. Reason: user not in Prifddinas. Resetting vote data: ${clanVote[0]} & ${clanVote[1]}`
 			);
 	} else {
 		helperItems.VoteInput.innerHTML = `<p style="white-space:normal!important;">Found clans!</br>${clanVote[0]} and ${clanVote[1]}</p>`;
@@ -271,6 +270,26 @@ const callWithRetry = async (fn, depth = 0) => {
 		return callWithRetry(fn, depth + 1);
 	}
 };
+
+/*
+ * If the 'Current' vote is still valid for a 'Last' vote - set it to 'Last'
+ * and if we have a 'Last' vote and our 'Current' is invalid - delete the 'Last'
+ * for also being invalid
+ * */
+function updateVoteHistory() {
+	const mostRecentVote = voteHistory.get('Current');
+	if (!isLastVoteInvalid(mostRecentVote.timestamp)) {
+		voteHistory.set('Last', mostRecentVote);
+	} else {
+		voteHistory.delete('Last');
+	}
+
+	// Either we moved it to 'Last' or it is invalid. Either way it should be deleted
+	voteHistory.delete('Current');
+
+	/* We are also eligible to vote again */
+	voteHistory.set('Voted', false);
+}
 
 function fetchVos() {
 	callWithRetry(getLastVos);
@@ -367,12 +386,18 @@ function displayCurrentClanVote(mostRecentVote) {
 }
 
 function submitClanData() {
-	// Check to see if we have already voted and that our data is valid
 
+	const currentVote = voteHistory.get('Current');
+
+	// If our Vote data is older than 4 minutes don't bother voting
+	if (currentVote && !isRecentVote(currentVote)) return;
+
+
+	// Checks to see if we have already voted and that our data is valid
 	// If our vote data matches data in last vos our data is outdated and we are not allowed to vote
 	if (dataMatchesLastHour()) {
 		// We already voted which is logged elsewhere - so avoid a redundant log
-		if (voteHistory.get('Current')) return;
+		if (currentVote) return;
 
 		if (debugMode)
 			console.log('Skipping vote. Reason: Vote matches last Voice of Seren');
@@ -410,44 +435,43 @@ function submitClanData() {
 		return;
 	}
 
-	if (hasValidData()) {
-		getLastVos().then((res) => {
-			if (debugMode)
-				console.log(
-					'Validation: Checking data does not match last VoS'
+	// Our data is recent and valid and we haven't voted - we can vote!
+	getLastVos().then((res) => {
+		if (debugMode)
+			console.log(
+				'Validation: Checking data does not match last VoS'
+			);
+		fetch('https://vos-alt1.fly.dev/increase_counter', {
+			method: 'POST',
+			body: JSON.stringify({
+				clans: clanVote,
+				uuid: uuid,
+			}),
+			headers: {
+				'Content-type': 'application/json; charset=UTF-8',
+			},
+		})
+			.then((res) => {
+				sauce.updateSetting(
+					'votedCount',
+					sauce.getSetting('votedCount') + 1
 				);
-			fetch('https://vos-alt1.fly.dev/increase_counter', {
-				method: 'POST',
-				body: JSON.stringify({
-					clans: clanVote,
-					uuid: uuid,
-				}),
-				headers: {
-					'Content-type': 'application/json; charset=UTF-8',
-				},
-			})
-				.then((res) => {
-					sauce.updateSetting(
-						'votedCount',
-						sauce.getSetting('votedCount') + 1
+				if (debugMode)
+					console.log(
+						`Voted for ${titleCase(clanVote[0])} & ${titleCase(clanVote[1])}. Fetching live data from server.`
 					);
-					if (debugMode)
-						console.log(
-							`Voted for ${clanVote[0]} & ${clanVote[1]}. Fetching live data from server.`
-						);
-					fetchVos();
-				})
-				.then((res) => {
-					lastClanVote = clanVote;
-					if (debugMode) console.log(lastClanVote);
-					voteHistory.set('Voted', true);
-					startVoteCountdown();
-				})
-				.catch((err) => {
-					helperItems.VoteOutput.innerHTML = `<p>API Error: Please try again</p>`;
-				});
-		});
-	}
+				fetchVos();
+			})
+			.then((res) => {
+				lastClanVote = clanVote;
+				if (debugMode) console.log(lastClanVote);
+				voteHistory.set('Voted', true);
+				startVoteCountdown();
+			})
+			.catch((err) => {
+				helperItems.VoteOutput.innerHTML = `<p>API Error: Please try again</p>`;
+			});
+	});
 }
 
 async function automaticScan() {
