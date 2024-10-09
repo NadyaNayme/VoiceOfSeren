@@ -469,6 +469,9 @@ async function submitClanData() {
 
 async function automaticScan() {
 	let now = DateTime.now();
+	let voted = voteHistory.get('Voted');
+	let current = voteHistory.get('Current');
+	let last = voteHistory.get('Last');
 
 	// The "now" check is to allow alts to scan and vote for first few minutes of the hour
     if (!alt1.rsActive && now.minute >= 3) {
@@ -477,17 +480,24 @@ async function automaticScan() {
     }
 
     if (
-        voteHistory.get('Voted') &&
+        voted &&
         now.minute <= 2 &&
-        voteHistory.get('Current')
+        current
     ) {
+
+		if (
+            (current.clan_1 === last?.clan_1) ||
+            current.clan_1 === last?.clan_1
+        ) {
+        	debugLog(`Skipping scan. Current data matched data from last hour.`);
+			voteHistory.delete('Current');
+			clanVote = [];
+			return;
+        }
         debugLog(
-            `Skipping scan. Reason: voted recently (voted for ${lastClanVote[0]} and ${lastClanVote[1]})`,
+            `Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
         );
-        setTimeout(() => {
-            voteHistory.set('Voted', false);
-        }, 1000 * 20);
-        return;
+        voteHistory.set('Voted', false);
     } else {
         await scanForClanData();
         await sauce.timeout(50);
@@ -499,9 +509,9 @@ async function automaticScan() {
 
     // If we have not voted and have recent data - try and vote
     if (
-        !voteHistory.get('Voted') &&
-        voteHistory.get('Current') &&
-        isRecentVote(voteHistory.get('Current').timestamp)
+        !voted &&
+        current &&
+        isRecentVote(current.timestamp)
     ) {
         await submitClanData();
     }

@@ -12233,24 +12233,32 @@ function submitClanData() {
 }
 function automaticScan() {
     return __awaiter(this, void 0, void 0, function () {
-        var now;
+        var now, voted, current, last;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+                    voted = voteHistory.get('Voted');
+                    current = voteHistory.get('Current');
+                    last = voteHistory.get('Last');
                     // The "now" check is to allow alts to scan and vote for first few minutes of the hour
                     if (!alt1.rsActive && now.minute >= 3) {
                         debugLog("Skipping scan. Reason: RuneScape is not active");
                         return [2 /*return*/];
                     }
-                    if (!(voteHistory.get('Voted') &&
+                    if (!(voted &&
                         now.minute <= 2 &&
-                        voteHistory.get('Current'))) return [3 /*break*/, 1];
-                    debugLog("Skipping scan. Reason: voted recently (voted for ".concat(lastClanVote[0], " and ").concat(lastClanVote[1], ")"));
-                    setTimeout(function () {
-                        voteHistory.set('Voted', false);
-                    }, 1000 * 20);
-                    return [2 /*return*/];
+                        current)) return [3 /*break*/, 1];
+                    if ((current.clan_1 === (last === null || last === void 0 ? void 0 : last.clan_1)) ||
+                        current.clan_1 === (last === null || last === void 0 ? void 0 : last.clan_1)) {
+                        debugLog("Skipping scan. Current data matched data from last hour.");
+                        voteHistory.delete('Current');
+                        clanVote = [];
+                        return [2 /*return*/];
+                    }
+                    debugLog("Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.");
+                    voteHistory.set('Voted', false);
+                    return [3 /*break*/, 5];
                 case 1: return [4 /*yield*/, scanForClanData()];
                 case 2:
                     _a.sent();
@@ -12264,9 +12272,9 @@ function automaticScan() {
                     voteHistory.set('Voted', true);
                     _a.label = 5;
                 case 5:
-                    if (!(!voteHistory.get('Voted') &&
-                        voteHistory.get('Current') &&
-                        isRecentVote(voteHistory.get('Current').timestamp))) return [3 /*break*/, 7];
+                    if (!(!voted &&
+                        current &&
+                        isRecentVote(current.timestamp))) return [3 /*break*/, 7];
                     return [4 /*yield*/, submitClanData()];
                 case 6:
                     _a.sent();
