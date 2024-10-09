@@ -255,7 +255,7 @@ async function scanForClanData() {
 
     // If we have not voted and have recent data - try and vote
     if (!voted && mostRecentVote && isRecentVote(mostRecentVote.timestamp)) {
-        submitClanData();
+        await submitClanData();
     }
 }
 
@@ -389,7 +389,7 @@ function displayCurrentClanVote(mostRecentVote) {
     helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
 }
 
-function submitClanData() {
+async function submitClanData() {
     const currentVote = voteHistory.get('Current');
 
     // Checks to see if we have already voted and that our data is valid
@@ -488,7 +488,10 @@ async function automaticScan() {
     } else {
         await scanForClanData();
         await sauce.timeout(50);
-        submitClanData();
+        await submitClanData();
+
+		// Set voted to true here so that the below check will fail and we won't hit this branch again on the next scan
+		voteHistory.set('Voted', true);
     }
 
     // If we have not voted and have recent data - try and vote
@@ -497,7 +500,7 @@ async function automaticScan() {
         voteHistory.get('Current') &&
         isRecentVote(voteHistory.get('Current').timestamp)
     ) {
-        submitClanData();
+        await submitClanData();
     }
 }
 

@@ -12018,11 +12018,12 @@ function scanForClanData() {
                         };
                         voteHistory.set('Current', vote);
                     }
-                    // If we have not voted and have recent data - try and vote
-                    if (!voted && mostRecentVote && isRecentVote(mostRecentVote.timestamp)) {
-                        submitClanData();
-                    }
-                    return [2 /*return*/];
+                    if (!(!voted && mostRecentVote && isRecentVote(mostRecentVote.timestamp))) return [3 /*break*/, 4];
+                    return [4 /*yield*/, submitClanData()];
+                case 3:
+                    _a.sent();
+                    _a.label = 4;
+                case 4: return [2 /*return*/];
             }
         });
     });
@@ -12165,62 +12166,68 @@ function displayCurrentClanVote(mostRecentVote) {
     helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
 }
 function submitClanData() {
-    var currentVote = voteHistory.get('Current');
-    // Checks to see if we have already voted and that our data is valid
-    // If our vote data matches data in last vos our data is outdated and we are not allowed to vote
-    if (dataMatchesLastHour()) {
-        // We already voted which is logged elsewhere - so avoid a redundant log
-        if (currentVote)
-            return;
-        debugLog('Skipping vote. Reason: Vote matches last Voice of Seren');
-        return;
-    }
-    if (voteHistory.get('Voted')) {
-        var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-        if (now.minute <= 2) {
-            debugLog('Skipping vote. Reason: recently voted (during primetime)');
-            return;
-        }
-        debugLog('Skipping vote. Reason: recently voted (after primetime)');
-        setTimeout(function () {
-            voteHistory.set('Voted', false);
-        }, 1000 * 60 * 15);
-        return;
-    }
-    debugLog('Validation: Checking if clan data is two different clans');
-    if (!hasValidData()) {
-        debugLog("Skipping vote. Reason: invalid data - ".concat(clanVote[0], " & ").concat(clanVote[1]));
-        debugLog("Rescanning for data...");
-        scanForClanData();
-        return;
-    }
-    // Our data is recent and valid and we haven't voted - we can vote!
-    getLastVos().then(function (res) {
-        debugLog('Validation: Checking data does not match last Voice of Seren');
-        fetch('https://vos-alt1.fly.dev/increase_counter', {
-            method: 'POST',
-            body: JSON.stringify({
-                clans: clanVote,
-                uuid: uuid,
-            }),
-            headers: {
-                'Content-type': 'application/json; charset=UTF-8',
-            },
-        })
-            .then(function (res) {
-            _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
-            debugLog("Voted for ".concat(titleCase(clanVote[0]), " & ").concat(titleCase(clanVote[1]), ". Fetching live data from server."));
-            voteHistory.set('Voted', true);
-            fetchVos();
-        })
-            .then(function (res) {
-            lastClanVote = clanVote;
-            if (debugMode)
-                console.log(lastClanVote);
-            startVoteCountdown();
-        })
-            .catch(function (err) {
-            helperItems.VoteOutput.innerHTML = "<p>API Error: Please try again</p>";
+    return __awaiter(this, void 0, void 0, function () {
+        var currentVote, now;
+        return __generator(this, function (_a) {
+            currentVote = voteHistory.get('Current');
+            // Checks to see if we have already voted and that our data is valid
+            // If our vote data matches data in last vos our data is outdated and we are not allowed to vote
+            if (dataMatchesLastHour()) {
+                // We already voted which is logged elsewhere - so avoid a redundant log
+                if (currentVote)
+                    return [2 /*return*/];
+                debugLog('Skipping vote. Reason: Vote matches last Voice of Seren');
+                return [2 /*return*/];
+            }
+            if (voteHistory.get('Voted')) {
+                now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
+                if (now.minute <= 2) {
+                    debugLog('Skipping vote. Reason: recently voted (during primetime)');
+                    return [2 /*return*/];
+                }
+                debugLog('Skipping vote. Reason: recently voted (after primetime)');
+                setTimeout(function () {
+                    voteHistory.set('Voted', false);
+                }, 1000 * 60 * 15);
+                return [2 /*return*/];
+            }
+            debugLog('Validation: Checking if clan data is two different clans');
+            if (!hasValidData()) {
+                debugLog("Skipping vote. Reason: invalid data - ".concat(clanVote[0], " & ").concat(clanVote[1]));
+                debugLog("Rescanning for data...");
+                scanForClanData();
+                return [2 /*return*/];
+            }
+            // Our data is recent and valid and we haven't voted - we can vote!
+            getLastVos().then(function (res) {
+                debugLog('Validation: Checking data does not match last Voice of Seren');
+                fetch('https://vos-alt1.fly.dev/increase_counter', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        clans: clanVote,
+                        uuid: uuid,
+                    }),
+                    headers: {
+                        'Content-type': 'application/json; charset=UTF-8',
+                    },
+                })
+                    .then(function (res) {
+                    _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
+                    debugLog("Voted for ".concat(titleCase(clanVote[0]), " & ").concat(titleCase(clanVote[1]), ". Fetching live data from server."));
+                    voteHistory.set('Voted', true);
+                    fetchVos();
+                })
+                    .then(function (res) {
+                    lastClanVote = clanVote;
+                    if (debugMode)
+                        console.log(lastClanVote);
+                    startVoteCountdown();
+                })
+                    .catch(function (err) {
+                    helperItems.VoteOutput.innerHTML = "<p>API Error: Please try again</p>";
+                });
+            });
+            return [2 /*return*/];
         });
     });
 }
@@ -12249,16 +12256,21 @@ function automaticScan() {
                     return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(50)];
                 case 3:
                     _a.sent();
-                    submitClanData();
-                    _a.label = 4;
+                    return [4 /*yield*/, submitClanData()];
                 case 4:
-                    // If we have not voted and have recent data - try and vote
-                    if (!voteHistory.get('Voted') &&
+                    _a.sent();
+                    // Set voted to true here so that the below check will fail and we won't hit this branch again on the next scan
+                    voteHistory.set('Voted', true);
+                    _a.label = 5;
+                case 5:
+                    if (!(!voteHistory.get('Voted') &&
                         voteHistory.get('Current') &&
-                        isRecentVote(voteHistory.get('Current').timestamp)) {
-                        submitClanData();
-                    }
-                    return [2 /*return*/];
+                        isRecentVote(voteHistory.get('Current').timestamp))) return [3 /*break*/, 7];
+                    return [4 /*yield*/, submitClanData()];
+                case 6:
+                    _a.sent();
+                    _a.label = 7;
+                case 7: return [2 /*return*/];
             }
         });
     });
