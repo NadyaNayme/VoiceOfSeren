@@ -11869,6 +11869,15 @@ function getNextHourEpoch() {
         return currentEpoch + 3600;
     return (Math.floor(currentEpoch / 3600) + 1) * 3600;
 }
+function isLastVoteInvalid(lastVoteTimestamp) {
+    var currentEpoch = getCurrentEpoch();
+    // Get the most recent hour mark of the current epoch
+    var currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
+    // Calculate the timestamp for 2 hours ago from the most recent hour mark
+    var twoHoursAgo = currentHourMark - 7200;
+    // 'Last' votes older than 2 hours ago are invalid
+    return lastVoteTimestamp >= twoHoursAgo;
+}
 function startVoteCountdown() {
     var countdownElement = document.getElementById('Countdown');
     var interval = setInterval(function () {
@@ -11943,7 +11952,18 @@ function scanForClanData() {
                          * set "Current" to "Last". Otherwise we can safely skip the scan.
                          */
                         if (getCurrentEpoch() > nextVotingHour) {
-                            voteHistory.set('Last', mostRecentVote);
+                            /*
+                             * If the 'Current' vote is still valid for a 'Last' vote - set it to 'Last'
+                             * and if we have a 'Last' vote and our 'Current' is invalid - delete the 'Last'
+                             * for also being invalid
+                             * */
+                            if (!isLastVoteInvalid(mostRecentVote.timestamp)) {
+                                voteHistory.set('Last', mostRecentVote);
+                            }
+                            else {
+                                voteHistory.delete('Last');
+                            }
+                            // Either we moved it to 'Last' or it is invalid. Either way it should be deleted
                             voteHistory.delete('Current');
                             /* We are also eligible to vote again */
                             voteHistory.set('Voted', false);
@@ -12323,8 +12343,16 @@ function dataMatchesLastHour() {
 function hasValidData() {
     var lastVote = voteHistory.get('Last');
     var lastVoteCheck;
+    // If our 'Last' vote is older than 2 hours it is invalid
+    // Since it is an invalid vote we can delete it - but since we already hold a reference
+    // to the value we need to set the held value to be undefined to ensure the next condition always returns true
+    if (isLastVoteInvalid(lastVote.timestamp)) {
+        voteHistory.delete('Last');
+        lastVote = undefined;
+    }
+    ;
     // If we have a "Last" vote check that it is not equal to our "Current" vote
-    if (lastVote) {
+    if (lastVote && lastVote.timestamp) {
         var lastClan_1 = lastVote.clans.clan_1;
         var lastClan_2 = lastVote.clans.clan_2;
         lastVoteCheck =
