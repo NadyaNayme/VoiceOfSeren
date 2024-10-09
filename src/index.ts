@@ -153,6 +153,7 @@ function tryFindClans() {
 
 async function scanForClanData() {
 	const mostRecentVote = voteHistory.get('Current');
+	const voted = voteHistory.get('Voted');
 	if (mostRecentVote) {
 		// Check if "Now" is past the timestamp for our next voting hour
 		const nextVotingHour = mostRecentVote.timestamp;
@@ -179,10 +180,12 @@ async function scanForClanData() {
 
 			/* We are also eligible to vote again */
 			voteHistory.set('Voted', false);
-		} else {
+		} else if (voted) {
 			if (debugMode) {
 				console.log(
-					`Skipping scan. Reason: Already voted this hour: ${mostRecentVote.clans.clan_1} & ${mostRecentVote.clans.clan_2}`
+					`Skipping scan. Reason: Already voted this hour: ${titleCase(
+						mostRecentVote.clans.clan_1
+					)} & ${titleCase(mostRecentVote.clans.clan_2)}`
 				);
 			}
 			displayCurrentClanVote(mostRecentVote);
@@ -471,7 +474,7 @@ async function automaticScan() {
 		return;
 	} else {
 		await scanForClanData();
-		new Promise((resolve) => setTimeout(resolve, 50));
+		await sauce.timeout(50);
 		await submitClanData();
 	}
 }

@@ -11940,11 +11940,12 @@ function tryFindClans() {
 }
 function scanForClanData() {
     return __awaiter(this, void 0, void 0, function () {
-        var mostRecentVote, nextVotingHour, foundClans, firstClan, firstClanPos, secondClan, secondClanPos, vote;
+        var mostRecentVote, voted, nextVotingHour, foundClans, firstClan, firstClanPos, secondClan, secondClanPos, vote;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     mostRecentVote = voteHistory.get('Current');
+                    voted = voteHistory.get('Voted');
                     if (mostRecentVote) {
                         nextVotingHour = mostRecentVote.timestamp;
                         /**
@@ -11968,9 +11969,9 @@ function scanForClanData() {
                             /* We are also eligible to vote again */
                             voteHistory.set('Voted', false);
                         }
-                        else {
+                        else if (voted) {
                             if (debugMode) {
-                                console.log("Skipping scan. Reason: Already voted this hour: ".concat(mostRecentVote.clans.clan_1, " & ").concat(mostRecentVote.clans.clan_2));
+                                console.log("Skipping scan. Reason: Already voted this hour: ".concat(titleCase(mostRecentVote.clans.clan_1), " & ").concat(titleCase(mostRecentVote.clans.clan_2)));
                             }
                             displayCurrentClanVote(mostRecentVote);
                             return [2 /*return*/];
@@ -12246,12 +12247,14 @@ function automaticScan() {
                 case 1: return [4 /*yield*/, scanForClanData()];
                 case 2:
                     _a.sent();
-                    new Promise(function (resolve) { return setTimeout(resolve, 50); });
-                    return [4 /*yield*/, submitClanData()];
+                    return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(50)];
                 case 3:
                     _a.sent();
-                    _a.label = 4;
-                case 4: return [2 /*return*/];
+                    return [4 /*yield*/, submitClanData()];
+                case 4:
+                    _a.sent();
+                    _a.label = 5;
+                case 5: return [2 /*return*/];
             }
         });
     });
