@@ -12070,7 +12070,7 @@ var callWithRetry = function (fn, depth) {
  * */
 function updateVoteHistory() {
     var mostRecentVote = voteHistory.get('Current');
-    if (!isLastVoteInvalid(mostRecentVote.timestamp)) {
+    if (mostRecentVote && !isLastVoteInvalid(mostRecentVote.timestamp)) {
         voteHistory.set('Last', mostRecentVote);
     }
     else {

@@ -285,7 +285,7 @@ const callWithRetry = async (fn, depth = 0) => {
  * */
 function updateVoteHistory() {
 	const mostRecentVote = voteHistory.get('Current');
-	if (!isLastVoteInvalid(mostRecentVote.timestamp)) {
+	if (mostRecentVote && !isLastVoteInvalid(mostRecentVote.timestamp)) {
 		voteHistory.set('Last', mostRecentVote);
 	} else {
 		voteHistory.delete('Last');
