@@ -80,7 +80,7 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
 	sessionData.set('Voted', true);
 
     // If we have not voted and have data gathered in the past 30 seconds - try and vote
-    if (!voted && current && checkTimeDifference(current?.timestamp, getCurrentEpoch(), 30)) {
+    if (!voted && current && checkTimeDifference(current?.timestamp - 3600, getCurrentEpoch(), 30)) {
         await submitClanData(sessionData, debugMode);
     }
 }

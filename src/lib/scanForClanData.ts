@@ -24,6 +24,7 @@ export async function scanForClanData(
     sessionData,
     debugMode: boolean,
 ): Promise<void> {
+	const nextEligibleVote: number = sessionData.get('NextEligible');
     const current: ClanVote = sessionData.get('Current');
     const voted: boolean = sessionData.get('Voted');
     if (current) {
@@ -32,7 +33,7 @@ export async function scanForClanData(
          * If Now > NextEligibleVotingHour then we delete "LastLocal" and
          * set "Current" to "LastLocal". Otherwise we can safely skip the scan.
          */
-        if (getCurrentEpoch() > current?.timestamp) {
+        if (getCurrentEpoch() > nextEligibleVote) {
             updateSessionData(sessionData);
         }
 
@@ -91,7 +92,7 @@ export async function scanForClanData(
     // Swap priority based on positioning
     if (firstClanPos > secondClanPos) {
         vote = {
-            timestamp: getNextHourEpoch(),
+            timestamp: getCurrentEpoch(),
             clans: {
                 clan_1: secondClan,
                 clan_2: firstClan,
@@ -118,6 +119,7 @@ export async function scanForClanData(
 
     // The data we have is valid - set it as our Current vote
     sessionData.set('Current', vote);
+	sessionData.set('NextEligible', getNextHourEpoch());
 
     // If we have not voted and have recent data (<30s old) - try and vote
     if (

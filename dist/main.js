@@ -1646,7 +1646,9 @@ function submitClanData(sessionData, debugMode) {
                         sessionData.set('Voted', true);
                         // This is done to update our "Current Voice of Seren" display
                         (0,_getServerData__WEBPACK_IMPORTED_MODULE_6__.fetchVos)(sessionData, debugMode);
+                        // Once we have voted our Last Local Vote is what we just submitted
                         sessionData.set('LastLocal', currentVote);
+                        // Start a countdown timer until our next eligible voting hour
                         (0,_lib__WEBPACK_IMPORTED_MODULE_1__.startVoteCountdown)(sessionData);
                     })
                         .catch(function (err) {
@@ -1784,7 +1786,7 @@ function automaticScan(sessionData, debugMode) {
                     _c.sent();
                     // Set voted to true here so that the below check will fail and we won't hit this branch again on the next scan
                     sessionData.set('Voted', true);
-                    if (!(!voted && current && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)(current === null || current === void 0 ? void 0 : current.timestamp, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 30))) return [3 /*break*/, 5];
+                    if (!(!voted && current && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)((current === null || current === void 0 ? void 0 : current.timestamp) - 3600, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 30))) return [3 /*break*/, 5];
                     return [4 /*yield*/, (0,_api_postClanData__WEBPACK_IMPORTED_MODULE_2__.submitClanData)(sessionData, debugMode)];
                 case 4:
                     _c.sent();
@@ -1884,7 +1886,7 @@ function checkDataValidity(sessionData, debugMode) {
     /**
      * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
      */
-    if (!(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) && now.minutes === 0 && now.seconds <= 30) {
+    if ((lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) > 0 && now.minutes === 0 && now.seconds <= 30) {
         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: Voice unlikely to have changed", debugMode);
         sessionData.delete('Current');
         return false;
@@ -2204,10 +2206,11 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 function scanForClanData(sessionData, debugMode) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     return __awaiter(this, void 0, void 0, function () {
-        var current, voted, foundClans, firstClan, firstClanPos, secondClan, secondClanPos, vote;
+        var nextEligibleVote, current, voted, foundClans, firstClan, firstClanPos, secondClan, secondClanPos, vote;
         return __generator(this, function (_j) {
             switch (_j.label) {
                 case 0:
+                    nextEligibleVote = sessionData.get('NextEligible');
                     current = sessionData.get('Current');
                     voted = sessionData.get('Voted');
                     if (current) {
@@ -2215,7 +2218,7 @@ function scanForClanData(sessionData, debugMode) {
                          * If Now > NextEligibleVotingHour then we delete "LastLocal" and
                          * set "Current" to "LastLocal". Otherwise we can safely skip the scan.
                          */
-                        if ((0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getCurrentEpoch)() > (current === null || current === void 0 ? void 0 : current.timestamp)) {
+                        if ((0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getCurrentEpoch)() > nextEligibleVote) {
                             (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.updateSessionData)(sessionData);
                         }
                         // If we have voted - we should skip scanning
@@ -2253,7 +2256,7 @@ function scanForClanData(sessionData, debugMode) {
                     // Swap priority based on positioning
                     if (firstClanPos > secondClanPos) {
                         vote = {
-                            timestamp: (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getNextHourEpoch)(),
+                            timestamp: (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getCurrentEpoch)(),
                             clans: {
                                 clan_1: secondClan,
                                 clan_2: firstClan,
@@ -2272,6 +2275,7 @@ function scanForClanData(sessionData, debugMode) {
                     _utility_helpers__WEBPACK_IMPORTED_MODULE_3__.helperItems.VoteOutput.innerHTML = '';
                     // The data we have is valid - set it as our Current vote
                     sessionData.set('Current', vote);
+                    sessionData.set('NextEligible', (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getNextHourEpoch)());
                     if (!(!voted &&
                         current &&
                         !(0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.checkTimeDifference)(current === null || current === void 0 ? void 0 : current.timestamp, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getCurrentEpoch)(), 30))) return [3 /*break*/, 4];
@@ -13320,11 +13324,14 @@ var debugMode = (_a = _a1sauce__WEBPACK_IMPORTED_MODULE_0__.getSetting('debugMod
 /**
  * Contains the following keys:
  *
- * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean
+ * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean | NextEligible: Number (Epoch Timestamp)
  *
  * Data is not persisted between sessions
  */
 var sessionData = new Map();
+/**
+ * Adds event listeners to the Settings
+ */
 function addEventListeners() {
     /**
      * Update the Scale of everything in the app based on the user's settings

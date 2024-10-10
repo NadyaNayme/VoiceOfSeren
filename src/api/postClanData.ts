@@ -62,7 +62,11 @@ export async function submitClanData(sessionData, debugMode) {
 
             // This is done to update our "Current Voice of Seren" display
             fetchVos(sessionData, debugMode);
+
+			// Once we have voted our Last Local Vote is what we just submitted
 			sessionData.set('LastLocal', currentVote);
+
+			// Start a countdown timer until our next eligible voting hour
             startVoteCountdown(sessionData);
         })
         .catch((err) => {

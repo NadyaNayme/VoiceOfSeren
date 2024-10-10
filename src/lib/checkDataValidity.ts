@@ -85,7 +85,7 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
     /**
      * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
      */
-    if (!lastLocal?.timestamp && now.minutes === 0 && now.seconds <= 30) {
+    if (lastLocal?.timestamp > 0 && now.minutes === 0 && now.seconds <= 30) {
         debugLog(`Invalid Data: Voice unlikely to have changed`, debugMode);
         sessionData.delete('Current');
         return false;

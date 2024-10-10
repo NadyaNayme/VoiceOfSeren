@@ -26,12 +26,15 @@ let debugMode = sauce.getSetting('debugMode') ?? false;
 /**
  * Contains the following keys:
  *
- * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean
+ * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean | NextEligible: Number (Epoch Timestamp)
  *
  * Data is not persisted between sessions
  */
 const sessionData = new Map();
 
+/**
+ * Adds event listeners to the Settings
+ */
 function addEventListeners() {
     /**
      * Update the Scale of everything in the app based on the user's settings
