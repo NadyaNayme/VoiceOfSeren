@@ -12339,7 +12339,7 @@ function automaticScan() {
                         debugLog("Skipping scan. Reason: RuneScape is not active");
                         return [2 /*return*/];
                     }
-                    if (voted && now.minutes <= 3 && isPrimetimeVote(current)) {
+                    if (voted && now.minutes <= 3 && isPrimetimeVote(current.timestamp)) {
                         sessionData.set('Voted', false);
                     }
                     if (!(voted && now.minute <= 2 && checkDataValidity())) return [3 /*break*/, 1];

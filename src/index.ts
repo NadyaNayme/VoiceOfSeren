@@ -555,7 +555,7 @@ async function automaticScan(): Promise<void> {
         return;
     }
 
-	if (voted && now.minutes <= 3 && isPrimetimeVote(current)) {
+	if (voted && now.minutes <= 3 && isPrimetimeVote(current.timestamp)) {
 		sessionData.set('Voted', false);
     }
 
