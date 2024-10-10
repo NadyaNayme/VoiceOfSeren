@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import { ClanVote } from '../data/types';
 import { isLastVoteInvalid, isRecentVote } from '../utility/epochs';
 import { debugLog } from '../utility/helpers';
+import { scanForClanData } from './scanForClanData';
 
 /**
  * Checks Current and Last voting data for validity.
@@ -22,11 +23,11 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
      */
     if (
         lastLocal !== undefined &&
-		lastLocal?.timestamp &&
+		lastLocal?.timestamp !== 0 &&
         isLastVoteInvalid(lastLocal?.timestamp)
     ) {
         debugLog(
-            `Invalid Data: "LastLocal" data older than 2 hours`,
+            `Invalid Data: "LastLocal" data older than 2 hours. Age: ${lastLocal?.timestamp}`,
             debugMode,
         );
         sessionData.set('LastLocal', undefined);
@@ -39,6 +40,7 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
     if (!currentVote?.timestamp) {
         debugLog(`Invalid data: Missing Current data`, debugMode);
         sessionData.delete('Current');
+		scanForClanData(sessionData, debugMode);
         return false;
     }
 
@@ -51,6 +53,7 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
     ) {
         debugLog(`Invalid Data: Current matches Last (Local)`, debugMode);
         sessionData.delete('Current');
+		scanForClanData(sessionData, debugMode);
         return false;
     }
 

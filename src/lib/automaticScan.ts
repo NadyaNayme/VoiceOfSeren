@@ -33,7 +33,7 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
 		return;
 	}
 
-	if (voted && now.minutes <= 3 && isPrimetimeVote(current?.timestamp)) {
+	if (voted && now.minutes <= 3) {
 		debugLog(
 			`Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
 			debugMode,
@@ -51,7 +51,6 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
                 `Skipping scan. Current data matched data from last hour.`,
                 debugMode,
             );
-            sessionData.delete('Current');
             return;
         }
     } else {
