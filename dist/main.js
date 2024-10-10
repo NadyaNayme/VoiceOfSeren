@@ -1677,8 +1677,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _api_postClanData__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../api/postClanData */ "./api/postClanData.ts");
 /* harmony import */ var _utility_epochs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utility/epochs */ "./utility/epochs.ts");
 /* harmony import */ var _utility_helpers__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utility/helpers */ "./utility/helpers.ts");
-/* harmony import */ var _checkDataValidity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./checkDataValidity */ "./lib/checkDataValidity.ts");
-/* harmony import */ var _scanForClanData__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./scanForClanData */ "./lib/scanForClanData.ts");
+/* harmony import */ var _scanForClanData__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./scanForClanData */ "./lib/scanForClanData.ts");
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -1721,8 +1720,8 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 
 
 
-
 var voteTimer = new Map();
+var primeTime = 2;
 /**
  * Scans the screen looking for Clan data
  *
@@ -1732,56 +1731,64 @@ var voteTimer = new Map();
 function automaticScan(sessionData, debugMode) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var now, voted, current, last;
+        var now, voted, current, lastLocal;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
                     now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
                     voted = sessionData.get('Voted');
                     current = sessionData.get('Current');
-                    last = sessionData.get('LastLocal');
+                    lastLocal = sessionData.get('LastLocal');
                     // The "now" check is to allow alts to scan and vote for first few minutes of the hour
-                    if (!alt1.rsActive && now.minute >= 3) {
+                    if (!alt1.rsActive && now.minute > primeTime) {
                         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Reason: RuneScape is not active window outside of primetime", debugMode);
                         return [2 /*return*/];
                     }
-                    if (voteTimer.get('VoteThrottle')) {
+                    // Skip scanning if we are currently being throttled
+                    if (voteTimer.get('Throttled')) {
                         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Reason: Vote is being throttled", debugMode);
                         return [2 /*return*/];
                     }
-                    if (voted && now.minutes <= 3) {
+                    // During primetime allow a vote every 30 seconds to better seed data
+                    if (voted && now.minutes <= primeTime) {
                         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.", debugMode);
                         sessionData.set('Voted', false);
-                        voteTimer.set('VoteThrottle', true);
+                        voteTimer.set('Throttled', true);
                         setTimeout(function () {
-                            voteTimer.set('VoteThrottle', false);
+                            voteTimer.set('Throttled', false);
                         }, 1000 * 30);
                     }
-                    if (!(voted && now.minute <= 2 && (0,_checkDataValidity__WEBPACK_IMPORTED_MODULE_5__.checkDataValidity)(sessionData, debugMode))) return [3 /*break*/, 1];
-                    if (((_a = current === null || current === void 0 ? void 0 : current.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = last === null || last === void 0 ? void 0 : last.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
-                        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Current data matched data from last hour.", debugMode);
+                    /**
+                     * If our data is older than 2 minutes and still matches the previous hour's data
+                     * delete our current data and set it to last. This is to account for the Voice
+                     * of Seren not reseting at xx:00 but typically at xx:00:30 or even later.
+                     */
+                    if (voted &&
+                        now.minute <= primeTime &&
+                        ((_a = current === null || current === void 0 ? void 0 : current.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.clans) === null || _b === void 0 ? void 0 : _b.clan_1) &&
+                        (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getEpochDifference)(current === null || current === void 0 ? void 0 : current.timestamp, lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) > 120) {
+                        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Current data matches data from last hour.", debugMode);
+                        sessionData.set('LastLocal', current);
+                        sessionData.delete('Current');
                         return [2 /*return*/];
                     }
-                    return [3 /*break*/, 5];
-                case 1: return [4 /*yield*/, (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_6__.scanForClanData)(sessionData, debugMode)];
-                case 2:
+                    return [4 /*yield*/, (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_5__.scanForClanData)(sessionData, debugMode)];
+                case 1:
                     _c.sent();
                     return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(50)];
-                case 3:
+                case 2:
                     _c.sent();
                     return [4 /*yield*/, (0,_api_postClanData__WEBPACK_IMPORTED_MODULE_2__.submitClanData)(sessionData, debugMode)];
-                case 4:
+                case 3:
                     _c.sent();
                     // Set voted to true here so that the below check will fail and we won't hit this branch again on the next scan
                     sessionData.set('Voted', true);
-                    _c.label = 5;
-                case 5:
-                    if (!(!voted && current && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.isRecentVote)(current === null || current === void 0 ? void 0 : current.timestamp))) return [3 /*break*/, 7];
+                    if (!(!voted && current && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.isRecentVote)(current === null || current === void 0 ? void 0 : current.timestamp))) return [3 /*break*/, 5];
                     return [4 /*yield*/, (0,_api_postClanData__WEBPACK_IMPORTED_MODULE_2__.submitClanData)(sessionData, debugMode)];
-                case 6:
+                case 4:
                     _c.sent();
-                    _c.label = 7;
-                case 7: return [2 /*return*/];
+                    _c.label = 5;
+                case 5: return [2 /*return*/];
             }
         });
     });
@@ -2391,6 +2398,7 @@ function startVersionCheck(version) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   getCurrentEpoch: () => (/* binding */ getCurrentEpoch),
+/* harmony export */   getEpochDifference: () => (/* binding */ getEpochDifference),
 /* harmony export */   getNextHourEpoch: () => (/* binding */ getNextHourEpoch),
 /* harmony export */   isLastVoteInvalid: () => (/* binding */ isLastVoteInvalid),
 /* harmony export */   isPrimetimeVote: () => (/* binding */ isPrimetimeVote),
@@ -2402,6 +2410,18 @@ __webpack_require__.r(__webpack_exports__);
  */
 function getCurrentEpoch() {
     return Math.floor(Date.now() / 1000);
+}
+/**
+ * Returns the difference between two epochs
+ * @returns number
+ */
+function getEpochDifference(one, two) {
+    if (one >= two) {
+        return one - two;
+    }
+    else {
+        return two - one;
+    }
 }
 /**
  * Provides the upcoming hour as Unix Time

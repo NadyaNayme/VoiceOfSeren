@@ -7,6 +7,18 @@ export function getCurrentEpoch(): number {
 }
 
 /**
+ * Returns the difference between two epochs
+ * @returns number
+ */
+export function getEpochDifference(one: number, two: number) {
+	if (one >= two) {
+		return one - two;
+	} else {
+		return two - one;
+	}
+}
+
+/**
  * Provides the upcoming hour as Unix Time
  * @returns number
  */
