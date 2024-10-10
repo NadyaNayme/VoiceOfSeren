@@ -12344,8 +12344,7 @@ function automaticScan() {
                         sessionData.set('Voted', false);
                     }
                     if (!(voted && now.minute <= 2 && checkDataValidity())) return [3 /*break*/, 1];
-                    if (current.clan_1 === (last === null || last === void 0 ? void 0 : last.clan_1) ||
-                        current.clan_1 === (last === null || last === void 0 ? void 0 : last.clan_1)) {
+                    if (current.clans.clan_1 === (last === null || last === void 0 ? void 0 : last.clans.clan_1)) {
                         debugLog("Skipping scan. Current data matched data from last hour.");
                         sessionData.delete('Current');
                         return [2 /*return*/];

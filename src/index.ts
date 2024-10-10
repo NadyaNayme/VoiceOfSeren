@@ -564,8 +564,7 @@ async function automaticScan(): Promise<void> {
 
     if (voted && now.minute <= 2 && checkDataValidity()) {
         if (
-            current.clan_1 === last?.clan_1 ||
-            current.clan_1 === last?.clan_1
+            current.clans.clan_1 === last?.clans.clan_1
         ) {
             debugLog(
                 `Skipping scan. Current data matched data from last hour.`,
