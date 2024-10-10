@@ -1638,9 +1638,13 @@ function submitClanData(sessionData, debugMode) {
                     })
                         .then(function (res) {
                         var _a, _b;
-                        // If our vote data was rejected or we encountered a Server Error - do nothing
-                        if (res.status >= 400)
+                        /**
+                         * If our vote failed or encountered a server error - we have not voted
+                         */
+                        if (res.status >= 400) {
+                            sessionData.set('Voted', false);
                             return;
+                        }
                         _a1sauce__WEBPACK_IMPORTED_MODULE_0__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_0__.getSetting('votedCount') + 1);
                         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Voted for ".concat((_a = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1, " & ").concat((_b = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _b === void 0 ? void 0 : _b.clan_2, "."), debugMode);
                         sessionData.set('Voted', true);
@@ -1776,23 +1780,22 @@ function automaticScan(sessionData, debugMode) {
                         sessionData.delete('Current');
                         return [2 /*return*/];
                     }
+                    // Scan for data
                     return [4 /*yield*/, (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_5__.scanForClanData)(sessionData, debugMode)];
                 case 1:
+                    // Scan for data
                     _e.sent();
-                    return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(50)];
+                    // Give the data a little time to read from screen
+                    return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(100)];
                 case 2:
+                    // Give the data a little time to read from screen
                     _e.sent();
+                    // Try to vote
                     return [4 /*yield*/, (0,_api_postClanData__WEBPACK_IMPORTED_MODULE_2__.submitClanData)(sessionData, debugMode)];
                 case 3:
+                    // Try to vote
                     _e.sent();
-                    // Set voted to true here so that the below check will fail and we won't hit this branch again on the next scan
-                    sessionData.set('Voted', true);
-                    if (!(!voted && current && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)((current === null || current === void 0 ? void 0 : current.timestamp) - 3600, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 30))) return [3 /*break*/, 5];
-                    return [4 /*yield*/, (0,_api_postClanData__WEBPACK_IMPORTED_MODULE_2__.submitClanData)(sessionData, debugMode)];
-                case 4:
-                    _e.sent();
-                    _e.label = 5;
-                case 5: return [2 /*return*/];
+                    return [2 /*return*/];
             }
         });
     });
@@ -1833,63 +1836,69 @@ function checkDataValidity(sessionData, debugMode) {
     var currentVote = sessionData.get('Current');
     var lastLocal = sessionData.get('LastLocal');
     var lastServer = sessionData.get('LastServer');
+    var reasons = [];
     /**
      * Last Vote data is invalid if it is >=2 hours old
      */
     if (lastLocal !== undefined &&
         (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 1000 * 60 * 2)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: \"LastLocal\" data older than 2 hours. Age: ".concat(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp), debugMode);
+        reasons.push("Invalid Data: \"LastLocal\" data older than 2 hours. Age: ".concat(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp));
         sessionData.set('LastLocal', undefined);
         lastLocal = undefined;
     }
     /**
      * Data is invalid if we do not have any data
      */
-    if (!(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid data: Missing Current data", debugMode);
+    if (!(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp) ||
+        !(currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans.clan_1) ||
+        !(currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans.clan_2)) {
+        reasons.push("Invalid data: Missing Current data");
         sessionData.delete('Current');
         (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_2__.scanForClanData)(sessionData, debugMode);
-        return false;
     }
     /**
      *  Data is invalid if Current hour's data === Last hour's data (Local)
      **/
     if ((lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) &&
         ((_a = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: Current matches Last (Local)", debugMode);
+        reasons.push("Invalid Data: Current matches Last (Local)");
         sessionData.delete('Current');
         (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_2__.scanForClanData)(sessionData, debugMode);
-        return false;
     }
     /**
      * Data is invalid if we have data but it is undefined
      */
     if (((_c = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _c === void 0 ? void 0 : _c.clan_1) === undefined) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid data: Data is undefined", debugMode);
-        return false;
+        reasons.push("Invalid data: Data is undefined");
     }
     /**
      * Data is invalid if Current hour's data === Last hour's data (Server)
      */
     if (((_d = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_1) === ((_e = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _e === void 0 ? void 0 : _e.clan_1)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: Current matches Last (Server)", debugMode);
+        reasons.push("Invalid Data: Current matches Last (Server)");
         sessionData.delete('Current');
-        return false;
     }
     /**
-     * Data is invalid if it is older than 4 minutes
+     * Data is invalid if it is older than 5 minutes
      */
-    if ((0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 240)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: Current is older than 4 minutes", debugMode);
+    if ((0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 60 * 5)) {
+        reasons.push("Invalid Data: Current is older than 5 minutes");
         sessionData.delete('Current');
-        return false;
     }
     /**
      * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
      */
     if ((lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) > 0 && now.minutes === 0 && now.seconds <= 30) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: Voice unlikely to have changed", debugMode);
+        reasons.push("Invalid Data: Voice unlikely to have changed");
         sessionData.delete('Current');
+    }
+    if (reasons.length > 0) {
+        reasons.forEach(function (reason) {
+            (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("".concat(reason), debugMode);
+        });
+        if (debugMode) {
+            console.log(sessionData);
+        }
         return false;
     }
     /**
@@ -2216,8 +2225,7 @@ function scanForClanData(sessionData, debugMode) {
                     voted = sessionData.get('Voted');
                     if (current) {
                         /**
-                         * If Now > NextEligibleVotingHour then we delete "LastLocal" and
-                         * set "Current" to "LastLocal". Otherwise we can safely skip the scan.
+                         * If Now > NextEligibleVotingHour then set "Current" to "LastLocal"
                          */
                         if ((0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getCurrentEpoch)() > nextEligibleVote) {
                             (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.updateSessionData)(sessionData);
@@ -2248,7 +2256,7 @@ function scanForClanData(sessionData, debugMode) {
                     secondClan = (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.titleCase)(foundClans[1][0]);
                     secondClanPos = foundClans[1][1].x;
                     vote = {
-                        timestamp: (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getNextHourEpoch)(),
+                        timestamp: (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getCurrentEpoch)(),
                         clans: {
                             clan_1: firstClan,
                             clan_2: secondClan,
@@ -2411,7 +2419,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getNextHourEpoch: () => (/* binding */ getNextHourEpoch)
 /* harmony export */ });
 /**
- * Returns the current time as Unix Time
+ * Returns the current time as Unix Time rounded to nearest second
  * @returns number
  */
 function getCurrentEpoch() {
@@ -2449,6 +2457,7 @@ function getNextHourEpoch() {
  * @param epoch_1 - An Unix Time timestamp
  * @param epoch_2 - An Unix Time timestamp
  * @param expectedTimeDifference - The expected difference between the two times
+ * @return If the expected difference is larger than the measured difference
  */
 function checkTimeDifference(epoch_1, epoch_2, expectedTimeDifference) {
     var difference = getEpochDifference(epoch_1, epoch_2);

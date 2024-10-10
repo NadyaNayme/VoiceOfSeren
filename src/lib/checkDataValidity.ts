@@ -18,6 +18,8 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
     let lastLocal: ClanVote = sessionData.get('LastLocal');
     let lastServer: ClanVote = sessionData.get('LastServer');
 
+	const reasons: String[] = [];
+
     /**
      * Last Vote data is invalid if it is >=2 hours old
      */
@@ -25,9 +27,8 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
         lastLocal !== undefined &&
 		checkTimeDifference(lastLocal?.timestamp, getCurrentEpoch(), 1000 * 60 * 2)
     ) {
-        debugLog(
+        reasons.push(
             `Invalid Data: "LastLocal" data older than 2 hours. Age: ${lastLocal?.timestamp}`,
-            debugMode,
         );
         sessionData.set('LastLocal', undefined);
         lastLocal = undefined;
@@ -36,11 +37,14 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
     /**
      * Data is invalid if we do not have any data
      */
-    if (!currentVote?.timestamp) {
-        debugLog(`Invalid data: Missing Current data`, debugMode);
+    if (
+        !currentVote?.timestamp ||
+        !currentVote?.clans.clan_1 ||
+        !currentVote?.clans.clan_2
+    ) {
+        reasons.push(`Invalid data: Missing Current data`);
         sessionData.delete('Current');
-		scanForClanData(sessionData, debugMode);
-        return false;
+        scanForClanData(sessionData, debugMode);
     }
 
     /**
@@ -50,46 +54,53 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
         lastLocal?.timestamp &&
         currentVote?.clans?.clan_1 === lastLocal?.clans?.clan_1
     ) {
-        debugLog(`Invalid Data: Current matches Last (Local)`, debugMode);
+        reasons.push(`Invalid Data: Current matches Last (Local)`);
         sessionData.delete('Current');
 		scanForClanData(sessionData, debugMode);
-        return false;
     }
 
     /**
      * Data is invalid if we have data but it is undefined
      */
     if (currentVote?.clans?.clan_1 === undefined) {
-        debugLog(`Invalid data: Data is undefined`, debugMode);
-        return false;
+        reasons.push(`Invalid data: Data is undefined`);
     }
 
     /**
      * Data is invalid if Current hour's data === Last hour's data (Server)
      */
     if (currentVote?.clans?.clan_1 === lastServer?.clans?.clan_1) {
-        debugLog(`Invalid Data: Current matches Last (Server)`, debugMode);
+        reasons.push(`Invalid Data: Current matches Last (Server)`);
         sessionData.delete('Current');
-        return false;
     }
 
     /**
-     * Data is invalid if it is older than 4 minutes
+     * Data is invalid if it is older than 5 minutes
      */
-    if (checkTimeDifference(currentVote?.timestamp, getCurrentEpoch(), 240)) {
-        debugLog(`Invalid Data: Current is older than 4 minutes`, debugMode);
+    if (checkTimeDifference(currentVote?.timestamp, getCurrentEpoch(), 60 * 5)) {
+        reasons.push(
+            `Invalid Data: Current is older than 5 minutes`,
+        );
         sessionData.delete('Current');
-        return false;
     }
 
     /**
      * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
      */
     if (lastLocal?.timestamp > 0 && now.minutes === 0 && now.seconds <= 30) {
-        debugLog(`Invalid Data: Voice unlikely to have changed`, debugMode);
+        reasons.push(`Invalid Data: Voice unlikely to have changed`);
         sessionData.delete('Current');
-        return false;
     }
+
+	if (reasons.length > 0) {
+		reasons.forEach((reason) => {
+			debugLog(`${reason}`, debugMode);
+		});
+		if (debugMode) {
+			console.log(sessionData);
+		}
+		return false;
+	}
 
     /**
      * If all of the above checks passed - our data is valid for the current hour

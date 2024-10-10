@@ -3,7 +3,7 @@ import * as sauce from '.././a1sauce';
 
 import { submitClanData } from '../api/postClanData';
 import { ClanVote } from '../data/types';
-import { checkTimeDifference, getCurrentEpoch, getEpochDifference } from '../utility/epochs';
+import { getEpochDifference } from '../utility/epochs';
 import { debugLog } from '../utility/helpers';
 import { checkDataValidity } from './checkDataValidity';
 import { scanForClanData } from './scanForClanData';
@@ -73,15 +73,12 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
         return;
     }
 
+	// Scan for data
 	await scanForClanData(sessionData, debugMode);
-	await sauce.timeout(50);
-	await submitClanData(sessionData, debugMode);
 
-	// Set voted to true here so that the below check will fail and we won't hit this branch again on the next scan
-	sessionData.set('Voted', true);
+	// Give the data a little time to read from screen
+	await sauce.timeout(100);
 
-    // If we have not voted and have data gathered in the past 30 seconds - try and vote
-    if (!voted && current && checkTimeDifference(current?.timestamp - 3600, getCurrentEpoch(), 30)) {
-        await submitClanData(sessionData, debugMode);
-    }
+	// Try to vote
+    await submitClanData(sessionData, debugMode);
 }

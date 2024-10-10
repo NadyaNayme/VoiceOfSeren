@@ -47,8 +47,13 @@ export async function submitClanData(sessionData, debugMode) {
     })
         .then((res) => {
 
-			// If our vote data was rejected or we encountered a Server Error - do nothing
-			if (res.status >= 400) return;
+			/**
+			 * If our vote failed or encountered a server error - we have not voted
+			 */
+			if (res.status >= 400) {
+				sessionData.set('Voted', false);
+				return;
+			}
 
             sauce.updateSetting(
                 'votedCount',

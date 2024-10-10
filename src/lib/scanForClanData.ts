@@ -28,17 +28,15 @@ export async function scanForClanData(
     const current: ClanVote = sessionData.get('Current');
     const voted: boolean = sessionData.get('Voted');
     if (current) {
-
         /**
-         * If Now > NextEligibleVotingHour then we delete "LastLocal" and
-         * set "Current" to "LastLocal". Otherwise we can safely skip the scan.
+         * If Now > NextEligibleVotingHour then set "Current" to "LastLocal"
          */
         if (getCurrentEpoch() > nextEligibleVote) {
             updateSessionData(sessionData);
         }
 
-		// If we have voted - we should skip scanning
-		if (voted) {
+        // If we have voted - we should skip scanning
+        if (voted) {
             debugLog(
                 `Skipping scan. Reason: Already voted this hour: ${current?.clans?.clan_1} & ${current?.clans?.clan_2}`,
                 debugMode,
@@ -82,7 +80,7 @@ export async function scanForClanData(
 
     // Compare the clan positions and set priority appropriately
     let vote: ClanVote = {
-        timestamp: getNextHourEpoch(),
+        timestamp: getCurrentEpoch(),
         clans: {
             clan_1: firstClan,
             clan_2: secondClan,

@@ -1,5 +1,5 @@
 /**
- * Returns the current time as Unix Time
+ * Returns the current time as Unix Time rounded to nearest second
  * @returns number
  */
 export function getCurrentEpoch(): number {
@@ -40,6 +40,7 @@ export function getNextHourEpoch(): number {
  * @param epoch_1 - An Unix Time timestamp
  * @param epoch_2 - An Unix Time timestamp
  * @param expectedTimeDifference - The expected difference between the two times
+ * @return If the expected difference is larger than the measured difference
  */
 export function checkTimeDifference(epoch_1: number, epoch_2: number, expectedTimeDifference: number) {
 	let difference = getEpochDifference(epoch_1, epoch_2)
