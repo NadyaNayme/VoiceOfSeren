@@ -20,12 +20,16 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
     /**
      * Last Vote data is invalid if it is >=2 hours old
      */
-    if (lastLocal?.timestamp && isLastVoteInvalid(lastLocal?.timestamp)) {
+    if (
+        lastLocal !== undefined &&
+		lastLocal?.timestamp &&
+        isLastVoteInvalid(lastLocal?.timestamp)
+    ) {
         debugLog(
             `Invalid Data: "LastLocal" data older than 2 hours`,
             debugMode,
         );
-        sessionData.delete('LastLocal');
+        sessionData.set('LastLocal', undefined);
         lastLocal = undefined;
     }
 

@@ -1722,6 +1722,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 
 
 
+var voteTimer = new Map();
 /**
  * Scans the screen looking for Clan data
  *
@@ -1744,9 +1745,17 @@ function automaticScan(sessionData, debugMode) {
                         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Reason: RuneScape is not active", debugMode);
                         return [2 /*return*/];
                     }
+                    if (voteTimer.get('VoteThrottle')) {
+                        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Reason: Vote is being throttled", debugMode);
+                        return [2 /*return*/];
+                    }
                     if (voted && now.minutes <= 3 && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.isPrimetimeVote)(current === null || current === void 0 ? void 0 : current.timestamp)) {
                         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.", debugMode);
                         sessionData.set('Voted', false);
+                        voteTimer.set('VoteThrottle', true);
+                        setTimeout(function () {
+                            voteTimer.set('VoteThrottle', false);
+                        }, 1000 * 30);
                     }
                     if (!(voted && now.minute <= 2 && (0,_checkDataValidity__WEBPACK_IMPORTED_MODULE_5__.checkDataValidity)(sessionData, debugMode))) return [3 /*break*/, 1];
                     if (((_a = current === null || current === void 0 ? void 0 : current.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = last === null || last === void 0 ? void 0 : last.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
@@ -1815,9 +1824,11 @@ function checkDataValidity(sessionData, debugMode) {
     /**
      * Last Vote data is invalid if it is >=2 hours old
      */
-    if ((lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_1__.isLastVoteInvalid)(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp)) {
+    if (lastLocal !== undefined &&
+        (lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) &&
+        (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_1__.isLastVoteInvalid)(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp)) {
         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_2__.debugLog)("Invalid Data: \"LastLocal\" data older than 2 hours", debugMode);
-        sessionData.delete('LastLocal');
+        sessionData.set('LastLocal', undefined);
         lastLocal = undefined;
     }
     /**

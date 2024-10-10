@@ -8,6 +8,8 @@ import { debugLog } from '../utility/helpers';
 import { checkDataValidity } from './checkDataValidity';
 import { scanForClanData } from './scanForClanData';
 
+const voteTimer = new Map();
+
 /**
  * Scans the screen looking for Clan data
  *
@@ -26,13 +28,22 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
         return;
     }
 
-    if (voted && now.minutes <= 3 && isPrimetimeVote(current?.timestamp)) {
-        debugLog(
-            `Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
-            debugMode,
-        );
-        sessionData.set('Voted', false);
-    }
+	if (voteTimer.get('VoteThrottle')) {
+		debugLog(`Skipping scan. Reason: Vote is being throttled`, debugMode);
+		return;
+	}
+
+	if (voted && now.minutes <= 3 && isPrimetimeVote(current?.timestamp)) {
+		debugLog(
+			`Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
+			debugMode,
+		);
+		sessionData.set('Voted', false);
+		voteTimer.set('VoteThrottle', true);
+		setTimeout(() => {
+			voteTimer.set('VoteThrottle', false);
+		}, 1000 * 30);
+	}
 
     if (voted && now.minute <= 2 && checkDataValidity(sessionData, debugMode)) {
         if (current?.clans?.clan_1 === last?.clans?.clan_1) {
