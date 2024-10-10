@@ -1732,16 +1732,17 @@ var primeTime = 2;
  * @returns Promise<void>
  */
 function automaticScan(sessionData, debugMode) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function () {
-        var now, voted, current, lastLocal;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var now, voted, current, lastLocal, lastServer;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
                 case 0:
                     now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
                     voted = sessionData.get('Voted');
                     current = sessionData.get('Current');
                     lastLocal = sessionData.get('LastLocal');
+                    lastServer = sessionData.get('LastServer');
                     // The "now" check is to allow alts to scan and vote for first few minutes of the hour
                     if (!alt1.rsActive && now.minute > primeTime) {
                         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Reason: RuneScape is not active window outside of primetime", debugMode);
@@ -1768,7 +1769,7 @@ function automaticScan(sessionData, debugMode) {
                      */
                     if (voted &&
                         now.minute <= primeTime &&
-                        ((_a = current === null || current === void 0 ? void 0 : current.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.clans) === null || _b === void 0 ? void 0 : _b.clan_1) &&
+                        (((_a = current === null || current === void 0 ? void 0 : current.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.clans) === null || _b === void 0 ? void 0 : _b.clan_1) || ((_c = current === null || current === void 0 ? void 0 : current.clans) === null || _c === void 0 ? void 0 : _c.clan_1) === ((_d = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _d === void 0 ? void 0 : _d.clan_1)) &&
                         (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getEpochDifference)(current === null || current === void 0 ? void 0 : current.timestamp, lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) > 120) {
                         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Current data matches data from last hour.", debugMode);
                         sessionData.set('LastLocal', current);
@@ -1777,20 +1778,20 @@ function automaticScan(sessionData, debugMode) {
                     }
                     return [4 /*yield*/, (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_5__.scanForClanData)(sessionData, debugMode)];
                 case 1:
-                    _c.sent();
+                    _e.sent();
                     return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(50)];
                 case 2:
-                    _c.sent();
+                    _e.sent();
                     return [4 /*yield*/, (0,_api_postClanData__WEBPACK_IMPORTED_MODULE_2__.submitClanData)(sessionData, debugMode)];
                 case 3:
-                    _c.sent();
+                    _e.sent();
                     // Set voted to true here so that the below check will fail and we won't hit this branch again on the next scan
                     sessionData.set('Voted', true);
                     if (!(!voted && current && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)((current === null || current === void 0 ? void 0 : current.timestamp) - 3600, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 30))) return [3 /*break*/, 5];
                     return [4 /*yield*/, (0,_api_postClanData__WEBPACK_IMPORTED_MODULE_2__.submitClanData)(sessionData, debugMode)];
                 case 4:
-                    _c.sent();
-                    _c.label = 5;
+                    _e.sent();
+                    _e.label = 5;
                 case 5: return [2 /*return*/];
             }
         });
@@ -2652,12 +2653,9 @@ function updateTitleBar(clan_1, clan_2) {
     }, 300);
 }
 /**
- * If the 'Current' vote is still valid for a 'LastLocal' vote - set it to 'LastLocal'
+ * If the 'Current' vote is old enough to be the last vote - set it to LastLocal
  *
- * If we have a 'LastLocal' vote and our 'Current' is invalid - delete the 'LastLocal'
- * for also being invalid
- *
- * Finally - deletes 'Voted' to allow us to vote again
+ * Deletes 'Voted' to allow us to vote again
  */
 function updateSessionData(sessionData) {
     var current = sessionData.get('Current');
@@ -2666,9 +2664,6 @@ function updateSessionData(sessionData) {
     if (current &&
         (0,_epochs__WEBPACK_IMPORTED_MODULE_1__.checkTimeDifference)(current === null || current === void 0 ? void 0 : current.timestamp, (0,_epochs__WEBPACK_IMPORTED_MODULE_1__.getCurrentEpoch)(), 1000 * 60)) {
         sessionData.set('LastLocal', current);
-    }
-    else {
-        sessionData.delete('LastLocal');
     }
     // Either we moved it to 'LastLocal' or it is invalid. Either way it should be deleted
     sessionData.delete('Current');

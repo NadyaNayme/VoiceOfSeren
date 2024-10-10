@@ -136,12 +136,9 @@ export function updateTitleBar(
 }
 
 /**
- * If the 'Current' vote is still valid for a 'LastLocal' vote - set it to 'LastLocal'
+ * If the 'Current' vote is old enough to be the last vote - set it to LastLocal
  *
- * If we have a 'LastLocal' vote and our 'Current' is invalid - delete the 'LastLocal'
- * for also being invalid
- *
- * Finally - deletes 'Voted' to allow us to vote again
+ * Deletes 'Voted' to allow us to vote again
  */
 export function updateSessionData(sessionData) {
     const current: ClanVote = sessionData.get('Current');
@@ -153,8 +150,6 @@ export function updateSessionData(sessionData) {
         checkTimeDifference(current?.timestamp, getCurrentEpoch(), 1000 * 60)
     ) {
         sessionData.set('LastLocal', current);
-    } else {
-        sessionData.delete('LastLocal');
     }
 
     // Either we moved it to 'LastLocal' or it is invalid. Either way it should be deleted

@@ -22,6 +22,7 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
     let voted: ClanVote = sessionData.get('Voted');
     let current: ClanVote = sessionData.get('Current');
     let lastLocal: ClanVote = sessionData.get('LastLocal');
+	let lastServer: ClanVote = sessionData.get('LastServer');
 
     // The "now" check is to allow alts to scan and vote for first few minutes of the hour
     if (!alt1.rsActive && now.minute > primeTime) {
@@ -60,7 +61,7 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
     if (
         voted &&
         now.minute <= primeTime &&
-        current?.clans?.clan_1 === lastLocal?.clans?.clan_1 &&
+        (current?.clans?.clan_1 === lastLocal?.clans?.clan_1 || current?.clans?.clan_1 === lastServer?.clans?.clan_1) &&
         getEpochDifference(current?.timestamp, lastLocal?.timestamp) > 120
     ) {
         debugLog(
