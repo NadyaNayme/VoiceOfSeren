@@ -48,18 +48,6 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
     }
 
     /**
-     *  Data is invalid if Current hour's data === Last hour's data (Local)
-     **/
-    if (
-        lastLocal?.timestamp &&
-        currentVote?.clans?.clan_1 === lastLocal?.clans?.clan_1
-    ) {
-        reasons.push(`Invalid Data: Current matches Last (Local)`);
-        sessionData.delete('Current');
-		scanForClanData(sessionData, debugMode);
-    }
-
-    /**
      * Data is invalid if we have data but it is undefined
      */
     if (currentVote?.clans?.clan_1 === undefined) {
@@ -87,7 +75,7 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
     /**
      * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
      */
-    if (lastLocal?.timestamp > 0 && now.minutes === 0 && now.seconds <= 30) {
+    if (lastLocal?.timestamp > 0 && now.minute === 0 && now.second <= 30) {
         reasons.push(`Invalid Data: Voice unlikely to have changed`);
         sessionData.delete('Current');
     }

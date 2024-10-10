@@ -25,9 +25,10 @@ export async function scanForClanData(
     debugMode: boolean,
 ): Promise<void> {
 	const nextEligibleVote: number = sessionData.get('NextEligible');
+	const throttled: boolean = sessionData.get('Throttled');
     const current: ClanVote = sessionData.get('Current');
     const voted: boolean = sessionData.get('Voted');
-    if (current) {
+    if (current && !throttled) {
         /**
          * If Now > NextEligibleVotingHour then set "Current" to "LastLocal"
          */
@@ -96,19 +97,6 @@ export async function scanForClanData(
                 clan_2: firstClan,
             },
         };
-    }
-
-    // If our current vote does not match what we scanned - delete our current vote
-    if (
-        current?.clans?.clan_1 !== vote.clans.clan_1 ||
-        current?.clans?.clan_2 !== vote.clans.clan_2
-    ) {
-        debugLog(
-            `Invalid Data. Reason: Scanned data does not match Current Vote. Resetting vote data: ${current?.clans?.clan_1} & ${current?.clans?.clan_2}`,
-            debugMode,
-        );
-        sessionData.delete('Current');
-        sessionData.set('Voted', false);
     }
 
     // Update the "Found Clans!" messaging with our detected clans

@@ -5,11 +5,9 @@ import { submitClanData } from '../api/postClanData';
 import { ClanVote } from '../data/types';
 import { getEpochDifference } from '../utility/epochs';
 import { debugLog } from '../utility/helpers';
-import { checkDataValidity } from './checkDataValidity';
 import { scanForClanData } from './scanForClanData';
 
-const voteTimer = new Map();
-const primeTime = 2;
+const primeTime = 3;
 
 /**
  * Scans the screen looking for Clan data
@@ -35,21 +33,21 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
 
 
 	// Skip scanning if we are currently being throttled
-	if (voteTimer.get('Throttled')) {
+	if (sessionData.get('Throttled')) {
 		debugLog(`Skipping scan. Reason: Vote is being throttled`, debugMode);
 		return;
 	}
 
 	// During primetime allow a vote every 30 seconds to better seed data
-	if (voted && now.minutes <= primeTime) {
+	if (voted && now.minute <= primeTime) {
         debugLog(
             `Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
             debugMode,
         );
         sessionData.set('Voted', false);
-        voteTimer.set('Throttled', true);
+        sessionData.set('Throttled', true);
         setTimeout(() => {
-            voteTimer.set('Throttled', false);
+            sessionData.set('Throttled', false);
         }, 1000 * 30);
     }
 
