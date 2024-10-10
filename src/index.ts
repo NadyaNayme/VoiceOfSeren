@@ -556,6 +556,9 @@ async function automaticScan(): Promise<void> {
     }
 
 	if (voted && now.minutes <= 3 && isPrimetimeVote(current.timestamp)) {
+        debugLog(
+            `Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
+        );
 		sessionData.set('Voted', false);
     }
 
@@ -570,10 +573,6 @@ async function automaticScan(): Promise<void> {
             sessionData.delete('Current');
             return;
         }
-        debugLog(
-            `Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
-        );
-        sessionData.set('Voted', false);
     } else {
         await scanForClanData();
         await sauce.timeout(50);

@@ -12340,6 +12340,7 @@ function automaticScan() {
                         return [2 /*return*/];
                     }
                     if (voted && now.minutes <= 3 && isPrimetimeVote(current.timestamp)) {
+                        debugLog("Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.");
                         sessionData.set('Voted', false);
                     }
                     if (!(voted && now.minute <= 2 && checkDataValidity())) return [3 /*break*/, 1];
@@ -12349,8 +12350,6 @@ function automaticScan() {
                         sessionData.delete('Current');
                         return [2 /*return*/];
                     }
-                    debugLog("Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.");
-                    sessionData.set('Voted', false);
                     return [3 /*break*/, 5];
                 case 1: return [4 /*yield*/, scanForClanData()];
                 case 2:
