@@ -10,11 +10,11 @@ export function getCurrentEpoch(): number {
  * Returns the difference between two epochs
  * @returns number
  */
-export function getEpochDifference(one: number, two: number) {
-	if (one >= two) {
-		return one - two;
+export function getEpochDifference(epoch_1: number, epoch_2: number) {
+	if (epoch_1 >= epoch_2) {
+		return epoch_1 - epoch_2;
 	} else {
-		return two - one;
+		return epoch_2 - epoch_1;
 	}
 }
 
@@ -33,43 +33,15 @@ export function getNextHourEpoch(): number {
 }
 
 /**
- * Returns "True" if provided Unix Time timestamp is older than 2 hours
- * @param timestamp - Unix Time to check against
- * @returns boolean
+ * Compares the difference between two epoch timestamps and returns
+ * "true" if the difference exceeds the provided threshold.
+ *
+ * The order of epoch parameters is irrelevant
+ * @param epoch_1 - An Unix Time timestamp
+ * @param epoch_2 - An Unix Time timestamp
+ * @param expectedTimeDifference - The expected difference between the two times
  */
-export function isLastVoteInvalid(timestamp: number): boolean {
-	if (timestamp === 0) return false;
-    const currentEpoch = getCurrentEpoch();
-    const currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
-    const twoHoursAgo = currentHourMark - 7200;
-
-    return timestamp >= twoHoursAgo;
-}
-
-/**
- * Returns "True" if provided timestamp is older than 4 minutes
- * @param timestamp - Unix Time to check against
- * @returns boolean
- */
-export function isRecentVote(timestamp: number): boolean {
-	if (timestamp === 0) return false;
-    const currentEpoch = getCurrentEpoch();
-    const currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
-    const fourMinutesAgo = currentHourMark - 240;
-
-    return timestamp >= fourMinutesAgo;
-}
-
-/**
- * Returns "true" if provided timestamp is older than 30 seconds
- * @param timestamp - Unix Time to check again
- * @returns boolean
- */
-export function isPrimetimeVote(timestamp: number): boolean {
-	if (timestamp === 0) return false;
-    const currentEpoch = getCurrentEpoch();
-    const currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
-    const thirtySecondsAgo = currentHourMark - 30;
-
-    return timestamp >= thirtySecondsAgo;
+export function checkTimeDifference(epoch_1: number, epoch_2: number, expectedTimeDifference: number) {
+	let difference = getEpochDifference(epoch_1, epoch_2)
+	return difference >= expectedTimeDifference
 }

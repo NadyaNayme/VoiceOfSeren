@@ -46,6 +46,10 @@ export async function submitClanData(sessionData, debugMode) {
         },
     })
         .then((res) => {
+
+			// If our vote data was rejected or we encountered a Server Error - do nothing
+			if (res.status >= 400) return;
+
             sauce.updateSetting(
                 'votedCount',
                 sauce.getSetting('votedCount') + 1,
@@ -58,9 +62,7 @@ export async function submitClanData(sessionData, debugMode) {
 
             // This is done to update our "Current Voice of Seren" display
             fetchVos(sessionData, debugMode);
-        })
-        .then((res) => {
-            sessionData.set('LastLocal', currentVote);
+			sessionData.set('LastLocal', currentVote);
             startVoteCountdown(sessionData);
         })
         .catch((err) => {

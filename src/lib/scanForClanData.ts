@@ -3,9 +3,9 @@ import { submitClanData } from '../api/postClanData';
 
 import { CapitalizedClanString, ClanVote } from '../data/types';
 import {
+	checkTimeDifference,
     getCurrentEpoch,
-    getNextHourEpoch,
-    isRecentVote,
+    getNextHourEpoch
 } from '../utility/epochs';
 import {
     debugLog,
@@ -24,25 +24,30 @@ export async function scanForClanData(
     sessionData,
     debugMode: boolean,
 ): Promise<void> {
-    const mostRecentVote: ClanVote = sessionData.get('Current');
+    const current: ClanVote = sessionData.get('Current');
     const voted: boolean = sessionData.get('Voted');
-    if (mostRecentVote) {
+    if (current) {
+
         /**
-         * If Now > EligibleVotingHour then we can delete "LastLocal" and
+         * If Now > NextEligibleVotingHour then we delete "LastLocal" and
          * set "Current" to "LastLocal". Otherwise we can safely skip the scan.
          */
-        if (getCurrentEpoch() > mostRecentVote?.timestamp) {
+        if (getCurrentEpoch() > current?.timestamp) {
             updateSessionData(sessionData);
-        } else if (voted || !isRecentVote(mostRecentVote?.timestamp)) {
+        }
+
+		// If we have voted - we should skip scanning
+		if (voted) {
             debugLog(
-                `Skipping scan. Reason: Already voted this hour: ${mostRecentVote?.clans?.clan_1} & ${mostRecentVote?.clans?.clan_2}`,
+                `Skipping scan. Reason: Already voted this hour: ${current?.clans?.clan_1} & ${current?.clans?.clan_2}`,
                 debugMode,
             );
             displayCurrentClanVote(sessionData);
             return;
         }
+
         debugLog(
-            `Skipping scan. Reason: Already have valid data: ${mostRecentVote?.clans?.clan_1} & ${mostRecentVote?.clans?.clan_2}`,
+            `Skipping scan. Reason: Already have valid data: ${current?.clans?.clan_1} & ${current?.clans?.clan_2}`,
             debugMode,
         );
         return;
@@ -96,11 +101,11 @@ export async function scanForClanData(
 
     // If our current vote does not match what we scanned - delete our current vote
     if (
-        mostRecentVote?.clans?.clan_1 !== vote.clans.clan_1 ||
-        mostRecentVote?.clans?.clan_2 !== vote.clans.clan_2
+        current?.clans?.clan_1 !== vote.clans.clan_1 ||
+        current?.clans?.clan_2 !== vote.clans.clan_2
     ) {
         debugLog(
-            `Invalid Data. Reason: Scanned data does not match Current Vote. Resetting vote data: ${mostRecentVote?.clans?.clan_1} & ${mostRecentVote?.clans?.clan_2}`,
+            `Invalid Data. Reason: Scanned data does not match Current Vote. Resetting vote data: ${current?.clans?.clan_1} & ${current?.clans?.clan_2}`,
             debugMode,
         );
         sessionData.delete('Current');
@@ -114,8 +119,12 @@ export async function scanForClanData(
     // The data we have is valid - set it as our Current vote
     sessionData.set('Current', vote);
 
-    // If we have not voted and have recent data - try and vote
-    if (!voted && mostRecentVote && isRecentVote(mostRecentVote?.timestamp)) {
+    // If we have not voted and have recent data (<30s old) - try and vote
+    if (
+        !voted &&
+        current &&
+        !checkTimeDifference(current?.timestamp, getCurrentEpoch(), 30)
+    ) {
         await submitClanData(sessionData, debugMode);
     }
 }

@@ -1638,13 +1638,14 @@ function submitClanData(sessionData, debugMode) {
                     })
                         .then(function (res) {
                         var _a, _b;
+                        // If our vote data was rejected or we encountered a Server Error - do nothing
+                        if (res.status >= 400)
+                            return;
                         _a1sauce__WEBPACK_IMPORTED_MODULE_0__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_0__.getSetting('votedCount') + 1);
                         (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Voted for ".concat((_a = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1, " & ").concat((_b = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _b === void 0 ? void 0 : _b.clan_2, "."), debugMode);
                         sessionData.set('Voted', true);
                         // This is done to update our "Current Voice of Seren" display
                         (0,_getServerData__WEBPACK_IMPORTED_MODULE_6__.fetchVos)(sessionData, debugMode);
-                    })
-                        .then(function (res) {
                         sessionData.set('LastLocal', currentVote);
                         (0,_lib__WEBPACK_IMPORTED_MODULE_1__.startVoteCountdown)(sessionData);
                     })
@@ -1783,7 +1784,7 @@ function automaticScan(sessionData, debugMode) {
                     _c.sent();
                     // Set voted to true here so that the below check will fail and we won't hit this branch again on the next scan
                     sessionData.set('Voted', true);
-                    if (!(!voted && current && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.isRecentVote)(current === null || current === void 0 ? void 0 : current.timestamp))) return [3 /*break*/, 5];
+                    if (!(!voted && current && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)(current === null || current === void 0 ? void 0 : current.timestamp, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 30))) return [3 /*break*/, 5];
                     return [4 /*yield*/, (0,_api_postClanData__WEBPACK_IMPORTED_MODULE_2__.submitClanData)(sessionData, debugMode)];
                 case 4:
                     _c.sent();
@@ -1809,9 +1810,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   checkDataValidity: () => (/* binding */ checkDataValidity)
 /* harmony export */ });
 /* harmony import */ var luxon__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! luxon */ "../node_modules/luxon/src/luxon.js");
-/* harmony import */ var _utility_epochs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utility/epochs */ "./utility/epochs.ts");
-/* harmony import */ var _utility_helpers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utility/helpers */ "./utility/helpers.ts");
-/* harmony import */ var _scanForClanData__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./scanForClanData */ "./lib/scanForClanData.ts");
+/* harmony import */ var _utility_helpers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utility/helpers */ "./utility/helpers.ts");
+/* harmony import */ var _scanForClanData__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./scanForClanData */ "./lib/scanForClanData.ts");
+/* harmony import */ var _utility_epochs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utility/epochs */ "./utility/epochs.ts");
 
 
 
@@ -1833,9 +1834,8 @@ function checkDataValidity(sessionData, debugMode) {
      * Last Vote data is invalid if it is >=2 hours old
      */
     if (lastLocal !== undefined &&
-        (lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) !== 0 &&
-        (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_1__.isLastVoteInvalid)(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_2__.debugLog)("Invalid Data: \"LastLocal\" data older than 2 hours. Age: ".concat(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp), debugMode);
+        (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 1000 * 60 * 2)) {
+        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: \"LastLocal\" data older than 2 hours. Age: ".concat(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp), debugMode);
         sessionData.set('LastLocal', undefined);
         lastLocal = undefined;
     }
@@ -1843,9 +1843,9 @@ function checkDataValidity(sessionData, debugMode) {
      * Data is invalid if we do not have any data
      */
     if (!(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_2__.debugLog)("Invalid data: Missing Current data", debugMode);
+        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid data: Missing Current data", debugMode);
         sessionData.delete('Current');
-        (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_3__.scanForClanData)(sessionData, debugMode);
+        (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_2__.scanForClanData)(sessionData, debugMode);
         return false;
     }
     /**
@@ -1853,31 +1853,31 @@ function checkDataValidity(sessionData, debugMode) {
      **/
     if ((lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) &&
         ((_a = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_2__.debugLog)("Invalid Data: Current matches Last (Local)", debugMode);
+        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: Current matches Last (Local)", debugMode);
         sessionData.delete('Current');
-        (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_3__.scanForClanData)(sessionData, debugMode);
+        (0,_scanForClanData__WEBPACK_IMPORTED_MODULE_2__.scanForClanData)(sessionData, debugMode);
         return false;
     }
     /**
      * Data is invalid if we have data but it is undefined
      */
     if (((_c = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _c === void 0 ? void 0 : _c.clan_1) === undefined) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_2__.debugLog)("Invalid data: Data is undefined", debugMode);
+        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid data: Data is undefined", debugMode);
         return false;
     }
     /**
      * Data is invalid if Current hour's data === Last hour's data (Server)
      */
     if (((_d = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_1) === ((_e = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _e === void 0 ? void 0 : _e.clan_1)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_2__.debugLog)("Invalid Data: Current matches Last (Server)", debugMode);
+        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: Current matches Last (Server)", debugMode);
         sessionData.delete('Current');
         return false;
     }
     /**
      * Data is invalid if it is older than 4 minutes
      */
-    if (!(0,_utility_epochs__WEBPACK_IMPORTED_MODULE_1__.isRecentVote)(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp)) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_2__.debugLog)("Invalid Data: Current is older than 4 minutes", debugMode);
+    if ((0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.checkTimeDifference)(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_3__.getCurrentEpoch)(), 240)) {
+        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: Current is older than 4 minutes", debugMode);
         sessionData.delete('Current');
         return false;
     }
@@ -1885,14 +1885,14 @@ function checkDataValidity(sessionData, debugMode) {
      * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
      */
     if (!(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) && now.minutes === 0 && now.seconds <= 30) {
-        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_2__.debugLog)("Invalid Data: Voice unlikely to have changed", debugMode);
+        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data: Voice unlikely to have changed", debugMode);
         sessionData.delete('Current');
         return false;
     }
     /**
      * If all of the above checks passed - our data is valid for the current hour
      */
-    (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_2__.debugLog)("Valid Data Found\nClan 1: ".concat((_f = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _f === void 0 ? void 0 : _f.clan_1, "\nClan 2: ").concat((_g = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _g === void 0 ? void 0 : _g.clan_2, "\nTimestamp: ").concat(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp), debugMode);
+    (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Valid Data Found\nClan 1: ".concat((_f = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _f === void 0 ? void 0 : _f.clan_1, "\nClan 2: ").concat((_g = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _g === void 0 ? void 0 : _g.clan_2, "\nTimestamp: ").concat(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp), debugMode);
     return true;
 }
 
@@ -2204,26 +2204,27 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 function scanForClanData(sessionData, debugMode) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     return __awaiter(this, void 0, void 0, function () {
-        var mostRecentVote, voted, foundClans, firstClan, firstClanPos, secondClan, secondClanPos, vote;
+        var current, voted, foundClans, firstClan, firstClanPos, secondClan, secondClanPos, vote;
         return __generator(this, function (_j) {
             switch (_j.label) {
                 case 0:
-                    mostRecentVote = sessionData.get('Current');
+                    current = sessionData.get('Current');
                     voted = sessionData.get('Voted');
-                    if (mostRecentVote) {
+                    if (current) {
                         /**
-                         * If Now > EligibleVotingHour then we can delete "LastLocal" and
+                         * If Now > NextEligibleVotingHour then we delete "LastLocal" and
                          * set "Current" to "LastLocal". Otherwise we can safely skip the scan.
                          */
-                        if ((0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getCurrentEpoch)() > (mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.timestamp)) {
+                        if ((0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getCurrentEpoch)() > (current === null || current === void 0 ? void 0 : current.timestamp)) {
                             (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.updateSessionData)(sessionData);
                         }
-                        else if (voted || !(0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.isRecentVote)(mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.timestamp)) {
-                            (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.debugLog)("Skipping scan. Reason: Already voted this hour: ".concat((_a = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1, " & ").concat((_b = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _b === void 0 ? void 0 : _b.clan_2), debugMode);
+                        // If we have voted - we should skip scanning
+                        if (voted) {
+                            (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.debugLog)("Skipping scan. Reason: Already voted this hour: ".concat((_a = current === null || current === void 0 ? void 0 : current.clans) === null || _a === void 0 ? void 0 : _a.clan_1, " & ").concat((_b = current === null || current === void 0 ? void 0 : current.clans) === null || _b === void 0 ? void 0 : _b.clan_2), debugMode);
                             (0,_displayClanVote__WEBPACK_IMPORTED_MODULE_4__.displayCurrentClanVote)(sessionData);
                             return [2 /*return*/];
                         }
-                        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.debugLog)("Skipping scan. Reason: Already have valid data: ".concat((_c = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _c === void 0 ? void 0 : _c.clan_1, " & ").concat((_d = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_2), debugMode);
+                        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.debugLog)("Skipping scan. Reason: Already have valid data: ".concat((_c = current === null || current === void 0 ? void 0 : current.clans) === null || _c === void 0 ? void 0 : _c.clan_1, " & ").concat((_d = current === null || current === void 0 ? void 0 : current.clans) === null || _d === void 0 ? void 0 : _d.clan_2), debugMode);
                         return [2 /*return*/];
                     }
                     foundClans = Object.entries((0,_tryFindClans__WEBPACK_IMPORTED_MODULE_5__.tryFindClans)());
@@ -2260,9 +2261,9 @@ function scanForClanData(sessionData, debugMode) {
                         };
                     }
                     // If our current vote does not match what we scanned - delete our current vote
-                    if (((_e = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _e === void 0 ? void 0 : _e.clan_1) !== vote.clans.clan_1 ||
-                        ((_f = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _f === void 0 ? void 0 : _f.clan_2) !== vote.clans.clan_2) {
-                        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.debugLog)("Invalid Data. Reason: Scanned data does not match Current Vote. Resetting vote data: ".concat((_g = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _g === void 0 ? void 0 : _g.clan_1, " & ").concat((_h = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _h === void 0 ? void 0 : _h.clan_2), debugMode);
+                    if (((_e = current === null || current === void 0 ? void 0 : current.clans) === null || _e === void 0 ? void 0 : _e.clan_1) !== vote.clans.clan_1 ||
+                        ((_f = current === null || current === void 0 ? void 0 : current.clans) === null || _f === void 0 ? void 0 : _f.clan_2) !== vote.clans.clan_2) {
+                        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_3__.debugLog)("Invalid Data. Reason: Scanned data does not match Current Vote. Resetting vote data: ".concat((_g = current === null || current === void 0 ? void 0 : current.clans) === null || _g === void 0 ? void 0 : _g.clan_1, " & ").concat((_h = current === null || current === void 0 ? void 0 : current.clans) === null || _h === void 0 ? void 0 : _h.clan_2), debugMode);
                         sessionData.delete('Current');
                         sessionData.set('Voted', false);
                     }
@@ -2271,7 +2272,9 @@ function scanForClanData(sessionData, debugMode) {
                     _utility_helpers__WEBPACK_IMPORTED_MODULE_3__.helperItems.VoteOutput.innerHTML = '';
                     // The data we have is valid - set it as our Current vote
                     sessionData.set('Current', vote);
-                    if (!(!voted && mostRecentVote && (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.isRecentVote)(mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.timestamp))) return [3 /*break*/, 4];
+                    if (!(!voted &&
+                        current &&
+                        !(0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.checkTimeDifference)(current === null || current === void 0 ? void 0 : current.timestamp, (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_2__.getCurrentEpoch)(), 30))) return [3 /*break*/, 4];
                     return [4 /*yield*/, (0,_api_postClanData__WEBPACK_IMPORTED_MODULE_1__.submitClanData)(sessionData, debugMode)];
                 case 3:
                     _j.sent();
@@ -2397,12 +2400,10 @@ function startVersionCheck(version) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   checkTimeDifference: () => (/* binding */ checkTimeDifference),
 /* harmony export */   getCurrentEpoch: () => (/* binding */ getCurrentEpoch),
 /* harmony export */   getEpochDifference: () => (/* binding */ getEpochDifference),
-/* harmony export */   getNextHourEpoch: () => (/* binding */ getNextHourEpoch),
-/* harmony export */   isLastVoteInvalid: () => (/* binding */ isLastVoteInvalid),
-/* harmony export */   isPrimetimeVote: () => (/* binding */ isPrimetimeVote),
-/* harmony export */   isRecentVote: () => (/* binding */ isRecentVote)
+/* harmony export */   getNextHourEpoch: () => (/* binding */ getNextHourEpoch)
 /* harmony export */ });
 /**
  * Returns the current time as Unix Time
@@ -2415,12 +2416,12 @@ function getCurrentEpoch() {
  * Returns the difference between two epochs
  * @returns number
  */
-function getEpochDifference(one, two) {
-    if (one >= two) {
-        return one - two;
+function getEpochDifference(epoch_1, epoch_2) {
+    if (epoch_1 >= epoch_2) {
+        return epoch_1 - epoch_2;
     }
     else {
-        return two - one;
+        return epoch_2 - epoch_1;
     }
 }
 /**
@@ -2436,43 +2437,17 @@ function getNextHourEpoch() {
     return (Math.floor(currentEpoch / 3600) + 1) * 3600;
 }
 /**
- * Returns "True" if provided Unix Time timestamp is older than 2 hours
- * @param timestamp - Unix Time to check against
- * @returns boolean
+ * Compares the difference between two epoch timestamps and returns
+ * "true" if the difference exceeds the provided threshold.
+ *
+ * The order of epoch parameters is irrelevant
+ * @param epoch_1 - An Unix Time timestamp
+ * @param epoch_2 - An Unix Time timestamp
+ * @param expectedTimeDifference - The expected difference between the two times
  */
-function isLastVoteInvalid(timestamp) {
-    if (timestamp === 0)
-        return false;
-    var currentEpoch = getCurrentEpoch();
-    var currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
-    var twoHoursAgo = currentHourMark - 7200;
-    return timestamp >= twoHoursAgo;
-}
-/**
- * Returns "True" if provided timestamp is older than 4 minutes
- * @param timestamp - Unix Time to check against
- * @returns boolean
- */
-function isRecentVote(timestamp) {
-    if (timestamp === 0)
-        return false;
-    var currentEpoch = getCurrentEpoch();
-    var currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
-    var fourMinutesAgo = currentHourMark - 240;
-    return timestamp >= fourMinutesAgo;
-}
-/**
- * Returns "true" if provided timestamp is older than 30 seconds
- * @param timestamp - Unix Time to check again
- * @returns boolean
- */
-function isPrimetimeVote(timestamp) {
-    if (timestamp === 0)
-        return false;
-    var currentEpoch = getCurrentEpoch();
-    var currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
-    var thirtySecondsAgo = currentHourMark - 30;
-    return timestamp >= thirtySecondsAgo;
+function checkTimeDifference(epoch_1, epoch_2, expectedTimeDifference) {
+    var difference = getEpochDifference(epoch_1, epoch_2);
+    return difference >= expectedTimeDifference;
 }
 
 
@@ -2681,9 +2656,12 @@ function updateTitleBar(clan_1, clan_2) {
  * Finally - deletes 'Voted' to allow us to vote again
  */
 function updateSessionData(sessionData) {
-    var mostRecentVote = sessionData.get('Current');
-    if (mostRecentVote && !(0,_epochs__WEBPACK_IMPORTED_MODULE_1__.isLastVoteInvalid)(mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.timestamp)) {
-        sessionData.set('LastLocal', mostRecentVote);
+    var current = sessionData.get('Current');
+    // If our currentvote is older than 1 hour it is no longer current
+    // and is most likely our vote for the previous hour
+    if (current &&
+        (0,_epochs__WEBPACK_IMPORTED_MODULE_1__.checkTimeDifference)(current === null || current === void 0 ? void 0 : current.timestamp, (0,_epochs__WEBPACK_IMPORTED_MODULE_1__.getCurrentEpoch)(), 1000 * 60)) {
+        sessionData.set('LastLocal', current);
     }
     else {
         sessionData.delete('LastLocal');

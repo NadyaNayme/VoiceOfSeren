@@ -1,9 +1,9 @@
 import { DateTime } from 'luxon';
 
 import { ClanVote } from '../data/types';
-import { isLastVoteInvalid, isRecentVote } from '../utility/epochs';
 import { debugLog } from '../utility/helpers';
 import { scanForClanData } from './scanForClanData';
+import { checkTimeDifference, getCurrentEpoch } from '../utility/epochs';
 
 /**
  * Checks Current and Last voting data for validity.
@@ -23,8 +23,7 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
      */
     if (
         lastLocal !== undefined &&
-		lastLocal?.timestamp !== 0 &&
-        isLastVoteInvalid(lastLocal?.timestamp)
+		checkTimeDifference(lastLocal?.timestamp, getCurrentEpoch(), 1000 * 60 * 2)
     ) {
         debugLog(
             `Invalid Data: "LastLocal" data older than 2 hours. Age: ${lastLocal?.timestamp}`,
@@ -77,7 +76,7 @@ export function checkDataValidity(sessionData, debugMode: boolean): boolean {
     /**
      * Data is invalid if it is older than 4 minutes
      */
-    if (!isRecentVote(currentVote?.timestamp)) {
+    if (checkTimeDifference(currentVote?.timestamp, getCurrentEpoch(), 240)) {
         debugLog(`Invalid Data: Current is older than 4 minutes`, debugMode);
         sessionData.delete('Current');
         return false;

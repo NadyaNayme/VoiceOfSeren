@@ -1,7 +1,7 @@
 import * as a1lib from 'alt1';
 import * as sauce from '.././a1sauce';
 import { CapitalizedClanString, ClanVote } from '../data/types';
-import { getCurrentEpoch, isLastVoteInvalid } from './epochs';
+import { checkTimeDifference, getCurrentEpoch } from './epochs';
 import { startVoteCountdown } from '../lib';
 import { getLastVos } from '../api/getLastVoice';
 import { fetchVos } from '../api/getServerData';
@@ -144,9 +144,15 @@ export function updateTitleBar(
  * Finally - deletes 'Voted' to allow us to vote again
  */
 export function updateSessionData(sessionData) {
-    const mostRecentVote: ClanVote = sessionData.get('Current');
-    if (mostRecentVote && !isLastVoteInvalid(mostRecentVote?.timestamp)) {
-        sessionData.set('LastLocal', mostRecentVote);
+    const current: ClanVote = sessionData.get('Current');
+
+	// If our currentvote is older than 1 hour it is no longer current
+	// and is most likely our vote for the previous hour
+    if (
+        current &&
+        checkTimeDifference(current?.timestamp, getCurrentEpoch(), 1000 * 60)
+    ) {
+        sessionData.set('LastLocal', current);
     } else {
         sessionData.delete('LastLocal');
     }
