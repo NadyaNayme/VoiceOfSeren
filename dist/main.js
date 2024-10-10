@@ -2467,12 +2467,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   updateTitleBar: () => (/* binding */ updateTitleBar),
 /* harmony export */   uuid: () => (/* binding */ uuid)
 /* harmony export */ });
-/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! alt1 */ "../node_modules/alt1/dist/base/index.js");
-/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(alt1__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! alt1 */ "../node_modules/alt1/dist/base/index.js");
+/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(alt1__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _a1sauce__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! .././a1sauce */ "./a1sauce.ts");
 /* harmony import */ var _epochs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./epochs */ "./utility/epochs.ts");
 /* harmony import */ var _lib__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../lib */ "./lib/index.ts");
 /* harmony import */ var _api_getLastVoice__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../api/getLastVoice */ "./api/getLastVoice.ts");
+/* harmony import */ var _api_getServerData__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../api/getServerData */ "./api/getServerData.ts");
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -2510,6 +2511,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
     }
 };
 var _a;
+
 
 
 
@@ -2563,7 +2565,7 @@ var helperItems = {
 /**
  * Promise containing image data for each of the Elf Clans
  */
-var clanImages = alt1__WEBPACK_IMPORTED_MODULE_4__.webpackImages({
+var clanImages = alt1__WEBPACK_IMPORTED_MODULE_5__.webpackImages({
     amlodd: __webpack_require__(/*! .././asset/data/Amlodd_Clan.data.png */ "./asset/data/Amlodd_Clan.data.png"),
     cadarn: __webpack_require__(/*! .././asset/data/Cadarn_Clan.data.png */ "./asset/data/Cadarn_Clan.data.png"),
     crwys: __webpack_require__(/*! .././asset/data/Crwys_Clan.data.png */ "./asset/data/Crwys_Clan.data.png"),
@@ -2697,6 +2699,10 @@ function updateTimestamps(sessionData, debugMode) {
                     }
                     timeAgo += 'ago';
                     helperItems.Timestamp.innerHTML = "Last Server Check: ".concat(timeAgo);
+                    // Fetch from server again if data is >1h 1m old
+                    if (hours > 1 && minutes > 1) {
+                        (0,_api_getServerData__WEBPACK_IMPORTED_MODULE_4__.fetchVos)(sessionData, debugMode);
+                    }
                     return [2 /*return*/];
             }
         });

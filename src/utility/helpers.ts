@@ -4,6 +4,7 @@ import { CapitalizedClanString, ClanVote } from '../data/types';
 import { getCurrentEpoch, isLastVoteInvalid } from './epochs';
 import { startVoteCountdown } from '../lib';
 import { getLastVos } from '../api/getLastVoice';
+import { fetchVos } from '../api/getServerData';
 
 /**
  * UUID is only used for Server-side statistics
@@ -196,6 +197,12 @@ export async function updateTimestamps(sessionData, debugMode: boolean) {
     timeAgo += 'ago';
 
     helperItems.Timestamp.innerHTML = `Last Server Check: ${timeAgo}`;
+
+	// Fetch from server again if data is >1h 1m old
+	if (hours > 1 && minutes > 1) {
+		fetchVos(sessionData, debugMode);
+	}
+
 }
 
 /**
