@@ -12484,18 +12484,18 @@ function checkDataValidity() {
         lastLocal = undefined;
     }
     /**
+     * Data is invalid if we do not have any data
+     */
+    if (!currentVote) {
+        debugLog("Invalid data: Missing Current data");
+        return false;
+    }
+    /**
      *  Data is invalid if Current hour's data === Last hour's data (Local)
      **/
     if (lastLocal && currentVote.clan_1 === lastLocal.clans.clan_1) {
         debugLog("Invalid Data: Current matches Last (Local)");
         sessionData.delete('Current');
-        return false;
-    }
-    /**
-     * Data is invalid if we do not have any data
-     */
-    if (!currentVote) {
-        debugLog("Invalid data: Missing Current data");
         return false;
     }
     /**

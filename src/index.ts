@@ -694,7 +694,7 @@ function alertFavorite(clan_1: string, clan_2: string) {
 function checkDataValidity(): boolean {
     let currentVote = sessionData.get('Current');
     let lastLocal = sessionData.get('LastLocal');
-	let lastServer = sessionData.get('LastServer');
+    let lastServer = sessionData.get('LastServer');
 
     /**
      * Last Vote data is invalid if it is >=2 hours old
@@ -703,6 +703,14 @@ function checkDataValidity(): boolean {
         debugLog(`Invalid Data: "LastLocal" data older than 2 hours`);
         sessionData.delete('LastLocal');
         lastLocal = undefined;
+    }
+
+    /**
+     * Data is invalid if we do not have any data
+     */
+    if (!currentVote) {
+        debugLog(`Invalid data: Missing Current data`);
+        return false;
     }
 
     /**
@@ -715,20 +723,12 @@ function checkDataValidity(): boolean {
     }
 
     /**
-     * Data is invalid if we do not have any data
-     */
-    if (!currentVote) {
-        debugLog(`Invalid data: Missing Current data`);
-        return false;
-    }
-
-    /**
      * Data is invalid if we have data but it is undefined
      */
-	if (currentVote.clans.clan_1 === undefined) {
+    if (currentVote.clans.clan_1 === undefined) {
         debugLog(`Invalid data: Data is undefined`);
         return false;
-	}
+    }
 
     /**
      * Data is invalid if Current hour's data === Last hour's data (Server)
