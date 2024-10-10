@@ -8,6 +8,26 @@ import './version.json';
 import './icon.png';
 import './css/styles.css';
 
+type ClanString =
+    | 'amlodd'
+    | 'cadarn'
+    | 'crwys'
+    | 'hefin'
+    | 'iorwerth'
+    | 'ithell'
+    | 'meilyr'
+    | 'trahaearn';
+
+type CapitalizedClanString = Capitalize<ClanString>;
+
+type ClanVote = {
+    timestamp: number;
+    clans: {
+        clan_1: CapitalizedClanString;
+        clan_2: CapitalizedClanString;
+    };
+};
+
 /**
  * Utility function to type fewer characters for getElementById
  * @param id String ID for the desired element
@@ -70,7 +90,7 @@ let debugMode = sauce.getSetting('debugMode') ?? false;
 /**
  * Contains the following keys:
  *
- * LastLocal | LastServer | Current | Voted
+ * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean
  *
  * Data is not persisted between sessions
  */
@@ -127,7 +147,7 @@ function isRecentVote(timestamp: number): boolean {
 /**
  * Returns "true" if provided timestamp is older than 30 seconds
  * @param timestamp - Unix Time to check again
- * @returns
+ * @returns boolean
  */
 function isPrimetimeVote(timestamp: number): boolean {
     const currentEpoch = getCurrentEpoch();
@@ -180,7 +200,7 @@ function updateFavoriteClans(favoriteClans: Set<string>) {
 /**
  * Captures the game window and scans it for Clan icons
  * If the icons exist - returns the x,y coordinates of the icons
- * @returns {clan: {x,y}, clan: {x,y}}
+ * @returns \{clan: {x,y}, clan: {x,y}}
  */
 function tryFindClans(): object {
     // Capture RS Window
@@ -224,8 +244,8 @@ function tryFindClans(): object {
  * @returns Promise<void>
  */
 async function scanForClanData(): Promise<void> {
-    const mostRecentVote = sessionData.get('Current');
-    const voted = sessionData.get('Voted');
+    const mostRecentVote: ClanVote = sessionData.get('Current');
+    const voted: boolean = sessionData.get('Voted');
     if (mostRecentVote) {
         /**
          * If Now > EligibleVotingHour then we can delete "LastLocal" and
@@ -235,17 +255,13 @@ async function scanForClanData(): Promise<void> {
             updateSessionData();
         } else if (voted || !isRecentVote(mostRecentVote?.timestamp)) {
             debugLog(
-                `Skipping scan. Reason: Already voted this hour: ${titleCase(
-                    mostRecentVote?.clans?.clan_1,
-                )} & ${titleCase(mostRecentVote?.clans?.clan_2)}`,
+                `Skipping scan. Reason: Already voted this hour: ${mostRecentVote?.clans?.clan_1} & ${mostRecentVote?.clans?.clan_2}`,
             );
             displayCurrentClanVote();
             return;
         }
-		debugLog(
-            `Skipping scan. Reason: Already have valid data: ${titleCase(
-                mostRecentVote?.clans?.clan_1,
-            )} & ${titleCase(mostRecentVote?.clans?.clan_2)}`,
+        debugLog(
+            `Skipping scan. Reason: Already have valid data: ${mostRecentVote?.clans?.clan_1} & ${mostRecentVote?.clans?.clan_2}`,
         );
         return;
     }
@@ -267,29 +283,23 @@ async function scanForClanData(): Promise<void> {
         return;
     }
 
-    let firstClan = foundClans[0][0];
-    let firstClanPos = foundClans[0][1].x;
+    let firstClan = <CapitalizedClanString>titleCase(foundClans[0][0]);
+    let firstClanPos: number = foundClans[0][1].x;
 
-    let secondClan = foundClans[1][0];
-    let secondClanPos = foundClans[1][1].x;
+    let secondClan = <CapitalizedClanString>titleCase(foundClans[1][0]);
+    let secondClanPos: number = foundClans[1][1].x;
 
     // Compare the clan positions and set priority appropriately
-	let vote = {
-		timestamp: 0,
-		clans: {
-			clan_1: '',
-			clan_2: ''
-		}
-	};
-    if (firstClanPos < secondClanPos) {
-        vote = {
-            timestamp: getNextHourEpoch(),
-            clans: {
-                clan_1: firstClan,
-                clan_2: secondClan,
-            },
-        };
-    } else {
+    let vote: ClanVote = {
+        timestamp: getNextHourEpoch(),
+        clans: {
+            clan_1: firstClan,
+            clan_2: secondClan,
+        },
+    };
+
+	// Swap priority based on positioning
+    if (firstClanPos > secondClanPos) {
         vote = {
             timestamp: getNextHourEpoch(),
             clans: {
@@ -299,21 +309,27 @@ async function scanForClanData(): Promise<void> {
         };
     }
 
-    if (!firstClan || !secondClan) {
-        helperItems.VoteOutput.innerHTML =
-            '<p>You must be in Prifddinas to scan for data!</p>';
+	// If our current vote does not match what we scanned - delete our current vote
+	if (
+        mostRecentVote?.clans?.clan_1 !== vote.clans.clan_1 ||
+        mostRecentVote?.clans?.clan_2 !== vote.clans.clan_2
+    ) {
         debugLog(
-            `Invalid Data. Reason: user not in Prifddinas. Resetting vote data: ${titleCase(vote.clans.clan_1)} & ${titleCase(vote.clans.clan_2)}`,
+            `Invalid Data. Reason: Scanned data does not match Current Vote. Resetting vote data: ${mostRecentVote?.clans?.clan_1} & ${mostRecentVote?.clans?.clan_2}`,
         );
-    } else {
-        helperItems.VoteInput.innerHTML = `<p style="white-space:normal!important;">Found clans!</br>${titleCase(vote.clans.clan_1)} and ${titleCase(vote.clans.clan_2)}</p>`;
-        helperItems.VoteOutput.innerHTML = '';
-
-        sessionData.set('Current', vote);
+        sessionData.delete('Current');
+		sessionData.set('Voted', false);
     }
 
+	// Update the "Found Clans!" messaging with our detected clans
+	helperItems.VoteInput.innerHTML = `<p style="white-space:normal!important;">Found clans!</br>${vote.clans.clan_1} and ${vote.clans.clan_2}</p>`;
+	helperItems.VoteOutput.innerHTML = '';
+
+	// The data we have is valid - set it as our Current vote
+	sessionData.set('Current', vote);
+
     // If we have not voted and have recent data - try and vote
-    if (!voted && mostRecentVote && isRecentVote(mostRecentVote.timestamp)) {
+    if (!voted && mostRecentVote && isRecentVote(mostRecentVote?.timestamp)) {
         await submitClanData();
     }
 }
@@ -344,8 +360,8 @@ const callWithRetry = async (fn, depth = 0) => {
  * Finally - deletes 'Voted' to allow us to vote again
  */
 function updateSessionData() {
-    const mostRecentVote = sessionData.get('Current');
-    if (mostRecentVote && !isLastVoteInvalid(mostRecentVote.timestamp)) {
+    const mostRecentVote: ClanVote = sessionData.get('Current');
+    if (mostRecentVote && !isLastVoteInvalid(mostRecentVote?.timestamp)) {
         sessionData.set('LastLocal', mostRecentVote);
     } else {
         sessionData.delete('LastLocal');
@@ -379,16 +395,17 @@ async function getCurrentVos() {
         .then((res) => res.text())
         .then((data) => {
             let vos = JSON.parse(data);
-            let currentVote = sessionData.get('Current');
-            let lastServer = sessionData.get('LastServer');
+            let currentVote: ClanVote = sessionData.get('Current');
+            let lastServer: ClanVote = sessionData.get('LastServer');
+
             if (vos['clan_1'] == undefined || vos['clan_2'] == undefined) {
                 alt1.setTitleBarText('');
                 helperItems.Current.innerHTML =
                     '<p>No data found. You can help by visiting Prifddinas and submitting data!</p>';
                 return;
             }
-            let clan_1: string = vos['clan_1'];
-            let clan_2: string = vos['clan_2'];
+            let clan_1 = <CapitalizedClanString>titleCase(vos['clan_1']);
+            let clan_2 = <CapitalizedClanString>titleCase(vos['clan_2']);
 
             // If data is new, update the title bar and alert user of favorited hour
             if (
@@ -399,8 +416,8 @@ async function getCurrentVos() {
                 alertFavorite(clan_1, clan_2);
             }
 
-			// If our current voting data does not match what the server says it is
-			// attempt to scan for new data - this does not affect our ability to vote
+            // If our current voting data does not match what the server says it is
+            // attempt to scan for new data - this does not affect our ability to vote
             if (clan_1 !== currentVote?.clans?.clan_1) {
                 debugLog(
                     'Invalid Data: Vote does not match server data. Deleting Current vote and attempting to scan again.',
@@ -409,12 +426,12 @@ async function getCurrentVos() {
                 scanForClanData();
             }
 
-			// Update the time stamps to let the user know when data was last fetched and voting will next be available
+            // Update the time stamps to let the user know when data was last fetched and voting will next be available
             updateTimestamps();
         })
         .catch((err) => {
             helperItems.Current.innerHTML = `<p>API Error: Please try again in a minute</p>`;
-			debugLog(err);
+            debugLog(err);
         });
 }
 
@@ -436,30 +453,31 @@ async function getLastVos() {
                     '<p>Server was reset - no data for previous hour.</p>';
                 return;
             }
-            let clan_1 = titleCase(last_vos['clan_1']);
-            let clan_2 = titleCase(last_vos['clan_2']);
+            let clan_1 = <CapitalizedClanString>titleCase(last_vos['clan_1']);
+            let clan_2 = <CapitalizedClanString>titleCase(last_vos['clan_2']);
 
-			// Update the "Last Voice of Seren" section of the App Window
-            helperItems.Last.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
+            // Update the "Last Voice of Seren" section of the App Window
+            helperItems.Last.innerHTML = createClanDisplay(clan_1, clan_2);
 
-			// If we do not have data from the server or our data does not match - update it
-			const lastServer = sessionData.get('LastServer');
-			const lastServerData = {
+            // If we do not have data from the server or our data does not match - update it
+            const lastServer: ClanVote = sessionData.get('LastServer');
+            const lastServerData: ClanVote = {
                 timestamp: getCurrentEpoch(),
                 clans: {
                     clan_1: last_vos['clan_1'],
                     clan_2: last_vos['clan_2'],
                 },
             };
-			if (
-                !lastServer && lastServer?.clans?.clan_1 !== lastServerData.clans.clan_1
+            if (
+                !lastServer &&
+                lastServer?.clans?.clan_1 !== lastServerData?.clans?.clan_1
             ) {
                 sessionData.set('LastServer', lastServerData);
             }
         })
         .catch((err) => {
             helperItems.Last.innerHTML = `<p>API Error: Please try again in a minute</p>`;
-			debugLog(err);
+            debugLog(err);
         });
 }
 
@@ -468,16 +486,16 @@ async function getLastVos() {
  * @returns void
  */
 function displayCurrentClanVote() {
-	const mostRecentVote = sessionData.get('Current');
+    const mostRecentVote: ClanVote = sessionData.get('Current');
     // If we don't have a vote
     if (!mostRecentVote) return;
 
     // If we're already showing the current clans using server data
     if (helperItems.Current.innerHTML.includes('asset/resource')) return;
 
-    let clan_1 = titleCase(mostRecentVote.clans.clan_1);
-    let clan_2 = titleCase(mostRecentVote.clans.clan_2);
-    helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
+    let clan_1 = mostRecentVote?.clans?.clan_1;
+    let clan_2 = mostRecentVote?.clans?.clan_2;
+    helperItems.Current.innerHTML = createClanDisplay(clan_1, clan_2);
 }
 
 /**
@@ -485,12 +503,12 @@ function displayCurrentClanVote() {
  * @returns Promise<void>
  */
 async function submitClanData() {
-    const currentVote = sessionData.get('Current');
-    const voted = sessionData.get('Voted');
+    const currentVote: ClanVote = sessionData.get('Current');
+    const voted: Boolean = sessionData.get('Voted');
 
     // If we have already voted - skip voting
-	// No debugLog because we're skipping scan for the same reason
-	if (voted) return;
+    // No debugLog because we're skipping scan for the same reason
+    if (voted) return;
 
     // Ensure our Last data is fully up-to-date for validity checking purposes
     await getLastVos();
@@ -507,7 +525,10 @@ async function submitClanData() {
     fetch('https://vos-alt1.fly.dev/increase_counter', {
         method: 'POST',
         body: JSON.stringify({
-            clans: [currentVote.clans.clan_1, currentVote.clans.clan_2],
+            clans: [
+                currentVote?.clans?.clan_1.toLowerCase(),
+                currentVote?.clans?.clan_2.toLowerCase(),
+            ],
             uuid: uuid,
         }),
         headers: {
@@ -520,7 +541,7 @@ async function submitClanData() {
                 sauce.getSetting('votedCount') + 1,
             );
             debugLog(
-                `Voted for ${titleCase(currentVote.clans.clan_1)} & ${titleCase(currentVote.clans.clan_2)}.`,
+                `Voted for ${currentVote?.clans?.clan_1} & ${currentVote?.clans?.clan_2}.`,
             );
             sessionData.set('Voted', true);
 
@@ -544,28 +565,26 @@ async function submitClanData() {
  * @returns Promise<void>
  */
 async function automaticScan(): Promise<void> {
-	let now = DateTime.now();
-	let voted = sessionData.get('Voted');
-	let current = sessionData.get('Current');
-	let last = sessionData.get('LastLocal');
+    let now = DateTime.now();
+    let voted: ClanVote = sessionData.get('Voted');
+    let current: ClanVote = sessionData.get('Current');
+    let last: ClanVote = sessionData.get('LastLocal');
 
-	// The "now" check is to allow alts to scan and vote for first few minutes of the hour
+    // The "now" check is to allow alts to scan and vote for first few minutes of the hour
     if (!alt1.rsActive && now.minute >= 3) {
         debugLog(`Skipping scan. Reason: RuneScape is not active`);
         return;
     }
 
-	if (voted && now.minutes <= 3 && isPrimetimeVote(current.timestamp)) {
+    if (voted && now.minutes <= 3 && isPrimetimeVote(current?.timestamp)) {
         debugLog(
             `Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
         );
-		sessionData.set('Voted', false);
+        sessionData.set('Voted', false);
     }
 
     if (voted && now.minute <= 2 && checkDataValidity()) {
-        if (
-            current.clans.clan_1 === last?.clans.clan_1
-        ) {
+        if (current?.clans?.clan_1 === last?.clans?.clan_1) {
             debugLog(
                 `Skipping scan. Current data matched data from last hour.`,
             );
@@ -582,54 +601,71 @@ async function automaticScan(): Promise<void> {
     }
 
     // If we have not voted and have recent data - try and vote
-    if (
-        !voted &&
-        current &&
-        isRecentVote(current.timestamp)
-    ) {
+    if (!voted && current && isRecentVote(current?.timestamp)) {
         await submitClanData();
     }
 }
 
-function titleCase(string) {
+/**
+ * Utility function to capitalize the first letter of a string
+ * @param string - The string that should be capitalized
+ * @returns string - The same string with the first letter capitalized
+ */
+function titleCase(string: string) {
     return string[0].toUpperCase() + string.slice(1).toLowerCase();
 }
 
-function updateTitleBar(clan_1: string, clan_2: string) {
-	clan_1 = titleCase(clan_1);
-	clan_2 = titleCase(clan_2);
-    helperItems.Current.innerHTML = `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
+/**
+ * Creates the Current/Last Voice of Seren Clan Display element and returns it as a string
+ * @param clan_1 - First Voice of Seren Clan
+ * @param clan_2 - Second Voice of Seren Clan
+ * @returns string
+ */
+function createClanDisplay(
+    clan_1: CapitalizedClanString,
+    clan_2: CapitalizedClanString,
+) {
+    return `<div><p>${clan_1}</p><img src="./asset/resource/${clan_1}.png" alt="${clan_1}"></div><div><p>${clan_2}</p><img src="./asset/resource/${clan_2}.png" alt="${clan_2}"></div>`;
+}
+
+/**
+ * Creates the Alt1 TitleBar Element and returns it as a string
+ * @param clan_1 - First Voice of Seren Clan
+ * @param clan_2 - Second Voice of Seren Clan
+ * @returns string
+ */
+function createClanTitleBar(
+    clan_1: CapitalizedClanString,
+    clan_2: CapitalizedClanString,
+) {
+    let title = `The Voice of Seren is currently at ${clan_1} and ${clan_2}.`;
+    return `<span title='"${title}"'><img width='80' height='80' src='./asset/resource/"${clan_1}".png'/><img src='./asset/resource/"${clan_2}".png'/></span>`;
+}
+
+function updateTitleBar(
+    clan_1: CapitalizedClanString,
+    clan_2: CapitalizedClanString,
+) {
+    helperItems.Current.innerHTML = createClanDisplay(clan_1, clan_2);
     setTimeout(() => {
-        let title =
-            'The Voice of Seren is currently at ' +
-            clan_1 +
-            ' and ' +
-            clan_2 +
-            '.';
-        alt1.setTitleBarText(
-            "<span title='" +
-                title +
-                "'><img width='80' height='80' src='./asset/resource/" +
-                clan_1 +
-                ".png'/><img src='./asset/resource/" +
-                clan_2 +
-                ".png'/></span>",
-        );
+        alt1.setTitleBarText(createClanTitleBar(clan_1, clan_2));
     }, 300);
 }
 
 async function updateTimestamps() {
-
-    if (sessionData.get('Current') || sessionData.get('Voted') && getByID('Countdown').textContent === '') {
+    if (
+        sessionData.get('Current') ||
+        (sessionData.get('Voted') && getByID('Countdown').textContent === '')
+    ) {
         startVoteCountdown();
     }
 
-	const lastServer = sessionData.get('LastServer');
+    const lastServer: ClanVote = sessionData.get('LastServer');
     if (!lastServer) {
-		await getLastVos();
-		return;
-	}
-    const lastFetchEpoch = lastServer.timestamp - 1;
+        await getLastVos();
+        return;
+    }
+    const lastFetchEpoch = lastServer?.timestamp - 1;
     const now = getCurrentEpoch();
 
     const diffInSeconds = now - lastFetchEpoch;
@@ -644,8 +680,8 @@ async function updateTimestamps() {
     if (minutes > 0 || hours > 0) {
         timeAgo += `${minutes}M `;
     } else {
-		timeAgo += '<1m ';
-	}
+        timeAgo += '<1m ';
+    }
     timeAgo += 'ago';
 
     helperItems.Timestamp.innerHTML = `Last Server Check: ${timeAgo}`;
@@ -662,9 +698,10 @@ function showTooltip(tooltip: string = '') {
     }
 }
 
-function alertFavorite(clan_1: string, clan_2: string) {
-	clan_1 = titleCase(clan_1);
-	clan_2 = titleCase(clan_2);
+function alertFavorite(
+    clan_1: CapitalizedClanString,
+    clan_2: CapitalizedClanString,
+) {
     let alertClans = [];
     if (getFavoriteClans().has(clan_1)) {
         alertClans.push(clan_1);
@@ -691,14 +728,15 @@ function alertFavorite(clan_1: string, clan_2: string) {
  * @returns boolean
  */
 function checkDataValidity(): boolean {
-    let currentVote = sessionData.get('Current');
-    let lastLocal = sessionData.get('LastLocal');
-    let lastServer = sessionData.get('LastServer');
+    let now = DateTime.now();
+    let currentVote: ClanVote = sessionData.get('Current');
+    let lastLocal: ClanVote = sessionData.get('LastLocal');
+    let lastServer: ClanVote = sessionData.get('LastServer');
 
     /**
      * Last Vote data is invalid if it is >=2 hours old
      */
-    if (lastLocal && isLastVoteInvalid(lastLocal.timestamp)) {
+    if (lastLocal && isLastVoteInvalid(lastLocal?.timestamp)) {
         debugLog(`Invalid Data: "LastLocal" data older than 2 hours`);
         sessionData.delete('LastLocal');
         lastLocal = undefined;
@@ -715,7 +753,7 @@ function checkDataValidity(): boolean {
     /**
      *  Data is invalid if Current hour's data === Last hour's data (Local)
      **/
-    if (lastLocal && currentVote.clan_1 === lastLocal.clans.clan_1) {
+    if (lastLocal && currentVote?.clans?.clan_1 === lastLocal?.clans?.clan_1) {
         debugLog(`Invalid Data: Current matches Last (Local)`);
         sessionData.delete('Current');
         return false;
@@ -724,7 +762,7 @@ function checkDataValidity(): boolean {
     /**
      * Data is invalid if we have data but it is undefined
      */
-    if (currentVote.clans.clan_1 === undefined) {
+    if (currentVote?.clans?.clan_1 === undefined) {
         debugLog(`Invalid data: Data is undefined`);
         return false;
     }
@@ -732,7 +770,7 @@ function checkDataValidity(): boolean {
     /**
      * Data is invalid if Current hour's data === Last hour's data (Server)
      */
-    if (currentVote.clans.clan_1 === lastServer?.clans?.clan_1) {
+    if (currentVote?.clans?.clan_1 === lastServer?.clans?.clan_1) {
         debugLog(`Invalid Data: Current matches Last (Server)`);
         sessionData.delete('Current');
         return false;
@@ -741,8 +779,17 @@ function checkDataValidity(): boolean {
     /**
      * Data is invalid if it is older than 4 minutes
      */
-    if (!isRecentVote(currentVote.timestamp)) {
+    if (!isRecentVote(currentVote?.timestamp)) {
         debugLog(`Invalid Data: Current is older than 4 minutes`);
+        sessionData.delete('Current');
+        return false;
+    }
+
+    /**
+     * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
+     */
+    if (!lastLocal && now.minutes === 0 && now.seconds <= 30) {
+        debugLog(`Invalid Data: Voice unlikely to have changed`);
         sessionData.delete('Current');
         return false;
     }
@@ -751,7 +798,7 @@ function checkDataValidity(): boolean {
      * If all of the above checks passed - our data is valid for the current hour
      */
     debugLog(
-        `Valid Data Found\nClan 1: ${titleCase(currentVote.clans.clan_1)}\nClan 2: ${titleCase(currentVote.clans.clan_2)}\nTimestamp: ${currentVote.timestamp}`,
+        `Valid Data Found\nClan 1: ${currentVote?.clans?.clan_1}\nClan 2: ${currentVote?.clans?.clan_2}\nTimestamp: ${currentVote?.timestamp}`,
     );
     return true;
 }
@@ -863,7 +910,7 @@ const settingsObject = {
     ),
 };
 
-function createClanCheckbox(clanName: string): HTMLElement {
+function createClanCheckbox(clanName: CapitalizedClanString): HTMLElement {
     // Checkbox automatically updates the default value based on localStorage.
     let clanCheckbox = sauce.createCheckboxSetting(
         `favorite${clanName}`,
@@ -923,10 +970,10 @@ export function startvos(): void {
         return;
     }
 
-	/**
-	 * randomUUID() does not exist for 1.5.6 so this only runs for 1.6.0
-	 * users on 1.5.6 will collectively have a UUID of "0"
-	 */
+    /**
+     * randomUUID() does not exist for 1.5.6 so this only runs for 1.6.0
+     * users on 1.5.6 will collectively have a UUID of "0"
+     */
     if (
         a1lib.hasAlt1Version('1.6.0') &&
         sauce.getSetting('uuid') == undefined
@@ -937,11 +984,11 @@ export function startvos(): void {
     fetchVos();
     setInterval(fetchHourly, 15000);
     setInterval(automaticScan, 3000);
-	setInterval(updateTimestamps, 60000);
+    setInterval(updateTimestamps, 60000);
 
-	/**
-	 * Update the Scale of everything in the app based on the user's settings
-	 */
+    /**
+     * Update the Scale of everything in the app based on the user's settings
+     */
     if (sauce.getSetting('uiScale')) {
         getByID('app').style.transform = `scale(${
             parseInt(settingsObject.uiScale.querySelector('input').value, 10) /
@@ -952,9 +999,8 @@ export function startvos(): void {
 
 window.onload = function () {
     if (window.alt1) {
-
         // check version on startup then check again every 12 hours
-		const version = '2.0.0';
+        const version = '2.0.0';
         checkVersion(version);
         setInterval(
             () => {
@@ -965,22 +1011,22 @@ window.onload = function () {
 
         alt1.identifyAppUrl('./appconfig.json');
 
-		/**
-		 * Create the settings and initialize any event listeners
-		 */
+        /**
+         * Create the settings and initialize any event listeners
+         */
         Object.values(settingsObject).forEach((val) => {
             helperItems.settings.before(val);
         });
         initSettings();
 
-		/**
-		 * Finally - start the application
-		 */
+        /**
+         * Finally - start the application
+         */
         startvos();
 
-		/**
-		 * For fun statistics so a person can see how many times they have voted
-		 */
+        /**
+         * For fun statistics so a person can see how many times they have voted
+         */
         if (!sauce.getSetting('votedCount')) {
             sauce.updateSetting('votedCount', 0);
         }

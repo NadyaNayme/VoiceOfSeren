@@ -11875,7 +11875,7 @@ var debugMode = (_b = _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('debugMod
 /**
  * Contains the following keys:
  *
- * LastLocal | LastServer | Current | Voted
+ * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean
  *
  * Data is not persisted between sessions
  */
@@ -11924,7 +11924,7 @@ function isRecentVote(timestamp) {
 /**
  * Returns "true" if provided timestamp is older than 30 seconds
  * @param timestamp - Unix Time to check again
- * @returns
+ * @returns boolean
  */
 function isPrimetimeVote(timestamp) {
     var currentEpoch = getCurrentEpoch();
@@ -11969,7 +11969,7 @@ function updateFavoriteClans(favoriteClans) {
 /**
  * Captures the game window and scans it for Clan icons
  * If the icons exist - returns the x,y coordinates of the icons
- * @returns {clan: {x,y}, clan: {x,y}}
+ * @returns \{clan: {x,y}, clan: {x,y}}
  */
 function tryFindClans() {
     // Capture RS Window
@@ -12008,11 +12008,11 @@ function tryFindClans() {
  * @returns Promise<void>
  */
 function scanForClanData() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     return __awaiter(this, void 0, void 0, function () {
         var mostRecentVote, voted, foundClans, firstClan, firstClanPos, secondClan, secondClanPos, vote;
-        return __generator(this, function (_e) {
-            switch (_e.label) {
+        return __generator(this, function (_j) {
+            switch (_j.label) {
                 case 0:
                     mostRecentVote = sessionData.get('Current');
                     voted = sessionData.get('Voted');
@@ -12025,11 +12025,11 @@ function scanForClanData() {
                             updateSessionData();
                         }
                         else if (voted || !isRecentVote(mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.timestamp)) {
-                            debugLog("Skipping scan. Reason: Already voted this hour: ".concat(titleCase((_a = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1), " & ").concat(titleCase((_b = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _b === void 0 ? void 0 : _b.clan_2)));
+                            debugLog("Skipping scan. Reason: Already voted this hour: ".concat((_a = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1, " & ").concat((_b = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _b === void 0 ? void 0 : _b.clan_2));
                             displayCurrentClanVote();
                             return [2 /*return*/];
                         }
-                        debugLog("Skipping scan. Reason: Already have valid data: ".concat(titleCase((_c = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _c === void 0 ? void 0 : _c.clan_1), " & ").concat(titleCase((_d = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_2)));
+                        debugLog("Skipping scan. Reason: Already have valid data: ".concat((_c = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _c === void 0 ? void 0 : _c.clan_1, " & ").concat((_d = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_2));
                         return [2 /*return*/];
                     }
                     foundClans = Object.entries(tryFindClans());
@@ -12041,30 +12041,22 @@ function scanForClanData() {
                     debugLog('Invalid Data. Reason: Outside of Prifddinas (likely)');
                     return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(1000 * 20)];
                 case 1:
-                    _e.sent();
+                    _j.sent();
                     return [2 /*return*/];
                 case 2:
-                    firstClan = foundClans[0][0];
+                    firstClan = titleCase(foundClans[0][0]);
                     firstClanPos = foundClans[0][1].x;
-                    secondClan = foundClans[1][0];
+                    secondClan = titleCase(foundClans[1][0]);
                     secondClanPos = foundClans[1][1].x;
                     vote = {
-                        timestamp: 0,
+                        timestamp: getNextHourEpoch(),
                         clans: {
-                            clan_1: '',
-                            clan_2: ''
-                        }
+                            clan_1: firstClan,
+                            clan_2: secondClan,
+                        },
                     };
-                    if (firstClanPos < secondClanPos) {
-                        vote = {
-                            timestamp: getNextHourEpoch(),
-                            clans: {
-                                clan_1: firstClan,
-                                clan_2: secondClan,
-                            },
-                        };
-                    }
-                    else {
+                    // Swap priority based on positioning
+                    if (firstClanPos > secondClanPos) {
                         vote = {
                             timestamp: getNextHourEpoch(),
                             clans: {
@@ -12073,21 +12065,23 @@ function scanForClanData() {
                             },
                         };
                     }
-                    if (!firstClan || !secondClan) {
-                        helperItems.VoteOutput.innerHTML =
-                            '<p>You must be in Prifddinas to scan for data!</p>';
-                        debugLog("Invalid Data. Reason: user not in Prifddinas. Resetting vote data: ".concat(titleCase(vote.clans.clan_1), " & ").concat(titleCase(vote.clans.clan_2)));
+                    // If our current vote does not match what we scanned - delete our current vote
+                    if (((_e = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _e === void 0 ? void 0 : _e.clan_1) !== vote.clans.clan_1 ||
+                        ((_f = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _f === void 0 ? void 0 : _f.clan_2) !== vote.clans.clan_2) {
+                        debugLog("Invalid Data. Reason: Scanned data does not match Current Vote. Resetting vote data: ".concat((_g = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _g === void 0 ? void 0 : _g.clan_1, " & ").concat((_h = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _h === void 0 ? void 0 : _h.clan_2));
+                        sessionData.delete('Current');
+                        sessionData.set('Voted', false);
                     }
-                    else {
-                        helperItems.VoteInput.innerHTML = "<p style=\"white-space:normal!important;\">Found clans!</br>".concat(titleCase(vote.clans.clan_1), " and ").concat(titleCase(vote.clans.clan_2), "</p>");
-                        helperItems.VoteOutput.innerHTML = '';
-                        sessionData.set('Current', vote);
-                    }
-                    if (!(!voted && mostRecentVote && isRecentVote(mostRecentVote.timestamp))) return [3 /*break*/, 4];
+                    // Update the "Found Clans!" messaging with our detected clans
+                    helperItems.VoteInput.innerHTML = "<p style=\"white-space:normal!important;\">Found clans!</br>".concat(vote.clans.clan_1, " and ").concat(vote.clans.clan_2, "</p>");
+                    helperItems.VoteOutput.innerHTML = '';
+                    // The data we have is valid - set it as our Current vote
+                    sessionData.set('Current', vote);
+                    if (!(!voted && mostRecentVote && isRecentVote(mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.timestamp))) return [3 /*break*/, 4];
                     return [4 /*yield*/, submitClanData()];
                 case 3:
-                    _e.sent();
-                    _e.label = 4;
+                    _j.sent();
+                    _j.label = 4;
                 case 4: return [2 /*return*/];
             }
         });
@@ -12130,7 +12124,7 @@ var callWithRetry = function (fn, depth) {
  */
 function updateSessionData() {
     var mostRecentVote = sessionData.get('Current');
-    if (mostRecentVote && !isLastVoteInvalid(mostRecentVote.timestamp)) {
+    if (mostRecentVote && !isLastVoteInvalid(mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.timestamp)) {
         sessionData.set('LastLocal', mostRecentVote);
     }
     else {
@@ -12172,8 +12166,8 @@ function getCurrentVos() {
                         '<p>No data found. You can help by visiting Prifddinas and submitting data!</p>';
                     return;
                 }
-                var clan_1 = vos['clan_1'];
-                var clan_2 = vos['clan_2'];
+                var clan_1 = titleCase(vos['clan_1']);
+                var clan_2 = titleCase(vos['clan_2']);
                 // If data is new, update the title bar and alert user of favorited hour
                 if (clan_1 !== ((_a = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _a === void 0 ? void 0 : _a.clan_1) &&
                     clan_2 !== ((_b = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _b === void 0 ? void 0 : _b.clan_2)) {
@@ -12209,7 +12203,7 @@ function getLastVos() {
             })
                 .then(function (res) { return res.text(); })
                 .then(function (data) {
-                var _a;
+                var _a, _b;
                 var last_vos = JSON.parse(data);
                 if (last_vos['clan_1'] == undefined ||
                     last_vos['clan_2'] == undefined) {
@@ -12220,7 +12214,7 @@ function getLastVos() {
                 var clan_1 = titleCase(last_vos['clan_1']);
                 var clan_2 = titleCase(last_vos['clan_2']);
                 // Update the "Last Voice of Seren" section of the App Window
-                helperItems.Last.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+                helperItems.Last.innerHTML = createClanDisplay(clan_1, clan_2);
                 // If we do not have data from the server or our data does not match - update it
                 var lastServer = sessionData.get('LastServer');
                 var lastServerData = {
@@ -12230,7 +12224,8 @@ function getLastVos() {
                         clan_2: last_vos['clan_2'],
                     },
                 };
-                if (!lastServer && ((_a = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _a === void 0 ? void 0 : _a.clan_1) !== lastServerData.clans.clan_1) {
+                if (!lastServer &&
+                    ((_a = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _a === void 0 ? void 0 : _a.clan_1) !== ((_b = lastServerData === null || lastServerData === void 0 ? void 0 : lastServerData.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
                     sessionData.set('LastServer', lastServerData);
                 }
             })
@@ -12247,6 +12242,7 @@ function getLastVos() {
  * @returns void
  */
 function displayCurrentClanVote() {
+    var _a, _b;
     var mostRecentVote = sessionData.get('Current');
     // If we don't have a vote
     if (!mostRecentVote)
@@ -12254,19 +12250,20 @@ function displayCurrentClanVote() {
     // If we're already showing the current clans using server data
     if (helperItems.Current.innerHTML.includes('asset/resource'))
         return;
-    var clan_1 = titleCase(mostRecentVote.clans.clan_1);
-    var clan_2 = titleCase(mostRecentVote.clans.clan_2);
-    helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+    var clan_1 = (_a = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1;
+    var clan_2 = (_b = mostRecentVote === null || mostRecentVote === void 0 ? void 0 : mostRecentVote.clans) === null || _b === void 0 ? void 0 : _b.clan_2;
+    helperItems.Current.innerHTML = createClanDisplay(clan_1, clan_2);
 }
 /**
  * Submits Clan data to the server if it is valid and we have not already voted or it is early in the hour
  * @returns Promise<void>
  */
 function submitClanData() {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
         var currentVote, voted;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     currentVote = sessionData.get('Current');
                     voted = sessionData.get('Voted');
@@ -12278,20 +12275,23 @@ function submitClanData() {
                     return [4 /*yield*/, getLastVos()];
                 case 1:
                     // Ensure our Last data is fully up-to-date for validity checking purposes
-                    _a.sent();
+                    _c.sent();
                     if (!!checkDataValidity()) return [3 /*break*/, 3];
                     debugLog('Skipping vote. Reason: Invalid Data');
                     sessionData.delete('Current');
                     return [4 /*yield*/, scanForClanData()];
                 case 2:
-                    _a.sent();
+                    _c.sent();
                     return [2 /*return*/];
                 case 3:
                     // Everything has checked out - let's vote!
                     fetch('https://vos-alt1.fly.dev/increase_counter', {
                         method: 'POST',
                         body: JSON.stringify({
-                            clans: [currentVote.clans.clan_1, currentVote.clans.clan_2],
+                            clans: [
+                                (_a = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1.toLowerCase(),
+                                (_b = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _b === void 0 ? void 0 : _b.clan_2.toLowerCase(),
+                            ],
                             uuid: uuid,
                         }),
                         headers: {
@@ -12299,8 +12299,9 @@ function submitClanData() {
                         },
                     })
                         .then(function (res) {
+                        var _a, _b;
                         _a1sauce__WEBPACK_IMPORTED_MODULE_1__.updateSetting('votedCount', _a1sauce__WEBPACK_IMPORTED_MODULE_1__.getSetting('votedCount') + 1);
-                        debugLog("Voted for ".concat(titleCase(currentVote.clans.clan_1), " & ").concat(titleCase(currentVote.clans.clan_2), "."));
+                        debugLog("Voted for ".concat((_a = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1, " & ").concat((_b = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _b === void 0 ? void 0 : _b.clan_2, "."));
                         sessionData.set('Voted', true);
                         // This is done to update our "Current Voice of Seren" display
                         fetchVos();
@@ -12325,10 +12326,11 @@ function submitClanData() {
  * @returns Promise<void>
  */
 function automaticScan() {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
         var now, voted, current, last;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
                     voted = sessionData.get('Voted');
@@ -12339,12 +12341,12 @@ function automaticScan() {
                         debugLog("Skipping scan. Reason: RuneScape is not active");
                         return [2 /*return*/];
                     }
-                    if (voted && now.minutes <= 3 && isPrimetimeVote(current.timestamp)) {
+                    if (voted && now.minutes <= 3 && isPrimetimeVote(current === null || current === void 0 ? void 0 : current.timestamp)) {
                         debugLog("Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.");
                         sessionData.set('Voted', false);
                     }
                     if (!(voted && now.minute <= 2 && checkDataValidity())) return [3 /*break*/, 1];
-                    if (current.clans.clan_1 === (last === null || last === void 0 ? void 0 : last.clans.clan_1)) {
+                    if (((_a = current === null || current === void 0 ? void 0 : current.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = last === null || last === void 0 ? void 0 : last.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
                         debugLog("Skipping scan. Current data matched data from last hour.");
                         sessionData.delete('Current');
                         return [2 /*return*/];
@@ -12352,49 +12354,58 @@ function automaticScan() {
                     return [3 /*break*/, 5];
                 case 1: return [4 /*yield*/, scanForClanData()];
                 case 2:
-                    _a.sent();
+                    _c.sent();
                     return [4 /*yield*/, _a1sauce__WEBPACK_IMPORTED_MODULE_1__.timeout(50)];
                 case 3:
-                    _a.sent();
+                    _c.sent();
                     return [4 /*yield*/, submitClanData()];
                 case 4:
-                    _a.sent();
+                    _c.sent();
                     // Set voted to true here so that the below check will fail and we won't hit this branch again on the next scan
                     sessionData.set('Voted', true);
-                    _a.label = 5;
+                    _c.label = 5;
                 case 5:
-                    if (!(!voted &&
-                        current &&
-                        isRecentVote(current.timestamp))) return [3 /*break*/, 7];
+                    if (!(!voted && current && isRecentVote(current === null || current === void 0 ? void 0 : current.timestamp))) return [3 /*break*/, 7];
                     return [4 /*yield*/, submitClanData()];
                 case 6:
-                    _a.sent();
-                    _a.label = 7;
+                    _c.sent();
+                    _c.label = 7;
                 case 7: return [2 /*return*/];
             }
         });
     });
 }
+/**
+ * Utility function to capitalize the first letter of a string
+ * @param string - The string that should be capitalized
+ * @returns string - The same string with the first letter capitalized
+ */
 function titleCase(string) {
     return string[0].toUpperCase() + string.slice(1).toLowerCase();
 }
+/**
+ * Creates the Current/Last Voice of Seren Clan Display element and returns it as a string
+ * @param clan_1 - First Voice of Seren Clan
+ * @param clan_2 - Second Voice of Seren Clan
+ * @returns string
+ */
+function createClanDisplay(clan_1, clan_2) {
+    return "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+}
+/**
+ * Creates the Alt1 TitleBar Element and returns it as a string
+ * @param clan_1 - First Voice of Seren Clan
+ * @param clan_2 - Second Voice of Seren Clan
+ * @returns string
+ */
+function createClanTitleBar(clan_1, clan_2) {
+    var title = "The Voice of Seren is currently at ".concat(clan_1, " and ").concat(clan_2, ".");
+    return "<span title='\"".concat(title, "\"'><img width='80' height='80' src='./asset/resource/\"").concat(clan_1, "\".png'/><img src='./asset/resource/\"").concat(clan_2, "\".png'/></span>");
+}
 function updateTitleBar(clan_1, clan_2) {
-    clan_1 = titleCase(clan_1);
-    clan_2 = titleCase(clan_2);
-    helperItems.Current.innerHTML = "<div><p>".concat(clan_1, "</p><img src=\"./asset/resource/").concat(clan_1, ".png\" alt=\"").concat(clan_1, "\"></div><div><p>").concat(clan_2, "</p><img src=\"./asset/resource/").concat(clan_2, ".png\" alt=\"").concat(clan_2, "\"></div>");
+    helperItems.Current.innerHTML = createClanDisplay(clan_1, clan_2);
     setTimeout(function () {
-        var title = 'The Voice of Seren is currently at ' +
-            clan_1 +
-            ' and ' +
-            clan_2 +
-            '.';
-        alt1.setTitleBarText("<span title='" +
-            title +
-            "'><img width='80' height='80' src='./asset/resource/" +
-            clan_1 +
-            ".png'/><img src='./asset/resource/" +
-            clan_2 +
-            ".png'/></span>");
+        alt1.setTitleBarText(createClanTitleBar(clan_1, clan_2));
     }, 300);
 }
 function updateTimestamps() {
@@ -12403,7 +12414,8 @@ function updateTimestamps() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (sessionData.get('Current') || sessionData.get('Voted') && getByID('Countdown').textContent === '') {
+                    if (sessionData.get('Current') ||
+                        (sessionData.get('Voted') && getByID('Countdown').textContent === '')) {
                         startVoteCountdown();
                     }
                     lastServer = sessionData.get('LastServer');
@@ -12413,7 +12425,7 @@ function updateTimestamps() {
                     _a.sent();
                     return [2 /*return*/];
                 case 2:
-                    lastFetchEpoch = lastServer.timestamp - 1;
+                    lastFetchEpoch = (lastServer === null || lastServer === void 0 ? void 0 : lastServer.timestamp) - 1;
                     now = getCurrentEpoch();
                     diffInSeconds = now - lastFetchEpoch;
                     hours = Math.floor(diffInSeconds / 3600);
@@ -12446,8 +12458,6 @@ function showTooltip(tooltip) {
     }
 }
 function alertFavorite(clan_1, clan_2) {
-    clan_1 = titleCase(clan_1);
-    clan_2 = titleCase(clan_2);
     var alertClans = [];
     if (getFavoriteClans().has(clan_1)) {
         alertClans.push(clan_1);
@@ -12470,14 +12480,15 @@ function alertFavorite(clan_1, clan_2) {
  * @returns boolean
  */
 function checkDataValidity() {
-    var _a;
+    var _a, _b, _c, _d, _e, _f, _g;
+    var now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
     var currentVote = sessionData.get('Current');
     var lastLocal = sessionData.get('LastLocal');
     var lastServer = sessionData.get('LastServer');
     /**
      * Last Vote data is invalid if it is >=2 hours old
      */
-    if (lastLocal && isLastVoteInvalid(lastLocal.timestamp)) {
+    if (lastLocal && isLastVoteInvalid(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp)) {
         debugLog("Invalid Data: \"LastLocal\" data older than 2 hours");
         sessionData.delete('LastLocal');
         lastLocal = undefined;
@@ -12492,7 +12503,7 @@ function checkDataValidity() {
     /**
      *  Data is invalid if Current hour's data === Last hour's data (Local)
      **/
-    if (lastLocal && currentVote.clan_1 === lastLocal.clans.clan_1) {
+    if (lastLocal && ((_a = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
         debugLog("Invalid Data: Current matches Last (Local)");
         sessionData.delete('Current');
         return false;
@@ -12500,14 +12511,14 @@ function checkDataValidity() {
     /**
      * Data is invalid if we have data but it is undefined
      */
-    if (currentVote.clans.clan_1 === undefined) {
+    if (((_c = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _c === void 0 ? void 0 : _c.clan_1) === undefined) {
         debugLog("Invalid data: Data is undefined");
         return false;
     }
     /**
      * Data is invalid if Current hour's data === Last hour's data (Server)
      */
-    if (currentVote.clans.clan_1 === ((_a = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _a === void 0 ? void 0 : _a.clan_1)) {
+    if (((_d = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_1) === ((_e = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _e === void 0 ? void 0 : _e.clan_1)) {
         debugLog("Invalid Data: Current matches Last (Server)");
         sessionData.delete('Current');
         return false;
@@ -12515,15 +12526,23 @@ function checkDataValidity() {
     /**
      * Data is invalid if it is older than 4 minutes
      */
-    if (!isRecentVote(currentVote.timestamp)) {
+    if (!isRecentVote(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp)) {
         debugLog("Invalid Data: Current is older than 4 minutes");
+        sessionData.delete('Current');
+        return false;
+    }
+    /**
+     * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
+     */
+    if (!lastLocal && now.minutes === 0 && now.seconds <= 30) {
+        debugLog("Invalid Data: Voice unlikely to have changed");
         sessionData.delete('Current');
         return false;
     }
     /**
      * If all of the above checks passed - our data is valid for the current hour
      */
-    debugLog("Valid Data Found\nClan 1: ".concat(titleCase(currentVote.clans.clan_1), "\nClan 2: ").concat(titleCase(currentVote.clans.clan_2), "\nTimestamp: ").concat(currentVote.timestamp));
+    debugLog("Valid Data Found\nClan 1: ".concat((_f = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _f === void 0 ? void 0 : _f.clan_1, "\nClan 2: ").concat((_g = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _g === void 0 ? void 0 : _g.clan_2, "\nTimestamp: ").concat(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp));
     return true;
 }
 var recentlyFetched = false;
