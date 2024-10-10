@@ -11901,27 +11901,36 @@ function getNextHourEpoch() {
 }
 /**
  * Returns "True" if provided Unix Time timestamp is older than 2 hours
- * @param lastVoteTimestamp - Unix Time to check against
+ * @param timestamp - Unix Time to check against
  * @returns boolean
  */
-function isLastVoteInvalid(lastVoteTimestamp) {
+function isLastVoteInvalid(timestamp) {
     var currentEpoch = getCurrentEpoch();
     var currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
     var twoHoursAgo = currentHourMark - 7200;
-    return lastVoteTimestamp >= twoHoursAgo;
+    return timestamp >= twoHoursAgo;
 }
 /**
  * Returns "True" if provided timestamp is older than 4 minutes
- * @param votedTimestamp - Unix Time to check against
+ * @param timestamp - Unix Time to check against
  * @returns boolean
  */
-function isRecentVote(votedTimestamp) {
+function isRecentVote(timestamp) {
     var currentEpoch = getCurrentEpoch();
     var currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
     var fourMinutesAgo = currentHourMark - 240;
-    return votedTimestamp >= fourMinutesAgo;
+    return timestamp >= fourMinutesAgo;
 }
-function setCurrentToLast() {
+/**
+ * Returns "true" if provided timestamp is older than 30 seconds
+ * @param timestamp - Unix Time to check again
+ * @returns
+ */
+function isPrimetimeVote(timestamp) {
+    var currentEpoch = getCurrentEpoch();
+    var currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
+    var thirtySecondsAgo = currentHourMark - 30;
+    return timestamp >= thirtySecondsAgo;
 }
 /**
  * Begins a countdown to the next hour in the format: \dH \dM \dS
@@ -12255,23 +12264,16 @@ function displayCurrentClanVote() {
  */
 function submitClanData() {
     return __awaiter(this, void 0, void 0, function () {
-        var currentVote, voted, now;
+        var currentVote, voted;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     currentVote = sessionData.get('Current');
                     voted = sessionData.get('Voted');
-                    now = luxon__WEBPACK_IMPORTED_MODULE_0__.DateTime.now();
-                    // If we have already voted - skip voting unless it is primetime
+                    // If we have already voted - skip voting
                     // No debugLog because we're skipping scan for the same reason
-                    if (voted && now.minute > 3)
+                    if (voted)
                         return [2 /*return*/];
-                    // Allow voting every 30 seconds during primetime
-                    if (voted && now.minute <= 3) {
-                        setTimeout(function () {
-                            sessionData.set('Voted', false);
-                        }, 1000 * 30);
-                    }
                     // Ensure our Last data is fully up-to-date for validity checking purposes
                     return [4 /*yield*/, getLastVos()];
                 case 1:
@@ -12336,6 +12338,9 @@ function automaticScan() {
                     if (!alt1.rsActive && now.minute >= 3) {
                         debugLog("Skipping scan. Reason: RuneScape is not active");
                         return [2 /*return*/];
+                    }
+                    if (voted && now.minutes <= 3 && isPrimetimeVote(current)) {
+                        sessionData.set('Voted', false);
                     }
                     if (!(voted && now.minute <= 2 && checkDataValidity())) return [3 /*break*/, 1];
                     if (current.clan_1 === (last === null || last === void 0 ? void 0 : last.clan_1) ||

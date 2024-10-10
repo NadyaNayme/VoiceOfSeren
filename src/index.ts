@@ -100,32 +100,41 @@ function getNextHourEpoch(): number {
 
 /**
  * Returns "True" if provided Unix Time timestamp is older than 2 hours
- * @param lastVoteTimestamp - Unix Time to check against
+ * @param timestamp - Unix Time to check against
  * @returns boolean
  */
-function isLastVoteInvalid(lastVoteTimestamp: number): boolean {
+function isLastVoteInvalid(timestamp: number): boolean {
     const currentEpoch = getCurrentEpoch();
     const currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
     const twoHoursAgo = currentHourMark - 7200;
 
-    return lastVoteTimestamp >= twoHoursAgo;
+    return timestamp >= twoHoursAgo;
 }
 
 /**
  * Returns "True" if provided timestamp is older than 4 minutes
- * @param votedTimestamp - Unix Time to check against
+ * @param timestamp - Unix Time to check against
  * @returns boolean
  */
-function isRecentVote(votedTimestamp: number): boolean {
+function isRecentVote(timestamp: number): boolean {
     const currentEpoch = getCurrentEpoch();
     const currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
     const fourMinutesAgo = currentHourMark - 240;
 
-    return votedTimestamp >= fourMinutesAgo;
+    return timestamp >= fourMinutesAgo;
 }
 
-function setCurrentToLast() {
+/**
+ * Returns "true" if provided timestamp is older than 30 seconds
+ * @param timestamp - Unix Time to check again
+ * @returns
+ */
+function isPrimetimeVote(timestamp: number): boolean {
+    const currentEpoch = getCurrentEpoch();
+    const currentHourMark = Math.floor(currentEpoch / 3600) * 3600;
+    const thirtySecondsAgo = currentHourMark - 30;
 
+    return timestamp >= thirtySecondsAgo;
 }
 
 /**
@@ -478,17 +487,10 @@ function displayCurrentClanVote() {
 async function submitClanData() {
     const currentVote = sessionData.get('Current');
     const voted = sessionData.get('Voted');
-    const now = DateTime.now();
 
-    // If we have already voted - skip voting unless it is primetime
+    // If we have already voted - skip voting
 	// No debugLog because we're skipping scan for the same reason
-	if (voted && now.minute > 3) return;
-	// Allow voting every 30 seconds during primetime
-    if (voted && now.minute <= 3) {
-        setTimeout(() => {
-            sessionData.set('Voted', false);
-        }, 1000 * 30);
-    }
+	if (voted) return;
 
     // Ensure our Last data is fully up-to-date for validity checking purposes
     await getLastVos();
@@ -551,6 +553,10 @@ async function automaticScan(): Promise<void> {
     if (!alt1.rsActive && now.minute >= 3) {
         debugLog(`Skipping scan. Reason: RuneScape is not active`);
         return;
+    }
+
+	if (voted && now.minutes <= 3 && isPrimetimeVote(current)) {
+		sessionData.set('Voted', false);
     }
 
     if (voted && now.minute <= 2 && checkDataValidity()) {
