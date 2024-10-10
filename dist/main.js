@@ -13351,7 +13351,7 @@ function startvos() {
 window.onload = function () {
     if (window.alt1) {
         alt1.identifyAppUrl('./appconfig.json');
-        var version = '2.0.1';
+        var version = '2.0.2';
         (0,_utility_checkVersion__WEBPACK_IMPORTED_MODULE_3__.startVersionCheck)(version);
         Object.values(_utility_settings__WEBPACK_IMPORTED_MODULE_2__.settingsObject).forEach(function (val) {
             _utility_helpers__WEBPACK_IMPORTED_MODULE_1__.helperItems.settings.before(val);

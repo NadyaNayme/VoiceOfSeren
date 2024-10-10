@@ -76,7 +76,7 @@ window.onload = function () {
     if (window.alt1) {
         alt1.identifyAppUrl('./appconfig.json');
 
-        const version = '2.0.1';
+        const version = '2.0.2';
         startVersionCheck(version);
 
         Object.values(settingsObject).forEach((val) => {
