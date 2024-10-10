@@ -736,7 +736,7 @@ function checkDataValidity(): boolean {
     /**
      * Last Vote data is invalid if it is >=2 hours old
      */
-    if (lastLocal && isLastVoteInvalid(lastLocal?.timestamp)) {
+    if (lastLocal?.timestamp && isLastVoteInvalid(lastLocal?.timestamp)) {
         debugLog(`Invalid Data: "LastLocal" data older than 2 hours`);
         sessionData.delete('LastLocal');
         lastLocal = undefined;
@@ -745,15 +745,16 @@ function checkDataValidity(): boolean {
     /**
      * Data is invalid if we do not have any data
      */
-    if (!currentVote) {
+    if (!currentVote?.timestamp) {
         debugLog(`Invalid data: Missing Current data`);
+		sessionData.delete('Current');
         return false;
     }
 
     /**
      *  Data is invalid if Current hour's data === Last hour's data (Local)
      **/
-    if (lastLocal && currentVote?.clans?.clan_1 === lastLocal?.clans?.clan_1) {
+    if (lastLocal?.timestamp && currentVote?.clans?.clan_1 === lastLocal?.clans?.clan_1) {
         debugLog(`Invalid Data: Current matches Last (Local)`);
         sessionData.delete('Current');
         return false;
@@ -788,7 +789,7 @@ function checkDataValidity(): boolean {
     /**
      * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
      */
-    if (!lastLocal && now.minutes === 0 && now.seconds <= 30) {
+    if (!lastLocal?.timestamp && now.minutes === 0 && now.seconds <= 30) {
         debugLog(`Invalid Data: Voice unlikely to have changed`);
         sessionData.delete('Current');
         return false;

@@ -12488,7 +12488,7 @@ function checkDataValidity() {
     /**
      * Last Vote data is invalid if it is >=2 hours old
      */
-    if (lastLocal && isLastVoteInvalid(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp)) {
+    if ((lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) && isLastVoteInvalid(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp)) {
         debugLog("Invalid Data: \"LastLocal\" data older than 2 hours");
         sessionData.delete('LastLocal');
         lastLocal = undefined;
@@ -12496,14 +12496,15 @@ function checkDataValidity() {
     /**
      * Data is invalid if we do not have any data
      */
-    if (!currentVote) {
+    if (!(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp)) {
         debugLog("Invalid data: Missing Current data");
+        sessionData.delete('Current');
         return false;
     }
     /**
      *  Data is invalid if Current hour's data === Last hour's data (Local)
      **/
-    if (lastLocal && ((_a = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
+    if ((lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) && ((_a = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _a === void 0 ? void 0 : _a.clan_1) === ((_b = lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
         debugLog("Invalid Data: Current matches Last (Local)");
         sessionData.delete('Current');
         return false;
@@ -12534,7 +12535,7 @@ function checkDataValidity() {
     /**
      * During the first minute - data is invalid for the first 30 seconds if we don't have Last (local) data
      */
-    if (!lastLocal && now.minutes === 0 && now.seconds <= 30) {
+    if (!(lastLocal === null || lastLocal === void 0 ? void 0 : lastLocal.timestamp) && now.minutes === 0 && now.seconds <= 30) {
         debugLog("Invalid Data: Voice unlikely to have changed");
         sessionData.delete('Current');
         return false;
