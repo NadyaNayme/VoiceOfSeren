@@ -24,7 +24,7 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
 
     // The "now" check is to allow alts to scan and vote for first few minutes of the hour
     if (!alt1.rsActive && now.minute >= 3) {
-        debugLog(`Skipping scan. Reason: RuneScape is not active`, debugMode);
+        debugLog(`Skipping scan. Reason: RuneScape is not active window outside of primetime`, debugMode);
         return;
     }
 

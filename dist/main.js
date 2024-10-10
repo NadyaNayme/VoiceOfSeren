@@ -1742,7 +1742,7 @@ function automaticScan(sessionData, debugMode) {
                     last = sessionData.get('LastLocal');
                     // The "now" check is to allow alts to scan and vote for first few minutes of the hour
                     if (!alt1.rsActive && now.minute >= 3) {
-                        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Reason: RuneScape is not active", debugMode);
+                        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_4__.debugLog)("Skipping scan. Reason: RuneScape is not active window outside of primetime", debugMode);
                         return [2 /*return*/];
                     }
                     if (voteTimer.get('VoteThrottle')) {
