@@ -1482,8 +1482,8 @@ function getLastVos(sessionData, debugMode) {
                 var lastServerData = {
                     timestamp: (0,_utility_epochs__WEBPACK_IMPORTED_MODULE_0__.getCurrentEpoch)(),
                     clans: {
-                        clan_1: last_vos['clan_1'],
-                        clan_2: last_vos['clan_2'],
+                        clan_1: clan_1,
+                        clan_2: clan_2,
                     },
                 };
                 if (!lastServer &&
@@ -13358,6 +13358,7 @@ function startvos() {
     setInterval(function () { return (0,_lib__WEBPACK_IMPORTED_MODULE_5__.fetchHourly)(sessionData, debugMode); }, 15000);
     setInterval(function () { return (0,_lib__WEBPACK_IMPORTED_MODULE_5__.automaticScan)(sessionData, debugMode); }, 3000);
     setInterval(function () { return (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.updateTimestamps)(sessionData, debugMode); }, 60000);
+    setInterval(function () { return console.log(sessionData); }, 15000);
 }
 window.onload = function () {
     if (window.alt1) {

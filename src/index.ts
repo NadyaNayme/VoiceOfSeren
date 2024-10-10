@@ -69,6 +69,7 @@ export function startvos(): Promise<void> {
     setInterval(() => fetchHourly(sessionData, debugMode), 15000);
     setInterval(() => automaticScan(sessionData, debugMode), 3000);
     setInterval(() => updateTimestamps(sessionData, debugMode), 60000);
+	setInterval(() => console.log(sessionData), 15000);
 }
 
 window.onload = function () {

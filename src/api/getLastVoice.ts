@@ -34,8 +34,8 @@ export async function getLastVos(sessionData, debugMode) {
             const lastServerData: ClanVote = {
                 timestamp: getCurrentEpoch(),
                 clans: {
-                    clan_1: last_vos['clan_1'],
-                    clan_2: last_vos['clan_2'],
+                    clan_1: clan_1,
+                    clan_2: clan_2,
                 },
             };
             if (
