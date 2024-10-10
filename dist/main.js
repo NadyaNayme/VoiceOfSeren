@@ -12473,7 +12473,6 @@ function checkDataValidity() {
     var currentVote = sessionData.get('Current');
     var lastLocal = sessionData.get('LastLocal');
     var lastServer = sessionData.get('LastServer');
-    console.log(lastLocal);
     /**
      * Last Vote data is invalid if it is >=2 hours old
      */

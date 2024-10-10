@@ -695,7 +695,6 @@ function checkDataValidity(): boolean {
     let currentVote = sessionData.get('Current');
     let lastLocal = sessionData.get('LastLocal');
 	let lastServer = sessionData.get('LastServer');
-	console.log(lastLocal);
 
     /**
      * Last Vote data is invalid if it is >=2 hours old
