@@ -620,35 +620,30 @@ async function updateTimestamps() {
         startVoteCountdown();
     }
 
-	await getLastVos();
 	const lastServer = sessionData.get('LastServer');
     if (!lastServer) {
+		await getLastVos();
 		return;
 	}
     const lastFetchEpoch = lastServer.timestamp - 1;
     const now = getCurrentEpoch();
 
-    // Calculate the difference in seconds
     const diffInSeconds = now - lastFetchEpoch;
 
-    // Calculate hours and minutes
     const hours = Math.floor(diffInSeconds / 3600);
     const minutes = Math.floor((diffInSeconds % 3600) / 60);
 
-    // Create the user-friendly string
     let timeAgo = '';
     if (hours > 0) {
         timeAgo += `${hours}H `;
     }
     if (minutes > 0 || hours > 0) {
-        // Show minutes if there are hours
         timeAgo += `${minutes}M `;
     } else {
 		timeAgo += '<1m ';
 	}
     timeAgo += 'ago';
 
-    // Update the inner HTML
     helperItems.Timestamp.innerHTML = `Last Server Check: ${timeAgo}`;
 }
 

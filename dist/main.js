@@ -12403,13 +12403,13 @@ function updateTimestamps() {
                     if (sessionData.get('Current') || sessionData.get('Voted') && getByID('Countdown').textContent === '') {
                         startVoteCountdown();
                     }
+                    lastServer = sessionData.get('LastServer');
+                    if (!!lastServer) return [3 /*break*/, 2];
                     return [4 /*yield*/, getLastVos()];
                 case 1:
                     _a.sent();
-                    lastServer = sessionData.get('LastServer');
-                    if (!lastServer) {
-                        return [2 /*return*/];
-                    }
+                    return [2 /*return*/];
+                case 2:
                     lastFetchEpoch = lastServer.timestamp - 1;
                     now = getCurrentEpoch();
                     diffInSeconds = now - lastFetchEpoch;
@@ -12420,14 +12420,12 @@ function updateTimestamps() {
                         timeAgo += "".concat(hours, "H ");
                     }
                     if (minutes > 0 || hours > 0) {
-                        // Show minutes if there are hours
                         timeAgo += "".concat(minutes, "M ");
                     }
                     else {
                         timeAgo += '<1m ';
                     }
                     timeAgo += 'ago';
-                    // Update the inner HTML
                     helperItems.Timestamp.innerHTML = "Last Server Check: ".concat(timeAgo);
                     return [2 /*return*/];
             }
