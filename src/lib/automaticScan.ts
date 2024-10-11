@@ -10,10 +10,10 @@ import { scanForClanData } from './scanForClanData';
 const primeTime = 3;
 
 /**
- * Scans the screen looking for Clan data
+ * Scans the screen looking for Clan Icons
  *
  * Skips scanning if player is not eligible to vote
- * @returns Promise<void>
+ * @returns Promise<void> - no meaningful return value
  */
 export async function automaticScan(sessionData, debugMode: boolean): Promise<void> {
     let now = DateTime.now();

@@ -1729,10 +1729,10 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 
 var primeTime = 3;
 /**
- * Scans the screen looking for Clan data
+ * Scans the screen looking for Clan Icons
  *
  * Skips scanning if player is not eligible to vote
- * @returns Promise<void>
+ * @returns Promise<void> - no meaningful return value
  */
 function automaticScan(sessionData, debugMode) {
     var _a, _b, _c, _d;
@@ -2403,14 +2403,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getNextHourEpoch: () => (/* binding */ getNextHourEpoch)
 /* harmony export */ });
 /**
- * Returns the current time as Unix Time rounded to nearest second
- * @returns number
+ * Returns the current time as Unix Time (rounded to nearest second instead of millisecond)
+ * @returns UnixEpoch
  */
 function getCurrentEpoch() {
     return Math.floor(Date.now() / 1000);
 }
 /**
- * Returns the difference between two epochs
+ * Returns the difference as seconds between two epochs
  * @returns number
  */
 function getEpochDifference(epoch_1, epoch_2) {
@@ -2435,13 +2435,13 @@ function getNextHourEpoch() {
 }
 /**
  * Compares the difference between two epoch timestamps and returns
- * "true" if the difference exceeds the provided threshold.
+ * "true" if the difference in seconds is >= threshold.
  *
  * The order of epoch parameters is irrelevant
  * @param epoch_1 - An Unix Time timestamp
  * @param epoch_2 - An Unix Time timestamp
  * @param expectedTimeDifference - The expected difference between the two times
- * @return If the expected difference is larger than the measured difference
+ * @return True if expected time difference is larger than actual difference
  */
 function checkTimeDifference(epoch_1, epoch_2, expectedTimeDifference) {
     var difference = getEpochDifference(epoch_1, epoch_2);
@@ -13387,7 +13387,11 @@ var debugMode = (_a = _a1sauce__WEBPACK_IMPORTED_MODULE_0__.getSetting('debugMod
 /**
  * Contains the following keys:
  *
- * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean | NextEligible: Number
+ * - LastLocal: ClanVote
+ * - LastServer: ClanVote
+ * - Current: ClanVote
+ * - Voted: Boolean
+ * - NextEligible: Number
  */
 var sessionData = new _utility_store__WEBPACK_IMPORTED_MODULE_11__.PersistentMap('VoiceOfSeren-data');
 // If the next voting period is at a later time than our existing voting period - we haven't voted for this hour

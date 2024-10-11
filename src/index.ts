@@ -28,7 +28,11 @@ let debugMode = sauce.getSetting('debugMode') ?? false;
 /**
  * Contains the following keys:
  *
- * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean | NextEligible: Number
+ * - LastLocal: ClanVote
+ * - LastServer: ClanVote
+ * - Current: ClanVote
+ * - Voted: Boolean
+ * - NextEligible: Number
  */
 let sessionData = new PersistentMap('VoiceOfSeren-data');
 
