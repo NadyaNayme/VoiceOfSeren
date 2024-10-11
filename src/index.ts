@@ -17,6 +17,8 @@ import './appconfig.json';
 import './version.json';
 import './icon.png';
 import './css/styles.css';
+import { PersistentMap } from './utility/store';
+import { getNextHourEpoch } from './utility/epochs';
 
 /**
  * Whether or not Debug Mode is enabled
@@ -26,11 +28,19 @@ let debugMode = sauce.getSetting('debugMode') ?? false;
 /**
  * Contains the following keys:
  *
- * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean | NextEligible: Number (Epoch Timestamp)
- *
- * Data is not persisted between sessions
+ * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean | NextEligible: Number
  */
-const sessionData = new Map();
+let sessionData = new PersistentMap('VoiceOfSeren-data');
+
+// If the next voting period is at a later time than our existing voting period - we haven't voted for this hour
+if (getNextHourEpoch() > sessionData.get('NextEligible')) {
+	sessionData.set('Voted', false);
+	sessionData.set('NextEligible', 0);
+}
+
+// Must always unthrottle on load as the interval to unthrottle never starts firing otherwise
+sessionData.set('Throttled', false);
+sessionData.set('LastServer', undefined);
 
 /**
  * Adds event listeners to the Settings
@@ -65,6 +75,7 @@ export function startvos(): Promise<void> {
     initSettings();
     addEventListeners();
 
+	// Do an initial fetch for data
     fetchVos(sessionData, debugMode);
 
 	// should be named "fetchAtTimes" to be honest. Runs every 15 seconds.

@@ -39,8 +39,8 @@ export async function getLastVos(sessionData, debugMode) {
                 },
             };
             if (
-                !lastServer &&
-                lastServer?.clans?.clan_1 !== lastServerData?.clans?.clan_1
+                lastServer?.clans?.clan_1 !== lastServerData?.clans?.clan_1 ||
+                lastServer?.clans?.clan_2 !== lastServerData?.clans?.clan_2
             ) {
                 sessionData.set('LastServer', lastServerData);
             }

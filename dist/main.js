@@ -1465,7 +1465,7 @@ function getLastVos(sessionData, debugMode) {
             })
                 .then(function (res) { return res.text(); })
                 .then(function (data) {
-                var _a, _b;
+                var _a, _b, _c, _d;
                 var last_vos = JSON.parse(data);
                 if (last_vos['clan_1'] == undefined ||
                     last_vos['clan_2'] == undefined) {
@@ -1486,8 +1486,8 @@ function getLastVos(sessionData, debugMode) {
                         clan_2: clan_2,
                     },
                 };
-                if (!lastServer &&
-                    ((_a = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _a === void 0 ? void 0 : _a.clan_1) !== ((_b = lastServerData === null || lastServerData === void 0 ? void 0 : lastServerData.clans) === null || _b === void 0 ? void 0 : _b.clan_1)) {
+                if (((_a = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _a === void 0 ? void 0 : _a.clan_1) !== ((_b = lastServerData === null || lastServerData === void 0 ? void 0 : lastServerData.clans) === null || _b === void 0 ? void 0 : _b.clan_1) ||
+                    ((_c = lastServer === null || lastServer === void 0 ? void 0 : lastServer.clans) === null || _c === void 0 ? void 0 : _c.clan_2) !== ((_d = lastServerData === null || lastServerData === void 0 ? void 0 : lastServerData.clans) === null || _d === void 0 ? void 0 : _d.clan_2)) {
                     sessionData.set('LastServer', lastServerData);
                 }
             })
@@ -2802,6 +2802,82 @@ settingsObject.uiScale.addEventListener('change', function (e) {
     _a1sauce__WEBPACK_IMPORTED_MODULE_0__.updateSetting('uiScale', settingsObject.uiScale.querySelector('input').value);
     (0,_helpers__WEBPACK_IMPORTED_MODULE_2__.getByID)('app').style.transform = "scale(".concat(parseInt(settingsObject.uiScale.querySelector('input').value, 10) / 100, ")");
 });
+
+
+/***/ }),
+
+/***/ "./utility/store.ts":
+/*!**************************!*\
+  !*** ./utility/store.ts ***!
+  \**************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PersistentMap: () => (/* binding */ PersistentMap)
+/* harmony export */ });
+/* harmony import */ var _epochs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./epochs */ "./utility/epochs.ts");
+
+var PersistentMap = /** @class */ (function () {
+    function PersistentMap(storageKey) {
+        this.storageKey = storageKey;
+        this.map = loadSession(storageKey);
+        this.save();
+    }
+    PersistentMap.prototype.save = function () {
+        saveSession(this.map, this.storageKey);
+    };
+    PersistentMap.prototype.set = function (key, value) {
+        this.map.set(key, value);
+        this.save();
+    };
+    PersistentMap.prototype.delete = function (key) {
+        var result = this.map.delete(key);
+        if (result) {
+            this.save();
+        }
+        return result;
+    };
+    PersistentMap.prototype.clear = function () {
+        this.map.clear();
+        this.save();
+    };
+    PersistentMap.prototype.get = function (key) {
+        return this.map.get(key);
+    };
+    PersistentMap.prototype.forEach = function (callback) {
+        this.map.forEach(callback);
+    };
+    PersistentMap.prototype.entries = function () {
+        return this.map.entries();
+    };
+    return PersistentMap;
+}());
+
+function saveSession(map, key) {
+    var mapArray = Array.from(map.entries());
+    var jsonString = JSON.stringify(mapArray);
+    localStorage.setItem(key, jsonString);
+}
+function loadSession(key) {
+    var jsonString = localStorage.getItem(key);
+    if (jsonString) {
+        var mapArray = JSON.parse(jsonString);
+        return clearOldData(new Map(mapArray));
+    }
+    return new Map();
+}
+function clearOldData(map) {
+    //Get the next hour's epoch then subtract 2 hours from that to return last hour's epoch
+    var previousHour = (0,_epochs__WEBPACK_IMPORTED_MODULE_0__.getNextHourEpoch)() - 7200;
+    map.forEach(function (entry, _key) {
+        if ((entry === null || entry === void 0 ? void 0 : entry.timestamp) > 0 && (0,_epochs__WEBPACK_IMPORTED_MODULE_0__.checkTimeDifference)(previousHour, entry === null || entry === void 0 ? void 0 : entry.timestamp, 3600)) {
+            map.delete(entry);
+        }
+    });
+    return map;
+}
 
 
 /***/ }),
@@ -13288,7 +13364,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _version_json__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./version.json */ "./version.json");
 /* harmony import */ var _icon_png__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./icon.png */ "./icon.png");
 /* harmony import */ var _css_styles_css__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./css/styles.css */ "./css/styles.css");
+/* harmony import */ var _utility_store__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./utility/store */ "./utility/store.ts");
+/* harmony import */ var _utility_epochs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./utility/epochs */ "./utility/epochs.ts");
 var _a;
+
+
 
 
 
@@ -13307,11 +13387,17 @@ var debugMode = (_a = _a1sauce__WEBPACK_IMPORTED_MODULE_0__.getSetting('debugMod
 /**
  * Contains the following keys:
  *
- * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean | NextEligible: Number (Epoch Timestamp)
- *
- * Data is not persisted between sessions
+ * LastLocal: ClanVote | LastServer: ClanVote | Current: ClanVote | Voted: Boolean | NextEligible: Number
  */
-var sessionData = new Map();
+var sessionData = new _utility_store__WEBPACK_IMPORTED_MODULE_11__.PersistentMap('VoiceOfSeren-data');
+// If the next voting period is at a later time than our existing voting period - we haven't voted for this hour
+if ((0,_utility_epochs__WEBPACK_IMPORTED_MODULE_12__.getNextHourEpoch)() > sessionData.get('NextEligible')) {
+    sessionData.set('Voted', false);
+    sessionData.set('NextEligible', 0);
+}
+// Must always unthrottle on load as the interval to unthrottle never starts firing otherwise
+sessionData.set('Throttled', false);
+sessionData.set('LastServer', undefined);
 /**
  * Adds event listeners to the Settings
  */
@@ -13337,6 +13423,7 @@ function startvos() {
     (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.permissionChecks)();
     (0,_utility_settings__WEBPACK_IMPORTED_MODULE_2__.initSettings)();
     addEventListeners();
+    // Do an initial fetch for data
     (0,_api_getServerData__WEBPACK_IMPORTED_MODULE_4__.fetchVos)(sessionData, debugMode);
     // should be named "fetchAtTimes" to be honest. Runs every 15 seconds.
     setInterval(function () { return (0,_lib__WEBPACK_IMPORTED_MODULE_5__.fetchHourly)(sessionData, debugMode); }, 1000 * 15);
