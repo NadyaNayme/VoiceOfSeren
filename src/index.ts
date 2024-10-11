@@ -34,7 +34,7 @@ let debugMode = sauce.getSetting('debugMode') ?? false;
  * - Voted: Boolean
  * - NextEligible: Number
  */
-let sessionData = new PersistentMap('VoiceOfSeren-data');
+const sessionData = new PersistentMap('VoiceOfSeren-data');
 
 // If the next voting period is at a later time than our existing voting period - we haven't voted for this hour
 if (getNextHourEpoch() > sessionData.get('NextEligible')) {
