@@ -2126,7 +2126,7 @@ function startVoteCountdown(sessionData) {
         if (timeRemaining <= 2) {
             (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.updateSessionData)(sessionData);
             clearInterval(interval);
-            countdownElement.textContent = 'The next vote is available!';
+            countdownElement.textContent = 'Due to server delay - votes don\'t happen immediately. Please remain in Prifdinnas until the vote occurs.';
         }
         else {
             var hours = Math.floor(timeRemaining / 3600);

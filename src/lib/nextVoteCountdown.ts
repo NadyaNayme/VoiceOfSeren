@@ -16,7 +16,7 @@ export function startVoteCountdown(sessionData): void {
         if (timeRemaining <= 2) {
             updateSessionData(sessionData);
             clearInterval(interval);
-            countdownElement.textContent = 'The next vote is available!';
+            countdownElement.textContent = 'Due to server delay - votes don\'t happen immediately. Please remain in Prifdinnas until the vote occurs.';
         } else {
             const hours = Math.floor(timeRemaining / 3600);
             const minutes = Math.floor((timeRemaining % 3600) / 60);
