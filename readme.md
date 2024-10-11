@@ -4,7 +4,8 @@ Crowdsourced data to share the current Voice of Seren.
 
 As with all crowdsourced information, it is reliant on the community. The more users able to contribute, the better. With a critical mass of contributors across all time zones, the VOS could easily be updated in a timely fashion for all users! Eventually, the project may grow to tagging roles in Discord automatically. All of this potential depends on you. If you are available on the hour change, please consider helping updating the VOS!
 
-![Voice of Seren](./vos.png)
+![Voice of Seren App](https://github.com/user-attachments/assets/7b861919-b7e2-4aab-bb9d-ee9a5e599573)
+
 
 ## How to Install & Required Settings
 
@@ -22,7 +23,7 @@ You can join my [development server](https://discord.gg/KJ2SgWyJFF) to pick up r
 - See the current Voice of Seren & vote in a consensus for the current voices
 - Automatically contributes data as long as the app is open (can be minimized) when you are in Prif (can opt-out of automatic scanning)
 - Active VoS are in Title Bar (exactly the same as D&D Notifications)
-- Coming Soon: Be alerted when a favorited voice is active!
+- Be alerted when a favorited voice is active!
 
 ## Privacy Concerns / Data Transparency
 
