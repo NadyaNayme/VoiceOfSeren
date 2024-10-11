@@ -173,10 +173,10 @@ export async function updateTimestamps(sessionData, debugMode: boolean) {
         startVoteCountdown(sessionData);
     }
 
-    const lastServer: ClanVote = sessionData.get('LastServer');
+    let lastServer: ClanVote = sessionData.get('LastServer');
     if (!lastServer) {
         await getLastVos(sessionData, debugMode);
-        return;
+		lastServer = sessionData.get('LastServer');
     }
     const lastFetchEpoch = lastServer?.timestamp - 1;
     const now = getCurrentEpoch();
@@ -198,12 +198,6 @@ export async function updateTimestamps(sessionData, debugMode: boolean) {
     timeAgo += 'ago';
 
     helperItems.Timestamp.innerHTML = `Last Server Check: ${timeAgo}`;
-
-	// Fetch from server again if data is >1h 1m old
-	if (hours > 1 && minutes > 1) {
-		fetchVos(sessionData, debugMode);
-	}
-
 }
 
 /**

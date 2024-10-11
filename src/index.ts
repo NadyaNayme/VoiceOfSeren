@@ -66,10 +66,23 @@ export function startvos(): Promise<void> {
     addEventListeners();
 
     fetchVos(sessionData, debugMode);
-    setInterval(() => fetchHourly(sessionData, debugMode), 15000);
-    setInterval(() => automaticScan(sessionData, debugMode), 3000);
-    setInterval(() => updateTimestamps(sessionData, debugMode), 60000);
-	setInterval(() => console.log(sessionData), 15000);
+
+	// should be named "fetchAtTimes" to be honest. Runs every 15 seconds.
+    setInterval(() => fetchHourly(sessionData, debugMode), 1000 * 15);
+
+	// Scan every 3 seconds - will early return if no need to scan.
+    setInterval(() => automaticScan(sessionData, debugMode), 1000 * 3);
+
+	// Keep our helpful timers accurate to the minute by updating them each minute
+    setInterval(() => updateTimestamps(sessionData, debugMode), 1000 * 60);
+
+	// Force a fetch once every hour + 15~ seconds delay
+	setInterval(() => fetchVos(sessionData, debugMode), 1000 * 60 * 60 + 15)
+
+	// Log session data every 30 seconds for debugging purposes.
+	setInterval(() => {
+		if (debugMode) console.log(sessionData)
+	}, 1000 * 30);
 }
 
 window.onload = function () {

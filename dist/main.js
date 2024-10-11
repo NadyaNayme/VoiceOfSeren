@@ -2474,13 +2474,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   updateTitleBar: () => (/* binding */ updateTitleBar),
 /* harmony export */   uuid: () => (/* binding */ uuid)
 /* harmony export */ });
-/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! alt1 */ "../node_modules/alt1/dist/base/index.js");
-/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(alt1__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! alt1 */ "../node_modules/alt1/dist/base/index.js");
+/* harmony import */ var alt1__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(alt1__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _a1sauce__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! .././a1sauce */ "./a1sauce.ts");
 /* harmony import */ var _epochs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./epochs */ "./utility/epochs.ts");
 /* harmony import */ var _lib__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../lib */ "./lib/index.ts");
 /* harmony import */ var _api_getLastVoice__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../api/getLastVoice */ "./api/getLastVoice.ts");
-/* harmony import */ var _api_getServerData__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../api/getServerData */ "./api/getServerData.ts");
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -2518,7 +2517,6 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
     }
 };
 var _a;
-
 
 
 
@@ -2572,7 +2570,7 @@ var helperItems = {
 /**
  * Promise containing image data for each of the Elf Clans
  */
-var clanImages = alt1__WEBPACK_IMPORTED_MODULE_5__.webpackImages({
+var clanImages = alt1__WEBPACK_IMPORTED_MODULE_4__.webpackImages({
     amlodd: __webpack_require__(/*! .././asset/data/Amlodd_Clan.data.png */ "./asset/data/Amlodd_Clan.data.png"),
     cadarn: __webpack_require__(/*! .././asset/data/Cadarn_Clan.data.png */ "./asset/data/Cadarn_Clan.data.png"),
     crwys: __webpack_require__(/*! .././asset/data/Crwys_Clan.data.png */ "./asset/data/Crwys_Clan.data.png"),
@@ -2684,7 +2682,8 @@ function updateTimestamps(sessionData, debugMode) {
                     return [4 /*yield*/, (0,_api_getLastVoice__WEBPACK_IMPORTED_MODULE_3__.getLastVos)(sessionData, debugMode)];
                 case 1:
                     _a.sent();
-                    return [2 /*return*/];
+                    lastServer = sessionData.get('LastServer');
+                    _a.label = 2;
                 case 2:
                     lastFetchEpoch = (lastServer === null || lastServer === void 0 ? void 0 : lastServer.timestamp) - 1;
                     now = (0,_epochs__WEBPACK_IMPORTED_MODULE_1__.getCurrentEpoch)();
@@ -2703,10 +2702,6 @@ function updateTimestamps(sessionData, debugMode) {
                     }
                     timeAgo += 'ago';
                     helperItems.Timestamp.innerHTML = "Last Server Check: ".concat(timeAgo);
-                    // Fetch from server again if data is >1h 1m old
-                    if (hours > 1 && minutes > 1) {
-                        (0,_api_getServerData__WEBPACK_IMPORTED_MODULE_4__.fetchVos)(sessionData, debugMode);
-                    }
                     return [2 /*return*/];
             }
         });
@@ -13343,10 +13338,19 @@ function startvos() {
     (0,_utility_settings__WEBPACK_IMPORTED_MODULE_2__.initSettings)();
     addEventListeners();
     (0,_api_getServerData__WEBPACK_IMPORTED_MODULE_4__.fetchVos)(sessionData, debugMode);
-    setInterval(function () { return (0,_lib__WEBPACK_IMPORTED_MODULE_5__.fetchHourly)(sessionData, debugMode); }, 15000);
-    setInterval(function () { return (0,_lib__WEBPACK_IMPORTED_MODULE_5__.automaticScan)(sessionData, debugMode); }, 3000);
-    setInterval(function () { return (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.updateTimestamps)(sessionData, debugMode); }, 60000);
-    setInterval(function () { return console.log(sessionData); }, 15000);
+    // should be named "fetchAtTimes" to be honest. Runs every 15 seconds.
+    setInterval(function () { return (0,_lib__WEBPACK_IMPORTED_MODULE_5__.fetchHourly)(sessionData, debugMode); }, 1000 * 15);
+    // Scan every 3 seconds - will early return if no need to scan.
+    setInterval(function () { return (0,_lib__WEBPACK_IMPORTED_MODULE_5__.automaticScan)(sessionData, debugMode); }, 1000 * 3);
+    // Keep our helpful timers accurate to the minute by updating them each minute
+    setInterval(function () { return (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.updateTimestamps)(sessionData, debugMode); }, 1000 * 60);
+    // Force a fetch once every hour + 15~ seconds delay
+    setInterval(function () { return (0,_api_getServerData__WEBPACK_IMPORTED_MODULE_4__.fetchVos)(sessionData, debugMode); }, 1000 * 60 * 60 + 15);
+    // Log session data every 30 seconds for debugging purposes.
+    setInterval(function () {
+        if (debugMode)
+            console.log(sessionData);
+    }, 1000 * 30);
 }
 window.onload = function () {
     if (window.alt1) {
