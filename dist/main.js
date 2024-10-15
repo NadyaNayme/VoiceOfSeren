@@ -1822,6 +1822,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var dailyVotes = [];
 /**
  * Checks Current and Last voting data for validity.
  * "LastLocal" data is deleted if it is more than 2 hours old
@@ -1895,6 +1896,36 @@ function checkDataValidity(sessionData, debugMode) {
      * If all of the above checks passed - our data is valid for the current hour
      */
     (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Valid Data Found\nClan 1: ".concat((_d = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_1, "\nClan 2: ").concat((_e = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _e === void 0 ? void 0 : _e.clan_2, "\nTimestamp: ").concat(currentVote === null || currentVote === void 0 ? void 0 : currentVote.timestamp), debugMode);
+    return appendClanVote(dailyVotes, currentVote, debugMode);
+}
+function appendClanVote(dailyVotes, currentVote, debugMode) {
+    var currentHour = Math.floor(currentVote.timestamp / 3600);
+    // Check if our incoming vote is for the same hour (primetime vote) or for a different hour
+    if (dailyVotes.length > 0) {
+        var lastVote = dailyVotes[dailyVotes.length - 1];
+        var lastHour = Math.floor(lastVote.timestamp / 3600);
+        var lastClan_1 = dailyVotes[dailyVotes.length - 1].clans.clan_1;
+        var lastClan_2 = dailyVotes[dailyVotes.length - 1].clans.clan_2;
+        // We won't append the data to dailyVotes - but it is still valid data for primetime voting
+        if (lastHour === currentHour &&
+            lastClan_1 === currentVote.clans.clan_1 &&
+            lastClan_2 === currentVote.clans.clan_2) {
+            return true;
+        }
+    }
+    // Check for the last two votes to see if they both match the current vote
+    var recentVotes = dailyVotes.slice(-2);
+    var matches = recentVotes.filter(function (vote) {
+        return (vote.clans.clan_1 === currentVote.clans.clan_1 &&
+            vote.clans.clan_2 === currentVote.clans.clan_2);
+    });
+    if (matches.length >= 2) {
+        (0,_utility_helpers__WEBPACK_IMPORTED_MODULE_1__.debugLog)("Invalid Data Found. Stale Vote (vote matches votes from previous 3 hours)", debugMode);
+        return false;
+    }
+    dailyVotes.push(currentVote);
+    console.log('Daily Votes:');
+    console.log(dailyVotes);
     return true;
 }
 
@@ -13446,7 +13477,7 @@ function startvos() {
 window.onload = function () {
     if (window.alt1) {
         alt1.identifyAppUrl('./appconfig.json');
-        var version = '2.0.3';
+        var version = '2.1.0';
         (0,_utility_checkVersion__WEBPACK_IMPORTED_MODULE_3__.startVersionCheck)(version);
         Object.values(_utility_settings__WEBPACK_IMPORTED_MODULE_2__.settingsObject).forEach(function (val) {
             _utility_helpers__WEBPACK_IMPORTED_MODULE_1__.helperItems.settings.before(val);
