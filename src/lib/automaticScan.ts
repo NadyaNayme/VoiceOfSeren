@@ -32,24 +32,26 @@ export async function automaticScan(sessionData, debugMode: boolean): Promise<vo
     }
 
 
+    // DISABLED due to Stale Voting bug as this made it harder for legitimate votes to take over
 	// Skip scanning if we are currently being throttled
-	if (sessionData.get('Throttled')) {
-		debugLog(`Skipping scan. Reason: Vote is being throttled`, debugMode);
-		return;
-	}
+	// if (sessionData.get('Throttled')) {
+	// 	debugLog(`Skipping scan. Reason: Vote is being throttled`, debugMode);
+	// 	return;
+	// }
 
+    // DISABLED due to Stale Voting bug as this made it harder for legitimate votes to take over
 	// During primetime allow a vote every 30 seconds to better seed data
-	if (voted && now.minute <= primeTime) {
-        debugLog(
-            `Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
-            debugMode,
-        );
-        sessionData.set('Voted', false);
-        sessionData.set('Throttled', true);
-        setTimeout(() => {
-            sessionData.set('Throttled', false);
-        }, 1000 * 30);
-    }
+	// if (voted && now.minute <= primeTime) {
+    //     debugLog(
+    //         `Primetime vote! Already voted but is being allowed to vote again if data is still recent enough.`,
+    //         debugMode,
+    //     );
+    //     sessionData.set('Voted', false);
+    //     sessionData.set('Throttled', true);
+    //     setTimeout(() => {
+    //         sessionData.set('Throttled', false);
+    //     }, 1000 * 30);
+    // }
 
 	/**
 	 * If our data is older than 2 minutes and still matches the previous hour's data
