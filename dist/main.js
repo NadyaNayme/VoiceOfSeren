@@ -1657,7 +1657,7 @@ function submitClanData(sessionData, debugMode) {
                         // Start a countdown timer until our next eligible voting hour
                         (0,_lib__WEBPACK_IMPORTED_MODULE_1__.startVoteCountdown)(sessionData);
                         //@ts-expect-error plausible gets loaded in index.html
-                        window.plausible('Signup', {
+                        window.plausible('VoS-Vote', {
                             props: {
                                 clan_1: (_c = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _c === void 0 ? void 0 : _c.clan_1,
                                 clan_2: (_d = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_2,

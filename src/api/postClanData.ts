@@ -77,7 +77,7 @@ export async function submitClanData(sessionData, debugMode) {
             startVoteCountdown(sessionData);
 
             //@ts-expect-error plausible gets loaded in index.html
-            window.plausible('Signup',
+            window.plausible('VoS-Vote',
                 {
                     props: {
                         clan_1: currentVote?.clans?.clan_1,
