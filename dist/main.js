@@ -1592,6 +1592,8 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 
 
 
+//@ts-expect-error plausible gets loaded in index.html
+window.plausible = window.plausible || function () { (window.plausible.q = window.plausible.q || []).push(arguments); };
 /**
  * Submits Clan data to the server if it is valid and we have not already voted or it is early in the hour
  * @returns Promise<void>
@@ -1637,7 +1639,7 @@ function submitClanData(sessionData, debugMode) {
                         },
                     })
                         .then(function (res) {
-                        var _a, _b;
+                        var _a, _b, _c, _d;
                         /**
                          * If our vote failed or encountered a server error - we have not voted
                          */
@@ -1654,6 +1656,14 @@ function submitClanData(sessionData, debugMode) {
                         sessionData.set('LastLocal', currentVote);
                         // Start a countdown timer until our next eligible voting hour
                         (0,_lib__WEBPACK_IMPORTED_MODULE_1__.startVoteCountdown)(sessionData);
+                        //@ts-expect-error plausible gets loaded in index.html
+                        window.plausible('Signup', {
+                            props: {
+                                clan_1: (_c = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _c === void 0 ? void 0 : _c.clan_1,
+                                clan_2: (_d = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_2,
+                            },
+                        });
+                        console.log('Sent Analytics');
                     })
                         .catch(function (err) {
                         _utility_helpers__WEBPACK_IMPORTED_MODULE_4__.helperItems.VoteOutput.innerHTML = "<p>API Error: Please try again</p>";

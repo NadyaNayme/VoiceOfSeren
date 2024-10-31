@@ -8,6 +8,9 @@ import { debugLog, helperItems, uuid } from '../utility/helpers';
 import { getLastVos } from './getLastVoice';
 import { fetchVos } from './getServerData';
 
+//@ts-expect-error plausible gets loaded in index.html
+window.plausible = window.plausible || function () { (window.plausible.q = window.plausible.q || []).push(arguments);};
+
 /**
  * Submits Clan data to the server if it is valid and we have not already voted or it is early in the hour
  * @returns Promise<void>
@@ -46,14 +49,13 @@ export async function submitClanData(sessionData, debugMode) {
         },
     })
         .then((res) => {
-
-			/**
-			 * If our vote failed or encountered a server error - we have not voted
-			 */
-			if (res.status >= 400) {
-				sessionData.set('Voted', false);
-				return;
-			}
+            /**
+             * If our vote failed or encountered a server error - we have not voted
+             */
+            if (res.status >= 400) {
+                sessionData.set('Voted', false);
+                return;
+            }
 
             sauce.updateSetting(
                 'votedCount',
@@ -68,11 +70,21 @@ export async function submitClanData(sessionData, debugMode) {
             // This is done to update our "Current Voice of Seren" display
             fetchVos(sessionData, debugMode);
 
-			// Once we have voted our Last Local Vote is what we just submitted
-			sessionData.set('LastLocal', currentVote);
+            // Once we have voted our Last Local Vote is what we just submitted
+            sessionData.set('LastLocal', currentVote);
 
-			// Start a countdown timer until our next eligible voting hour
+            // Start a countdown timer until our next eligible voting hour
             startVoteCountdown(sessionData);
+
+            //@ts-expect-error plausible gets loaded in index.html
+            window.plausible('Signup',
+                {
+                    props: {
+                        clan_1: currentVote?.clans?.clan_1,
+                        clan_2: currentVote?.clans?.clan_2,
+                    },
+                });
+            console.log('Sent Analytics');
         })
         .catch((err) => {
             helperItems.VoteOutput.innerHTML = `<p>API Error: Please try again</p>`;
