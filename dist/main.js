@@ -1639,7 +1639,7 @@ function submitClanData(sessionData, debugMode) {
                         },
                     })
                         .then(function (res) {
-                        var _a, _b, _c, _d;
+                        var _a, _b, _c, _d, _e;
                         /**
                          * If our vote failed or encountered a server error - we have not voted
                          */
@@ -1661,6 +1661,8 @@ function submitClanData(sessionData, debugMode) {
                             props: {
                                 clan_1: (_c = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _c === void 0 ? void 0 : _c.clan_1,
                                 clan_2: (_d = currentVote === null || currentVote === void 0 ? void 0 : currentVote.clans) === null || _d === void 0 ? void 0 : _d.clan_2,
+                                timestamp: new Date().toUTCString(),
+                                uuid: (_e = _a1sauce__WEBPACK_IMPORTED_MODULE_0__.getSetting('uuid')) !== null && _e !== void 0 ? _e : 0,
                             },
                         });
                         console.log('Sent Analytics');
@@ -13492,7 +13494,7 @@ function startvos() {
 window.onload = function () {
     if (window.alt1) {
         alt1.identifyAppUrl('./appconfig.json');
-        var version = '2.1.2';
+        var version = '2.1.3';
         (0,_utility_checkVersion__WEBPACK_IMPORTED_MODULE_3__.startVersionCheck)(version);
         Object.values(_utility_settings__WEBPACK_IMPORTED_MODULE_2__.settingsObject).forEach(function (val) {
             _utility_helpers__WEBPACK_IMPORTED_MODULE_1__.helperItems.settings.before(val);

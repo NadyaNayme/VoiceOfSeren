@@ -77,13 +77,14 @@ export async function submitClanData(sessionData, debugMode) {
             startVoteCountdown(sessionData);
 
             //@ts-expect-error plausible gets loaded in index.html
-            window.plausible('VoS-Vote',
-                {
-                    props: {
-                        clan_1: currentVote?.clans?.clan_1,
-                        clan_2: currentVote?.clans?.clan_2,
-                    },
-                });
+            window.plausible('VoS-Vote', {
+                props: {
+                    clan_1: currentVote?.clans?.clan_1,
+                    clan_2: currentVote?.clans?.clan_2,
+                    timestamp: new Date().toUTCString(),
+                    uuid: sauce.getSetting('uuid') ?? 0,
+                },
+            });
             console.log('Sent Analytics');
         })
         .catch((err) => {
