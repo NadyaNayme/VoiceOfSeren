@@ -1605,6 +1605,9 @@ function submitClanData(sessionData, debugMode) {
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
+                    // Don't vote if we haven't clicked the client in the past 15 minutes - client may have crashed and submits stale data otherwise
+                    if (alt1.rsLastActive >= 900000)
+                        return [2 /*return*/];
                     currentVote = sessionData.get('Current');
                     voted = sessionData.get('Voted');
                     // If we have already voted - skip voting
@@ -13494,7 +13497,7 @@ function startvos() {
 window.onload = function () {
     if (window.alt1) {
         alt1.identifyAppUrl('./appconfig.json');
-        var version = '2.1.3';
+        var version = '2.2.0';
         (0,_utility_checkVersion__WEBPACK_IMPORTED_MODULE_3__.startVersionCheck)(version);
         Object.values(_utility_settings__WEBPACK_IMPORTED_MODULE_2__.settingsObject).forEach(function (val) {
             _utility_helpers__WEBPACK_IMPORTED_MODULE_1__.helperItems.settings.before(val);

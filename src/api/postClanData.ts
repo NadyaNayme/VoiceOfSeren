@@ -16,6 +16,10 @@ window.plausible = window.plausible || function () { (window.plausible.q = windo
  * @returns Promise<void>
  */
 export async function submitClanData(sessionData, debugMode) {
+
+    // Don't vote if we haven't clicked the client in the past 15 minutes - client may have crashed and submits stale data otherwise
+    if (alt1.rsLastActive >= 900000) return
+
     const currentVote: ClanVote = sessionData.get('Current');
     const voted: Boolean = sessionData.get('Voted');
 
