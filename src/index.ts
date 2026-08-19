@@ -107,11 +107,6 @@ window.onload = function () {
         const version = '2.2.2';
         startVersionCheck(version);
 
-		let leaguesWorlds = [143, 146, 147, 172, 173, 174, 175, 190, 208, 209, 220, 221, 240, 241, 248, 260, 261, 262, 263, 264, 265, 266, 270, 271, 272, 273, 274, 275, 276, 277, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 292, 293, 294, 295, 296, 297, 298]
-		if (leaguesWorlds.includes(alt1.currentWorld)) {
-    		return;
-		}
-
         Object.values(settingsObject).forEach((val) => {
             helperItems.settings.before(val);
         });
